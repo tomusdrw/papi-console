@@ -7,23 +7,25 @@ export default {
     extend: {
       colors: {
         polkadot: {
-          0: "#FFFFFF",
-          100: "#E1DDFF",
-          200: "#D6BBFF",
-          300: "#DF98FF",
-          400: "#FC76FF",
-          500: "#E6007A",
+          950: "#030110",
+          900: "#0C052C",
+          800: "#23126D",
+          700: "#4027AE",
+          650: "#6543EF",
           600: "#5E39F2",
-          700: "#472FA7",
-          800: "#0F1750",
-          900: "#01050C",
+          500: "#E6007A",
+          400: "#FC76FF",
+          300: "#DB9EFF",
+          200: "#E4DAFF",
+          100: "#F2F3FF",
+          0: "#FBFCFF",
         },
       },
     },
   },
   plugins: [
     function ({ addVariant }) {
-      addVariant("group-state-open", ':merge(.group)[data-state="open"] &')
+      addVariant("group-state-open", ':merge(.group)[data-state="open"] &');
     },
   ],
-}
+};
