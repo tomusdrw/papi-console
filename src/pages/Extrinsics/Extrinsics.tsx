@@ -25,7 +25,7 @@ export const Extrinsics = () => {
   }
 
   return (
-    <div className="flex flex-col">
+    <div className="flex flex-col overflow-hidden">
       <div>Extrinsics</div>
       <EditMode
         {...extrinsicProps}

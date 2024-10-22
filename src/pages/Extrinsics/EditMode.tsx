@@ -53,7 +53,7 @@ export const EditMode: React.FC<{
   }, [metadata, codecType])
 
   return (
-    <div className="flex flex-col items-start w-full max-w-screen-lg h-screen text-polkadot-100 overflow-hidden bg-polkadot-900">
+    <div className="flex flex-col items-start w-full max-w-screen-lg text-polkadot-100 overflow-hidden bg-polkadot-900">
       <BinaryDisplay
         value={
           (innerValue.type === CodecComponentType.Initial
