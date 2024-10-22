@@ -13,6 +13,7 @@
     "semi": false
   },
   "dependencies": {
+    "@headlessui/react": "^2.1.10",
     "@polkadot-api/known-chains": "^0.5.4",
     "@polkadot-api/metadata-builders": "^0.8.2",
     "@polkadot-api/polkadot-sdk-compat": "^2.3.1",
@@ -22,6 +23,7 @@
     "@polkadot-api/substrate-client": "^0.2.2",
     "@polkadot-api/utils": "^0.1.2",
     "@polkadot-api/ws-provider": "^0.3.2",
+    "@radix-ui/react-toggle": "^1.1.0",
     "@react-rxjs/core": "^0.10.7",
     "@react-rxjs/utils": "^0.9.7",
     "lucide-react": "^0.453.0",
@@ -39,6 +41,7 @@
     "@types/node": "^22.7.8",
     "@types/react": "^18.3.10",
     "@types/react-dom": "^18.3.0",
+    "@types/react-portal": "^4.0.7",
     "@vitejs/plugin-react": "^4.3.2",
     "autoprefixer": "^10.4.20",
     "eslint": "^9.11.1",

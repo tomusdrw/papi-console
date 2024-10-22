@@ -369,7 +369,7 @@ export function getViewCodecComponent(
     switch (entry.type) {
       case "compact": {
         ResultComponent = entry.isBig ? CBigNumber : CNumber
-        type = (entry as any).size
+        type = (entry as any).size ?? "u128"
         break
       }
       case "primitive": {
@@ -833,7 +833,7 @@ export function getCodecComponent(
     switch (entry.type) {
       case "compact": {
         ResultComponent = entry.isBig ? CBigNumber : CNumber
-        type = (entry as any).size
+        type = (entry as any).size ?? "u128"
         break
       }
       case "primitive": {

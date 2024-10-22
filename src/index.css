@@ -1,3 +1,18 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+input, dialog {
+  @apply bg-black
+}
+
+
+.visible_when_parent_hover {
+  opacity: 0;
+  pointer-events: none;
+  transition: 0.2s opacity;
+}
+*:hover > .visible_when_parent_hover {
+  opacity: 1;
+  pointer-events: all;
+}
