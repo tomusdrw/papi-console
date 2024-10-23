@@ -48,7 +48,7 @@ const NumericEdit =
 
 export const CNumber: EditNumber = NumericEdit((value: string) => {
   const parsed = Number(value)
-  return value.trim() === "" || Number.isSafeInteger(parsed) ? NOTIN : parsed
+  return value.trim() === "" || !Number.isSafeInteger(parsed) ? NOTIN : parsed
 })
 export const CBigNumber: EditBigNumber = NumericEdit((value: string) => {
   try {
