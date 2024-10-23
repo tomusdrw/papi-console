@@ -1,6 +1,6 @@
 import { metadata$ } from "@/chain.state"
-import { CopyText } from "@/components/Copy"
-import { BinaryEdit } from "@/components/Icons"
+import { ActionButton } from "@/components/ActionButton"
+import { ButtonGroup } from "@/components/ButtonGroup"
 import { withSubscribe } from "@/components/withSuspense"
 import {
   CodecComponentType,
@@ -8,13 +8,13 @@ import {
   NOTIN,
 } from "@codec-components"
 import { getDynamicBuilder, getLookupFn } from "@polkadot-api/metadata-builders"
-import { Binary, HexString } from "@polkadot-api/substrate-bindings"
+import { Binary } from "@polkadot-api/substrate-bindings"
 import { state, useStateObservable } from "@react-rxjs/core"
-import { FC, useState } from "react"
+import { useState } from "react"
 import { map } from "rxjs"
-import { twMerge } from "tailwind-merge"
-import { BinaryEditModal } from "./BinaryEditModal"
+import { BinaryDisplay } from "./BinaryDisplay"
 import { EditMode } from "./EditMode"
+import { JsonMode } from "./JsonMode"
 
 const extrinsicProps$ = state(
   metadata$.pipe(
@@ -36,6 +36,7 @@ const extrinsicDecoder = extrinsicProps$.pipeState(
 )
 
 export const Extrinsics = withSubscribe(() => {
+  const [viewMode, setViewMode] = useState<"edit" | "json">("edit")
   const extrinsicProps = useStateObservable(extrinsicProps$)
   const decoder = useStateObservable(extrinsicDecoder)
 
@@ -52,7 +53,7 @@ export const Extrinsics = withSubscribe(() => {
         : componentValue.value.encoded) ?? null
 
   return (
-    <div className="flex flex-col overflow-hidden">
+    <div className="flex flex-col overflow-hidden gap-2">
       <div>Extrinsics</div>
 
       <BinaryDisplay
@@ -77,75 +78,43 @@ export const Extrinsics = withSubscribe(() => {
         }}
       />
 
-      <EditMode
-        {...extrinsicProps}
-        value={componentValue}
-        onUpdate={(value) =>
-          setComponentValue({ type: CodecComponentType.Updated, value })
-        }
-      />
+      <div className="flex flex-row justify-between px-2">
+        <ButtonGroup
+          value={viewMode}
+          onValueChange={setViewMode as any}
+          items={[
+            {
+              value: "edit",
+              content: "Edit",
+            },
+            {
+              value: "json",
+              content: "JSON",
+              disabled: !binaryValue,
+            },
+          ]}
+        />
+        <ActionButton disabled>Submit extrinsic</ActionButton>
+      </div>
+
+      {viewMode === "edit" ? (
+        <EditMode
+          {...extrinsicProps}
+          value={componentValue}
+          onUpdate={(value) =>
+            setComponentValue({ type: CodecComponentType.Updated, value })
+          }
+        />
+      ) : (
+        <JsonMode
+          value={
+            typeof binaryValue === "string"
+              ? Binary.fromHex(binaryValue).asBytes()
+              : binaryValue
+          }
+          decode={decoder}
+        />
+      )}
     </div>
   )
 })
-
-const DISPLAY_MAX_LEN = 1024
-const COPY_MAX_LEN = 5 * 1024 * 1024
-const BinaryDisplay: FC<{
-  value: Uint8Array | HexString | null
-  isEmpty: boolean
-  onValueChanged: (value: any | NOTIN) => boolean
-  decode: (value: Uint8Array | HexString) => any | NOTIN
-}> = ({ value, isEmpty, onValueChanged, decode }) => {
-  const [binaryOpen, setBinaryOpen] = useState(false)
-
-  const displayLength = DISPLAY_MAX_LEN * 2 + 2
-
-  const copyLength = COPY_MAX_LEN * 2 + 2
-  const hex = value
-    ? typeof value === "string"
-      ? value.slice(0, copyLength)
-      : Binary.fromBytes(value.slice(0, COPY_MAX_LEN)).asHex()
-    : null
-  const exceedsDisplayLength = hex && hex.length > displayLength
-  const exceedsCopyLength = !!hex && hex.length >= COPY_MAX_LEN * 2 + 2
-
-  const copyDisabled = hex === null || exceedsCopyLength
-
-  return (
-    <div className="p-2 w-full">
-      <div className="px-3 py-2 gap-2 rounded flex flex-row items-center bg-polkadot-800">
-        <CopyText text={hex ?? ""} disabled={copyDisabled} />
-        <div className="text-sm tabular-nums max-h-12 overflow-hidden whitespace-nowrap text-ellipsis flex-1">
-          {hex ? (
-            hex.slice(0, displayLength) + (exceedsDisplayLength ? "…" : "")
-          ) : (
-            <div className="flex flex-row items-center gap-1 text-slate-400">
-              {isEmpty
-                ? "Start by filling out your extrinsic, or enter a binary using the edit binary button at the end of this line."
-                : "Cannot display hex. Complete the required values."}
-            </div>
-          )}
-        </div>
-        <BinaryEdit
-          size={24}
-          className={twMerge("cursor-pointer hover:text-polkadot-300")}
-          onClick={() => setBinaryOpen(true)}
-        />
-        <BinaryEditModal
-          status={{
-            encodedValue:
-              typeof value === "string"
-                ? Binary.fromHex(value).asBytes()
-                : (value ?? undefined),
-            onValueChanged,
-            decode,
-            type: "complete",
-          }}
-          open={binaryOpen}
-          path=""
-          onClose={() => setBinaryOpen(false)}
-        />
-      </div>
-    </div>
-  )
-}

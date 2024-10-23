@@ -149,14 +149,18 @@ const parseValue = (value: string | Binary): Binary | NOTIN => {
   return Binary.fromText(value)
 }
 
-const textDecoder = new TextDecoder("utf-8", { fatal: true })
 const serializeValue = (value: Binary): string | Binary => {
   const bytes = value.asBytes()
   if (bytes.length === 0) return ""
   if (bytes.length > 5 * 1024 * 1024) return value
 
+  return bytesToString(value)
+}
+
+const textDecoder = new TextDecoder("utf-8", { fatal: true })
+export const bytesToString = (value: Binary) => {
   try {
-    return textDecoder.decode(bytes)
+    return textDecoder.decode(value.asBytes())
   } catch (_) {
     return value.asHex()
   }
