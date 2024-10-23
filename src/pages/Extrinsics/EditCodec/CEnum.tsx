@@ -47,8 +47,11 @@ export const CEnum: EditEnum = ({
               onValueChanged({ type: selected, value })
             }
           }}
-          value={value === NOTIN ? "" : value.type + getOptionType(value.type)}
-          options={options.map((option) => ({ text: option, value: option }))}
+          value={value === NOTIN ? "" : value.type}
+          options={options.map((option) => ({
+            text: option + getOptionType(option),
+            value: option,
+          }))}
         />
         {!isComplexShape && inner}
       </div>

@@ -33,6 +33,7 @@ export const SearchableSelect = <T,>({
         value={value}
         onChange={(value) => setValue(value)}
         onClose={() => setQuery("")}
+        immediate
       >
         <div className="flex flex-row p-2 rounded border border-polkadot-200 text-white bg-black">
           <ComboboxInput
