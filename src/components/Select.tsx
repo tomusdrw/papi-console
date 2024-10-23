@@ -43,6 +43,7 @@ export const SearchableSelect = <T,>({
             }
             onChange={(event) => setQuery(event.target.value)}
             placeholder="Select"
+            autoComplete="off"
           />
           <ComboboxButton className="group">
             <ChevronDown className="size-4 " />

@@ -68,7 +68,6 @@ async function getMetadata(source: ChainSource): Promise<AnyMetadata> {
   const provider = getProvider(source)
   const client = createClient(provider)
 
-  console.log("loading metadata")
   const metadata = await new Promise<AnyMetadata>((resolve, reject) => {
     const chainHead = client.chainHead(
       true,
@@ -100,7 +99,6 @@ async function getMetadata(source: ChainSource): Promise<AnyMetadata> {
     )
   })
 
-  console.log("received", metadata)
   client.destroy()
   return metadata
 }

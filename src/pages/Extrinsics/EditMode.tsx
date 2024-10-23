@@ -87,9 +87,7 @@ export const EditMode: React.FC<{
             >
               <div className="relative">
                 {!innerValue.value ? (
-                  <div className="h-14 ml-5 text-sm flex flex-col justify-center">
-                    {"Start by choosing a value -->"}
-                  </div>
+                  <div className="text-sm text-slate-400">(Empty)</div>
                 ) : (
                   <TreeCodec {...props} />
                 )}

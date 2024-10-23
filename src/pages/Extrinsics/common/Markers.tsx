@@ -5,6 +5,7 @@ import {
   FC,
   PropsWithChildren,
   useContext,
+  useEffect,
   useRef,
   useState,
 } from "react"
@@ -85,16 +86,32 @@ export const MarkersContextProvider: FC<PropsWithChildren> = ({ children }) => {
   )
 }
 
+const useWindowTransition = (isAllVisible: boolean) => {
+  const wasOff = useRef(false)
+
+  useEffect(() => {
+    wasOff.current = isAllVisible
+  }, [isAllVisible])
+
+  return !isAllVisible || !wasOff.current
+}
 export const VisibleWindow = () => {
   const ctx = useContext(MarkersContext)
   const [height, setHeight] = useState<number | null>(null)
   const ref = useHeightObserver(setHeight)
+
+  const isAllVisible = // 🔫 always has been
+    !!ctx &&
+    ((Math.round(ctx.range[0]) === 0 &&
+      Math.round(ctx.range[1]) === Math.round(height ?? NaN)) ||
+      ctx.range[1] === 0)
+  const transitionEnabled = useWindowTransition(isAllVisible)
   if (!ctx) return null
 
-  const isAllVisible = ctx.range[0] === 0 && ctx.range[1] === height // 🔫 always has been
-
-  const fade =
-    "absolute left-0 right-0 transition-all ease-linear bg-gray-100 bg-opacity-10 backdrop-blur-[0.4px]"
+  const fade = twMerge(
+    "absolute left-0 right-0 ease-linear bg-gray-100 bg-opacity-10 backdrop-blur-[0.4px]",
+    transitionEnabled && "transition-all",
+  )
 
   return (
     <div
