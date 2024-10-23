@@ -6,6 +6,9 @@ input, dialog {
   @apply bg-black
 }
 
+:root {
+  color-scheme: dark;
+}
 
 .visible_when_parent_hover {
   opacity: 0;
