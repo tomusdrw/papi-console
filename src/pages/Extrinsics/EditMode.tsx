@@ -1,14 +1,17 @@
 import {
+  MarkersContextProvider,
+  VisibleWindow,
+} from "@/codec-components/common/Markers"
+import { synchronizeScroll } from "@/codec-components/common/scroll"
+import { SubtreeFocus } from "@/codec-components/common/SubtreeFocus"
+import { EditCodec } from "@/codec-components/EditCodec"
+import { TreeCodec } from "@/codec-components/EditCodec/Tree/index"
+import {
   CodecComponentUpdate,
   CodecComponentValue,
   MetadataType,
 } from "@codec-components"
 import { useEffect, useRef, useState } from "react"
-import { MarkersContextProvider, VisibleWindow } from "./common/Markers"
-import { synchronizeScroll } from "./common/scroll"
-import { SubtreeFocus } from "./common/SubtreeFocus"
-import { EditCodec } from "./EditCodec"
-import { TreeCodec } from "./EditCodec/Tree/index"
 import { FocusPath } from "./FocusPath"
 
 export const EditMode: React.FC<{
