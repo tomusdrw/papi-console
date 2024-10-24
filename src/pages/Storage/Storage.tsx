@@ -45,12 +45,19 @@ export const Storage = withSubscribe(() => {
     }
 
     if (storageEntry.tag === "plain") {
-      return setSelectedEntry({ value: storageEntry.value, key: [] })
+      return setSelectedEntry({
+        value: storageEntry.value,
+        key: [],
+        pallet: pallet!,
+        entry: entry!,
+      })
     }
     if (storageEntry.value.hashers.length === 1) {
       return setSelectedEntry({
         value: storageEntry.value.value,
         key: [storageEntry.value.key],
+        pallet: pallet!,
+        entry: entry!,
       })
     }
 
@@ -67,6 +74,8 @@ export const Storage = withSubscribe(() => {
     setSelectedEntry({
       key,
       value: storageEntry.value.value,
+      pallet: pallet!,
+      entry: entry!,
     })
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedPallet, entry])
