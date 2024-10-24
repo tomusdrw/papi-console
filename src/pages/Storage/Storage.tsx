@@ -6,6 +6,7 @@ import { state, useStateObservable } from "@react-rxjs/core"
 import { FC, useEffect, useState } from "react"
 import { map } from "rxjs"
 import { selectedEntry$, setSelectedEntry } from "./storage.state"
+import { StorageDecode } from "./StorageDecode"
 import { StorageQuery } from "./StorageQuery"
 import { StorageSubscriptions } from "./StorageSubscriptions"
 
@@ -29,11 +30,17 @@ const metadataStorage$ = state(
 
 export const Storage = withSubscribe(() => {
   const { lookup, entries } = useStateObservable(metadataStorage$)
-  const [pallet, setPallet] = useState<string | null>(null)
-  const [entry, setEntry] = useState<string | null>(null)
+  const [pallet, setPallet] = useState<string | null>("System")
+  const [entry, setEntry] = useState<string | null>("Account")
 
   const selectedPallet =
     (pallet && lookup.metadata.pallets.find((p) => p.name === pallet)) || null
+
+  useEffect(
+    () => setEntry(selectedPallet?.storage?.items[0]?.name ?? null),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [selectedPallet?.name],
+  )
 
   useEffect(() => {
     const storageEntry = (
@@ -142,8 +149,4 @@ const StorageEntry: FC = () => {
       {mode === "query" ? <StorageQuery /> : <StorageDecode />}
     </>
   )
-}
-
-const StorageDecode: FC = () => {
-  return null
 }

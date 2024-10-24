@@ -13,6 +13,8 @@ import { BinaryStatus } from "@/codec-components/EditCodec/Tree/codec-components
 // @ts-expect-error save-as typings not available
 import { saveAs } from "save-as"
 
+// TODO refactor this out into a component not tied to `Extrinsics`
+// if possible, make it the edit button itself, internally handling the `open/close` state of the modal.
 export const BinaryEditModal: FC<{
   status: BinaryStatus
   open: boolean

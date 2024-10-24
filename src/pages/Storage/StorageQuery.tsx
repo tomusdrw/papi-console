@@ -30,7 +30,10 @@ import { BinaryEditModal } from "../Extrinsics/BinaryEditModal"
 import { addStorageSubscription, selectedEntry$ } from "./storage.state"
 
 export const StorageQuery: FC = () => {
+  const selectedEntry = useStateObservable(selectedEntry$)
   const isReady = useStateObservable(isReady$)
+
+  if (!selectedEntry) return null
 
   const submit = async () => {
     const [entry, unsafeApi, keyValues, keysEnabled] = await firstValueFrom(
@@ -63,8 +66,8 @@ export const StorageQuery: FC = () => {
 
   return (
     <div className="p-2 flex flex-col gap-4 items-start w-full">
-      <StorageKeysInput />
       <KeyDisplay />
+      <StorageKeysInput />
       <ActionButton disabled={!isReady} onClick={submit}>
         Query
       </ActionButton>
@@ -290,7 +293,19 @@ const encodedKey$ = state(
   null,
 )
 const KeyDisplay: FC = () => {
+  const [binaryOpen, setBinaryOpen] = useState(false)
   const key = useStateObservable(encodedKey$)
+  const lookup = useStateObservable(lookupState$)
+  const selectedEntry = useStateObservable(selectedEntry$)
+  const keys = useStateObservable(keys$)
+  const keysEnabled = useStateObservable(keysEnabled$)
+
+  if (!lookup || !selectedEntry) return null
+
+  const codec = getDynamicBuilder(lookup).buildStorage(
+    selectedEntry.pallet,
+    selectedEntry.entry,
+  )
 
   return (
     <div className="flex w-full overflow-hidden bg-polkadot-800 p-2 gap-2 rounded items-center">
@@ -304,6 +319,35 @@ const KeyDisplay: FC = () => {
         {key ?? "Fill in all the storage keys to calculate the encoded key"}
       </div>
       <CopyText text={key ?? ""} disabled={key === null} />
+      {keys.length === keysEnabled && (
+        <BinaryEdit
+          size={20}
+          className="cursor-pointer hover:text-polkadot-300"
+          onClick={() => setBinaryOpen(true)}
+        />
+      )}
+      <BinaryEditModal
+        status={{
+          encodedValue: key ? Binary.fromHex(key).asBytes() : undefined,
+          onValueChanged: (value: any[]) => {
+            value.forEach((value, idx) => setKeyValue({ idx, value }))
+            return true
+          },
+          decode: (v) => {
+            try {
+              return codec.keyDecoder(
+                typeof v === "string" ? v : Binary.fromBytes(v).asHex(),
+              )
+            } catch (_) {
+              return NOTIN
+            }
+          },
+          type: "complete",
+        }}
+        open={binaryOpen}
+        path=""
+        onClose={() => setBinaryOpen(false)}
+      />
     </div>
   )
 }
