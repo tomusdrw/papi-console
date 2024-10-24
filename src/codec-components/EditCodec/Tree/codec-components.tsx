@@ -1,4 +1,5 @@
 import { BinaryEdit, Focus, TypeIcon, TypeIcons } from "@/components/Icons"
+import { BinaryEditModal } from "@/pages/Extrinsics/BinaryEditModal"
 import {
   EditAccountId,
   EditBigNumber,
@@ -28,7 +29,6 @@ import {
   useState,
 } from "react"
 import { twMerge } from "tailwind-merge"
-import { BinaryEditModal } from "../../BinaryEditModal"
 import { isActive$, setHovered } from "../../common/paths.state"
 
 export const CVoid: EditVoid = () => null

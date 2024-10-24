@@ -1,25 +1,33 @@
-import SliderToggle from "@/components/Toggle"
-import { state, useStateObservable, withDefault } from "@react-rxjs/core"
-import { combineKeys, createSignal } from "@react-rxjs/utils"
-import { FC } from "react"
-import { combineLatest, filter, map, scan, startWith, switchMap } from "rxjs"
-import { selectedEntry$ } from "./storage.state"
-import { NOTIN } from "@codec-components"
-import { ActionButton } from "@/components/ActionButton"
 import { lookup$ } from "@/chain.state"
-import { getDynamicBuilder } from "@polkadot-api/metadata-builders"
+import { EditCodec } from "@/codec-components/EditCodec"
+import { ActionButton } from "@/components/ActionButton"
 import { CopyText } from "@/components/Copy"
+import { BinaryEdit } from "@/components/Icons"
+import SliderToggle from "@/components/Toggle"
+import {
+  CodecComponentType,
+  CodecComponentValue,
+  NOTIN,
+} from "@codec-components"
+import { getDynamicBuilder } from "@polkadot-api/metadata-builders"
+import { state, useStateObservable, withDefault } from "@react-rxjs/core"
+import { createSignal } from "@react-rxjs/utils"
+import { Binary } from "polkadot-api"
+import { FC, useState } from "react"
+import { combineLatest, filter, map, scan, startWith, switchMap } from "rxjs"
 import { twMerge } from "tailwind-merge"
+import { BinaryEditModal } from "../Extrinsics/BinaryEditModal"
+import { selectedEntry$ } from "./storage.state"
 
 export const StorageQuery: FC = () => {
   const isReady = useStateObservable(isReady$)
 
   return (
-    <>
+    <div className="p-2 flex flex-col gap-4 items-start w-full">
       <StorageKeysInput />
       <KeyDisplay />
       <ActionButton disabled={!isReady}>Query</ActionButton>
-    </>
+    </div>
   )
 }
 
@@ -91,20 +99,130 @@ const StorageKeysInput: FC = () => {
             isToggled={keysEnabled > idx}
             toggle={() => toggleKey(idx)}
           />
-          <StorageKeyInput type={type} disabled={keysEnabled <= idx} />
+          <StorageKeyInput
+            idx={idx}
+            type={type}
+            disabled={keysEnabled <= idx}
+          />
         </li>
       ))}
     </ol>
   )
 }
 
-const StorageKeyInput: FC<{ type: number; disabled: boolean }> = ({
+const lookupState$ = state(lookup$, null)
+const keyInputValue$ = state(
+  (idx: number) =>
+    keyValues$.pipe(
+      map(
+        (v, i): CodecComponentValue =>
+          i === 0
+            ? {
+                type: CodecComponentType.Initial,
+              }
+            : {
+                type: CodecComponentType.Updated,
+                value:
+                  v[idx] === NOTIN
+                    ? {
+                        empty: true,
+                      }
+                    : {
+                        empty: false,
+                        decoded: v[idx],
+                      },
+              },
+      ),
+    ),
+  {
+    type: CodecComponentType.Initial,
+  } satisfies CodecComponentValue,
+)
+const StorageKeyInput: FC<{ idx: number; type: number; disabled: boolean }> = ({
+  idx,
   type,
   disabled,
 }) => {
+  const [binaryOpen, setBinaryOpen] = useState(false)
+  const lookup = useStateObservable(lookupState$)
+  const value = useStateObservable(keyInputValue$(idx))
+
+  if (!lookup) return null
+
+  const codec = getDynamicBuilder(lookup).buildDefinition(type)
+  const binaryValue =
+    (value.type === CodecComponentType.Initial
+      ? value.value
+      : value.value.empty
+        ? null
+        : (value.value.encoded ?? codec.enc(value.value.decoded))) ?? null
+
+  const getTypeName = () => {
+    const lookupEntry = lookup(type)
+    switch (lookupEntry.type) {
+      case "primitive":
+        return lookupEntry.value
+      case "compact":
+        return (lookupEntry as any).size ?? "u128"
+      case "enum":
+        return "Enum"
+      case "array":
+        if (
+          lookupEntry.value.type === "primitive" &&
+          lookupEntry.value.value === "u8"
+        ) {
+          return "Binary"
+        }
+        return null
+      case "bitSequence":
+      case "AccountId20":
+      case "AccountId32":
+        return lookupEntry.type
+      default:
+        return null
+    }
+  }
+
   return (
-    <div className="border-l p-2">
-      Key type={type} enabled={String(!disabled)}
+    <div
+      className={twMerge(
+        "border-l px-2",
+        disabled && "pointer-events-none opacity-50",
+      )}
+    >
+      <div className="flex justify-between">
+        <div>{getTypeName()}</div>
+        <BinaryEdit
+          size={18}
+          className={twMerge("cursor-pointer hover:text-polkadot-300")}
+          onClick={() => setBinaryOpen(true)}
+        />
+      </div>
+      <EditCodec
+        metadata={lookup.metadata}
+        codecType={type}
+        value={value}
+        onUpdate={(value) =>
+          setKeyValue({ idx, value: value.empty ? NOTIN : value.decoded })
+        }
+      />
+      <BinaryEditModal
+        status={{
+          encodedValue:
+            typeof binaryValue === "string"
+              ? Binary.fromHex(binaryValue).asBytes()
+              : (binaryValue ?? undefined),
+          onValueChanged: (value) => {
+            setKeyValue({ idx, value })
+            return true
+          },
+          decode: codec.dec,
+          type: "complete",
+        }}
+        open={binaryOpen}
+        path=""
+        onClose={() => setBinaryOpen(false)}
+      />
     </div>
   )
 }
