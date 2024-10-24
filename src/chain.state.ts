@@ -11,6 +11,7 @@ import { toHex } from "@polkadot-api/utils"
 import { shareLatest } from "@react-rxjs/core"
 import { createClient, PolkadotClient } from "polkadot-api"
 import { chainSpec } from "polkadot-api/chains/polkadot"
+import { withLogsRecorder } from "polkadot-api/logs-provider"
 import { withPolkadotSdkCompat } from "polkadot-api/polkadot-sdk-compat"
 import { getSmProvider } from "polkadot-api/sm-provider"
 import { Client } from "polkadot-api/smoldot"
@@ -124,5 +125,5 @@ function getProvider(source: ChainSource) {
         chainSpec: source.value.chainSpec,
       })
 
-  return getSmProvider(chain)
+  return withLogsRecorder(console.debug, getSmProvider(chain))
 }
