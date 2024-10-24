@@ -1,22 +1,34 @@
-import { chainSpec } from "@polkadot-api/known-chains/polkadot"
-import { withPolkadotSdkCompat } from "@polkadot-api/polkadot-sdk-compat"
-import { getSmProvider } from "@polkadot-api/sm-provider"
-import { Client } from "@polkadot-api/smoldot"
-import { startFromWorker } from "@polkadot-api/smoldot/from-worker"
-import SmWorker from "@polkadot-api/smoldot/worker?worker"
+import { getLookupFn } from "@polkadot-api/metadata-builders"
 import {
+  Binary,
   CodecType,
   decAnyMetadata,
   metadata as metadataCodec,
-  u32,
   V14,
   V15,
-  Vector,
 } from "@polkadot-api/substrate-bindings"
-import { createClient } from "@polkadot-api/substrate-client"
 import { toHex } from "@polkadot-api/utils"
-import { getWsProvider } from "@polkadot-api/ws-provider/web"
-import { from, map, of, shareReplay, startWith, switchMap, tap } from "rxjs"
+import { shareLatest } from "@react-rxjs/core"
+import { createClient, PolkadotClient } from "polkadot-api"
+import { chainSpec } from "polkadot-api/chains/polkadot"
+import { withPolkadotSdkCompat } from "polkadot-api/polkadot-sdk-compat"
+import { getSmProvider } from "polkadot-api/sm-provider"
+import { Client } from "polkadot-api/smoldot"
+import { startFromWorker } from "polkadot-api/smoldot/from-worker"
+import SmWorker from "polkadot-api/smoldot/worker?worker"
+import { getWsProvider } from "polkadot-api/ws-provider/web"
+import {
+  concat,
+  finalize,
+  from,
+  map,
+  NEVER,
+  of,
+  shareReplay,
+  startWith,
+  switchMap,
+  tap,
+} from "rxjs"
 
 export type ChainSource = { id: string } & (
   | {
@@ -40,14 +52,29 @@ const selectedSource$ = of<ChainSource>({
 
 type AnyMetadata = CodecType<typeof metadataCodec>
 
-export const metadata$ = selectedSource$.pipe(
-  switchMap((src) => {
-    const metadata = from(getMetadata(src)).pipe(
+export const chainClient$ = selectedSource$.pipe(
+  map((src) => [src.id, getProvider(src)] as const),
+  switchMap(([id, provider]) => {
+    const client = createClient(provider)
+    return concat(of({ id, client }), NEVER).pipe(
+      finalize(() => client.destroy()),
+    )
+  }),
+  shareLatest(),
+)
+export const unsafeApi$ = chainClient$.pipe(
+  map(({ client }) => client.getUnsafeApi()),
+  shareLatest(),
+)
+
+export const metadata$ = chainClient$.pipe(
+  switchMap(({ id, client }) => {
+    const metadata = from(getMetadata(client)).pipe(
       tap((v) => {
-        localStorage.setItem(`metadata-${src.id}`, toHex(metadataCodec.enc(v)))
+        localStorage.setItem(`metadata-${id}`, toHex(metadataCodec.enc(v)))
       }),
     )
-    const cached = localStorage.getItem(`metadata-${src.id}`)
+    const cached = localStorage.getItem(`metadata-${id}`)
     if (cached) {
       return from(metadata).pipe(startWith(decAnyMetadata(cached)))
     }
@@ -62,45 +89,15 @@ export const metadata$ = selectedSource$.pipe(
   }),
   shareReplay(1),
 )
+export const lookup$ = metadata$.pipe(map(getLookupFn), shareLatest())
 
-const u32ListDecoder = Vector(u32).dec
-async function getMetadata(source: ChainSource): Promise<AnyMetadata> {
-  const provider = getProvider(source)
-  const client = createClient(provider)
-
-  const metadata = await new Promise<AnyMetadata>((resolve, reject) => {
-    const chainHead = client.chainHead(
-      true,
-      async (evt) => {
-        if (evt.type === "newBlock") {
-          chainHead.unpin([evt.blockHash])
-        }
-        if (evt.type !== "initialized") {
-          return
-        }
-
-        const hash = evt.finalizedBlockHashes[0]
-        const versionsResponse = await chainHead.call(
-          hash,
-          "Metadata_metadata_versions",
-          "",
-        )
-        const versions = u32ListDecoder(versionsResponse)
-        const metadataResponse = await (versions.includes(15)
-          ? chainHead.call(
-              hash,
-              "Metadata_metadata_at_version",
-              toHex(u32.enc(15)),
-            )
-          : chainHead.call(hash, "Metadata_metadata", ""))
-        resolve(decAnyMetadata(metadataResponse))
-      },
-      reject,
-    )
-  })
-
-  client.destroy()
-  return metadata
+async function getMetadata(client: PolkadotClient): Promise<AnyMetadata> {
+  const unsafeApi = client.getUnsafeApi()
+  const versions: number[] = await unsafeApi.apis.Metadata.metadata_versions()
+  const metadataResponse: Binary = await (versions.includes(15)
+    ? unsafeApi.apis.Metadata.metadata_at_version(15)
+    : unsafeApi.apis.Metadata.metadata())
+  return decAnyMetadata(metadataResponse.asBytes())
 }
 
 let smoldot: Client | null = null

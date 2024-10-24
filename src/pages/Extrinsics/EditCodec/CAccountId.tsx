@@ -12,7 +12,7 @@ import {
   connectInjectedExtension,
   getInjectedExtensions,
   InjectedPolkadotAccount,
-} from "@polkadot-api/pjs-signer"
+} from "polkadot-api/pjs-signer"
 import {
   getSs58AddressInfo,
   SS58String,
