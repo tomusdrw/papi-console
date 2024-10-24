@@ -1,6 +1,7 @@
-import { lookup$ } from "@/chain.state"
+import { lookup$, unsafeApi$ } from "@/chain.state"
 import { EditCodec } from "@/codec-components/EditCodec"
 import { ActionButton } from "@/components/ActionButton"
+import { bytesToString } from "@/components/BinaryInput"
 import { CopyText } from "@/components/Copy"
 import { BinaryEdit } from "@/components/Icons"
 import SliderToggle from "@/components/Toggle"
@@ -14,19 +15,59 @@ import { state, useStateObservable, withDefault } from "@react-rxjs/core"
 import { createSignal } from "@react-rxjs/utils"
 import { Binary } from "polkadot-api"
 import { FC, useState } from "react"
-import { combineLatest, filter, map, scan, startWith, switchMap } from "rxjs"
+import {
+  combineLatest,
+  filter,
+  firstValueFrom,
+  from,
+  map,
+  scan,
+  startWith,
+  switchMap,
+} from "rxjs"
 import { twMerge } from "tailwind-merge"
 import { BinaryEditModal } from "../Extrinsics/BinaryEditModal"
-import { selectedEntry$ } from "./storage.state"
+import { addStorageSubscription, selectedEntry$ } from "./storage.state"
 
 export const StorageQuery: FC = () => {
   const isReady = useStateObservable(isReady$)
+
+  const submit = async () => {
+    const [entry, unsafeApi, keyValues, keysEnabled] = await firstValueFrom(
+      combineLatest([selectedEntry$, unsafeApi$, keyValues$, keysEnabled$]),
+    )
+    const args = keyValues.slice(0, keysEnabled)
+    const storageEntry = unsafeApi.query[entry!.pallet][entry!.entry]
+    const single = keyValues.length === keysEnabled
+    const stream = single
+      ? storageEntry.watchValue(...args)
+      : from(storageEntry.getEntries(...args))
+
+    const stringifyArg = (value: unknown) => {
+      if (typeof value === "object" && value !== null) {
+        if (value instanceof Binary) {
+          return bytesToString(value)
+        }
+        return "arg"
+      }
+      return JSON.stringify(value)
+    }
+
+    addStorageSubscription({
+      name: `${entry!.pallet}.${entry!.entry}(${args.map(stringifyArg).join(", ")})`,
+      single,
+      stream,
+      type: entry!.value,
+    })
+  }
 
   return (
     <div className="p-2 flex flex-col gap-4 items-start w-full">
       <StorageKeysInput />
       <KeyDisplay />
-      <ActionButton disabled={!isReady}>Query</ActionButton>
+      <ActionButton disabled={!isReady} onClick={submit}>
+        Query
+      </ActionButton>
     </div>
   )
 }

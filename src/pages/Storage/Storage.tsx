@@ -5,8 +5,9 @@ import { withSubscribe } from "@/components/withSuspense"
 import { state, useStateObservable } from "@react-rxjs/core"
 import { FC, useEffect, useState } from "react"
 import { map } from "rxjs"
-import { StorageQuery } from "./StorageQuery"
 import { selectedEntry$, setSelectedEntry } from "./storage.state"
+import { StorageQuery } from "./StorageQuery"
+import { StorageSubscriptions } from "./StorageSubscriptions"
 
 const metadataStorage$ = state(
   lookup$.pipe(
@@ -111,6 +112,7 @@ export const Storage = withSubscribe(() => {
         )}
       </div>
       <StorageEntry />
+      <StorageSubscriptions />
     </div>
   )
 })
