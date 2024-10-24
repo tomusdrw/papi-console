@@ -1,18 +1,20 @@
-import { Binary } from "@polkadot-api/substrate-bindings"
-import { Download, FileUp } from "lucide-react"
-import { FC, useState } from "react"
-import { twMerge } from "tailwind-merge"
-import { useGenericSynchronizeInput } from "@/components/useSynchroniseInput"
-import { NOTIN } from "@codec-components"
 import {
   BinaryFileInput,
   checkEqualInputBinary,
 } from "@/components/BinaryInput"
 import { Modal } from "@/components/Modal"
+import { useGenericSynchronizeInput } from "@/components/useSynchroniseInput"
+import { NOTIN } from "@codec-components"
+import { Binary } from "@polkadot-api/substrate-bindings"
+import { Download, FileUp } from "lucide-react"
+import { FC, useState } from "react"
+import { twMerge } from "tailwind-merge"
+import { BinaryStatus } from "@/codec-components/EditCodec/Tree/codec-components"
 // @ts-expect-error save-as typings not available
 import { saveAs } from "save-as"
-import { BinaryStatus } from "./EditCodec/Tree/codec-components"
 
+// TODO refactor this out into a component not tied to `Extrinsics`
+// if possible, make it the edit button itself, internally handling the `open/close` state of the modal.
 export const BinaryEditModal: FC<{
   status: BinaryStatus
   open: boolean

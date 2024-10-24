@@ -1,4 +1,5 @@
 import { createContext, useContext } from "react"
+import { noop } from "rxjs"
 
 const SubtreeFocusContext = createContext<{
   callback: (path: string[]) => void
@@ -9,7 +10,13 @@ export const SubtreeFocus = SubtreeFocusContext.Provider
 
 export const useSubtreeFocus = () => {
   const ctx = useContext(SubtreeFocusContext)
-  if (!ctx) throw new Error("SubtreeFocus provider not found")
+  if (!ctx) {
+    return {
+      setFocus: noop,
+      getNextPath: () => null,
+    }
+  }
+
   return {
     setFocus: ctx.callback,
     getNextPath: (path: string[]) => {
