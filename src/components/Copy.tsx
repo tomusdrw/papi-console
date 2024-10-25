@@ -1,13 +1,16 @@
 import { CheckCircle, Copy } from "lucide-react"
 import { useEffect, useState } from "react"
+import { twMerge } from "tailwind-merge"
 
-export const CopyText: React.FC<{ text: string; disabled?: boolean }> = ({
-  text,
-  disabled = false,
-}) => {
+export const CopyText: React.FC<{
+  text: string
+  disabled?: boolean
+  className?: string
+}> = ({ text, className, disabled = false }) => {
   const [copied, setCopied] = useState(false)
-  const copy = async () => {
+  const copy = async (evt: React.MouseEvent) => {
     if (disabled) return
+    evt.stopPropagation()
 
     await navigator.clipboard.writeText(text)
     setCopied(true)
@@ -21,7 +24,7 @@ export const CopyText: React.FC<{ text: string; disabled?: boolean }> = ({
   return (
     <button
       disabled={disabled || copied}
-      className={disabled ? "opacity-50" : ""}
+      className={twMerge(className, disabled ? "opacity-50" : "")}
       onClick={copy}
     >
       {copied ? (

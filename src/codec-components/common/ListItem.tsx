@@ -1,21 +1,36 @@
 import { ExpandBtn } from "@/components/Expand"
 import { useStateObservable } from "@react-rxjs/core"
 import { Trash2 } from "lucide-react"
-import { twMerge as clsx } from "tailwind-merge"
+import { twMerge as clsx, twMerge } from "tailwind-merge"
 import { Marker } from "./Markers"
-import { isCollapsed$, toggleCollapsed } from "./paths.state"
+import {
+  isActive$,
+  isCollapsed$,
+  setHovered,
+  toggleCollapsed,
+} from "./paths.state"
+import { ReactNode } from "react"
 
 export const ListItem: React.FC<{
   idx: number
   children: React.ReactNode
   path: string[]
   onDelete?: () => void
-}> = ({ idx, onDelete, children, path }) => {
+  actions?: ReactNode
+}> = ({ idx, onDelete, children, path, actions }) => {
   const pathStr = path.join(".")
+  const isActive = useStateObservable(isActive$(pathStr))
   const isCollapsed = useStateObservable(isCollapsed$(pathStr))
 
   return (
-    <li className="flex flex-col mb-1">
+    <li
+      className={twMerge(
+        "flex flex-col mb-1",
+        isActive && "backdrop-brightness-150",
+      )}
+      onMouseEnter={() => setHovered({ id: pathStr, hover: true })}
+      onMouseLeave={() => setHovered({ id: pathStr, hover: false })}
+    >
       <div className="flex items-stretch">
         <Marker id={path} />
         <span
@@ -33,6 +48,7 @@ export const ListItem: React.FC<{
             <Trash2 size={16} />
           </button>
         ) : null}
+        {actions}
       </div>
       <div
         className={clsx(

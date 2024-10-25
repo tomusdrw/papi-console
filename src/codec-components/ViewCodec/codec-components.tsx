@@ -1,5 +1,4 @@
 import {
-  ViewArray,
   ViewBigNumber,
   ViewBool,
   ViewEthAccount,
@@ -9,8 +8,6 @@ import {
   ViewStr,
   ViewVoid,
 } from "@codec-components"
-import { ListItem } from "../common/ListItem"
-import { useSubtreeFocus } from "../common/SubtreeFocus"
 
 export const CBool: ViewBool = ({ value }) => {
   return <div className="flex gap-4">{value ? "Yes" : "No"}</div>
@@ -19,24 +16,6 @@ export const CBool: ViewBool = ({ value }) => {
 export const CVoid: ViewVoid = () => null
 
 export const CEthAccount: ViewEthAccount = ({ value }) => <span>{value}</span>
-
-export const CArray: ViewArray = ({ innerComponents, path }) => {
-  const focus = useSubtreeFocus()
-  const sub = focus.getNextPath(path)
-  if (sub) {
-    return innerComponents[Number(sub)]
-  }
-
-  return (
-    <ul>
-      {innerComponents.map((jsx, idx) => (
-        <ListItem key={idx} idx={idx} path={[...path, String(idx)]}>
-          {jsx}
-        </ListItem>
-      ))}
-    </ul>
-  )
-}
 
 export const COption: ViewOption = ({ value, inner }) => {
   const selected = value !== undefined

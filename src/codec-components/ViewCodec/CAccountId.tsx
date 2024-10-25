@@ -2,8 +2,10 @@ import { PolkadotIdenticon } from "@/components/PolkadotIdenticon"
 import { ViewAccountId } from "@codec-components"
 import { useStateObservable } from "@react-rxjs/core"
 import { accountDetail$, getPublicKey } from "../common/accounts.state"
+import { useReportBinary } from "./CopyBinary"
 
-export const CAccountId: ViewAccountId = ({ value }) => {
+export const CAccountId: ViewAccountId = ({ value, encodedValue }) => {
+  useReportBinary(encodedValue)
   const details = useStateObservable(accountDetail$(value))
 
   return (
