@@ -30,14 +30,20 @@ const metadataStorage$ = state(
 
 export const Storage = withSubscribe(() => {
   const { lookup, entries } = useStateObservable(metadataStorage$)
-  const [pallet, setPallet] = useState<string | null>("System")
-  const [entry, setEntry] = useState<string | null>("Account")
+  const [pallet, setPallet] = useState<string | null>("Staking")
+  const [entry, setEntry] = useState<string | null>("ErasStakersPaged")
 
   const selectedPallet =
     (pallet && lookup.metadata.pallets.find((p) => p.name === pallet)) || null
 
   useEffect(
-    () => setEntry(selectedPallet?.storage?.items[0]?.name ?? null),
+    () =>
+      setEntry((prev) => {
+        if (!selectedPallet?.storage?.items[0]) return null
+        return selectedPallet.storage.items.some((v) => v.name === prev)
+          ? prev
+          : selectedPallet.storage.items[0].name
+      }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [selectedPallet?.name],
   )

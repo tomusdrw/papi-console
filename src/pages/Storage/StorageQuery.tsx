@@ -2,7 +2,6 @@ import { lookup$, unsafeApi$ } from "@/chain.state"
 import { EditCodec } from "@/codec-components/EditCodec"
 import { ActionButton } from "@/components/ActionButton"
 import { BinaryEditButton } from "@/components/BinaryEditButton"
-import { bytesToString } from "@/components/BinaryInput"
 import { CopyText } from "@/components/Copy"
 import SliderToggle from "@/components/Toggle"
 import {
@@ -26,7 +25,11 @@ import {
   switchMap,
 } from "rxjs"
 import { twMerge } from "tailwind-merge"
-import { addStorageSubscription, selectedEntry$ } from "./storage.state"
+import {
+  addStorageSubscription,
+  selectedEntry$,
+  stringifyArg,
+} from "./storage.state"
 
 export const StorageQuery: FC = () => {
   const selectedEntry = useStateObservable(selectedEntry$)
@@ -45,18 +48,11 @@ export const StorageQuery: FC = () => {
       ? storageEntry.watchValue(...args)
       : from(storageEntry.getEntries(...args))
 
-    const stringifyArg = (value: unknown) => {
-      if (typeof value === "object" && value !== null) {
-        if (value instanceof Binary) {
-          return bytesToString(value)
-        }
-        return "arg"
-      }
-      return JSON.stringify(value)
-    }
+    const argString = [...args.map(stringifyArg), ...(single ? [] : ["…"])]
 
     addStorageSubscription({
-      name: `${entry!.pallet}.${entry!.entry}(${args.map(stringifyArg).join(", ")})`,
+      name: `${entry!.pallet}.${entry!.entry}(${argString})`,
+      args,
       single,
       stream,
       type: entry!.value,
@@ -272,7 +268,11 @@ const encodedKey$ = state(
         selectedEntry.pallet,
         selectedEntry.entry,
       )
-      return codec.enc(...args)
+      try {
+        return codec.enc(...args)
+      } catch (_) {
+        return null
+      }
     }),
   ),
   null,

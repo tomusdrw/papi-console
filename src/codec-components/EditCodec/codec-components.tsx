@@ -11,8 +11,8 @@ import {
 } from "@codec-components"
 import { FC, ReactNode, useState } from "react"
 import { twMerge } from "tailwind-merge"
+import { ListItem } from "../common/ListItem"
 import { useSubtreeFocus } from "../common/SubtreeFocus"
-import { ListItem } from "./ListItem"
 
 export const CBool: EditBool = ({ value, onValueChanged, path }) => {
   return (
@@ -45,6 +45,7 @@ export const CBool: EditBool = ({ value, onValueChanged, path }) => {
 
 export const CVoid: EditVoid = () => null
 
+// TODO
 export const CEthAccount: EditEthAccount = ({ value }) => (
   <span>{withDefault(value, "")}</span>
 )
@@ -87,6 +88,7 @@ export const COption: EditOption = ({ value, inner, onValueChanged }) => {
   )
 }
 
+// TODO
 export const CResult: EditResult = ({ value, inner, type }) => {
   return type === "blank" ? null : (
     <>

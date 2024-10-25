@@ -90,7 +90,10 @@ export const CEnum: EditEnum = ({
   )
 }
 
-const useAppendTitle = (container: HTMLElement | null, className: string) => {
+export const useAppendTitle = (
+  container: HTMLElement | null,
+  className: string,
+) => {
   const [element, setElement] = useState<HTMLElement | null>(null)
 
   useLayoutEffect(() => {
