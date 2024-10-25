@@ -38,6 +38,7 @@ export const StorageSubscriptions: FC = () => {
 const StorageSubscriptionBox: FC<{ subscription: string }> = ({
   subscription,
 }) => {
+  const [mode, setMode] = useState<"json" | "decoded">("json")
   const storageSubscription = useStateObservable(
     storageSubscription$(subscription),
   )
@@ -49,22 +50,39 @@ const StorageSubscriptionBox: FC<{ subscription: string }> = ({
         <h3 className="text-polkadot-200 overflow-hidden text-ellipsis whitespace-nowrap">
           {storageSubscription.name}
         </h3>
-        <button>
-          <Trash2
-            size={20}
-            className="text-polkadot-400 cursor-pointer hover:text-polkadot-500"
-            onClick={() => removeStorageSubscription(subscription)}
+        <div className="flex items-center flex-shrink-0 gap-2">
+          <ButtonGroup
+            value={mode}
+            onValueChange={setMode as any}
+            items={[
+              {
+                value: "json",
+                content: "JSON",
+              },
+              {
+                value: "decoded",
+                content: "Decoded",
+              },
+            ]}
           />
-        </button>
+          <button>
+            <Trash2
+              size={20}
+              className="text-polkadot-400 cursor-pointer hover:text-polkadot-500"
+              onClick={() => removeStorageSubscription(subscription)}
+            />
+          </button>
+        </div>
       </div>
-      <ResultDisplay storageSubscription={storageSubscription} />
+      <ResultDisplay storageSubscription={storageSubscription} mode={mode} />
     </li>
   )
 }
 
 const ResultDisplay: FC<{
   storageSubscription: StorageSubscription
-}> = ({ storageSubscription }) => {
+  mode: "json" | "decoded"
+}> = ({ storageSubscription, mode }) => {
   if (!("result" in storageSubscription)) {
     return <div className="text-sm text-slate-400">Loading…</div>
   }
@@ -72,6 +90,7 @@ const ResultDisplay: FC<{
   if (storageSubscription.single) {
     return (
       <ValueDisplay
+        mode={mode}
         storageSubscription={storageSubscription}
         value={storageSubscription.result}
         title={"Result"}
@@ -92,6 +111,7 @@ const ResultDisplay: FC<{
     return (
       <div key={title} className={itemClasses}>
         <ValueDisplay
+          mode={mode}
           title={title}
           value={value}
           storageSubscription={storageSubscription}
@@ -131,8 +151,8 @@ const ValueDisplay: FC<{
   storageSubscription: StorageSubscription
   title: string
   value: unknown | NOTIN
-}> = ({ storageSubscription, title, value }) => {
-  const [mode, setMode] = useState<"json" | "decoded">("json")
+  mode: string
+}> = ({ storageSubscription, title, value, mode }) => {
   const metadata = useStateObservable(metadataState$)
   const builder = useStateObservable(dynamicBuilder$)
 
@@ -156,25 +176,9 @@ const ValueDisplay: FC<{
 
   return (
     <div>
-      <div className="flex justify-between items-center overflow-hidden">
-        <div className="flex flex-1 gap-2 overflow-hidden">
-          <CopyBinary value={encodedValue} />
-          <h3 className="overflow-hidden text-ellipsis">{title}</h3>
-        </div>
-        <ButtonGroup
-          value={mode}
-          onValueChange={setMode as any}
-          items={[
-            {
-              value: "json",
-              content: "JSON",
-            },
-            {
-              value: "decoded",
-              content: "Decoded",
-            },
-          ]}
-        />
+      <div className="flex flex-1 gap-2 overflow-hidden">
+        <CopyBinary value={encodedValue} />
+        <h3 className="overflow-hidden text-ellipsis">{title}</h3>
       </div>
       {mode === "decoded" ? (
         <ViewCodec
