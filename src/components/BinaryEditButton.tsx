@@ -7,40 +7,74 @@ import { useGenericSynchronizeInput } from "@/components/useSynchroniseInput"
 import { NOTIN } from "@codec-components"
 import { Binary } from "@polkadot-api/substrate-bindings"
 import { Download, FileUp } from "lucide-react"
-import { FC, useState } from "react"
+import { ComponentProps, FC, useMemo, useState } from "react"
 import { twMerge } from "tailwind-merge"
-import { BinaryStatus } from "@/codec-components/EditCodec/Tree/codec-components"
 // @ts-expect-error save-as typings not available
 import { saveAs } from "save-as"
+import { BinaryEdit } from "./Icons"
 
-// TODO refactor this out into a component not tied to `Extrinsics`
-// if possible, make it the edit button itself, internally handling the `open/close` state of the modal.
-export const BinaryEditModal: FC<{
-  status: BinaryStatus
-  open: boolean
-  path: string
-  onClose: () => void
-}> = ({ status, path, open, onClose }) => (
+export interface BinaryEditProps {
+  initialValue?: Uint8Array
+  decode: (value: Uint8Array) => unknown | NOTIN
+  onValueChange: (value: any) => void
+  title?: string
+  fileName?: string
+}
+
+export const BinaryEditButton: FC<
+  BinaryEditProps & {
+    iconProps?: ComponentProps<typeof BinaryEdit>
+  }
+> = ({ iconProps, ...props }) => {
+  const [open, setOpen] = useState(false)
+  return (
+    <>
+      <BinaryEdit
+        size={20}
+        {...iconProps}
+        className={twMerge(
+          "cursor-pointer hover:text-polkadot-300",
+          iconProps?.className,
+        )}
+        onClick={() => setOpen(true)}
+      />
+      <BinaryEditModal {...props} open={open} onClose={() => setOpen(false)} />
+    </>
+  )
+}
+
+export const BinaryEditModal: FC<
+  BinaryEditProps & {
+    open: boolean
+    onClose: () => void
+  }
+> = ({ open, ...props }) => (
   <Modal
     open={open}
-    onClose={onClose}
+    onClose={props.onClose}
     title="Edit Binary"
     className="gap-2 text-xs min-w-96 max-w-xl"
   >
     <span className="overflow-hidden text-ellipsis whitespace-nowrap">
-      {path}
+      {props.title}
     </span>
-    <BinaryEditModalContent path={path} status={status} onClose={onClose} />
+    <BinaryEditModalContent {...props} />
   </Modal>
 )
 
 const MAX_DISPLAY_SIZE = 5 * 1024 * 1024
-const BinaryEditModalContent: FC<{
-  path: string
-  status: BinaryStatus
-  onClose: () => void
-}> = ({ path, status, onClose }) => {
-  const [value, setValue] = useState(status.encodedValue ?? new Uint8Array())
+const BinaryEditModalContent: FC<
+  BinaryEditProps & {
+    onClose: () => void
+  }
+> = ({
+  fileName,
+  initialValue = new Uint8Array(),
+  decode,
+  onValueChange,
+  onClose,
+}) => {
+  const [value, setValue] = useState(initialValue)
   const [error, setError] = useState("")
   const [inputValue, setInputValue] = useGenericSynchronizeInput(
     value,
@@ -60,12 +94,21 @@ const BinaryEditModalContent: FC<{
 
   const placeholder =
     value.length > MAX_DISPLAY_SIZE ? "(value is too long to display)" : ""
-  const isValid = status.decode(value) !== NOTIN
+  const safeDecode = (value: Uint8Array) => {
+    try {
+      return decode(value)
+    } catch (_) {
+      return NOTIN
+    }
+  }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const isValid = useMemo(() => safeDecode(value) !== NOTIN, [value, decode])
   const textareaValue = inputValue instanceof Uint8Array ? "" : inputValue
 
   const submit = () => {
-    if (status.decode(value) !== NOTIN) {
-      status.onValueChanged(status.decode(value))
+    const decoded = safeDecode(value)
+    if (decoded !== NOTIN) {
+      onValueChange(decoded)
       onClose()
     } else {
       // Shouldn't happen, but it's better than just swallowing that it failed.
@@ -87,7 +130,7 @@ const BinaryEditModalContent: FC<{
       new Blob([value], {
         type: "application/octet-stream",
       }),
-      `${path.replace(/\./g, "__") || "root"}.dat`,
+      `${fileName ?? new Date().toISOString()}.dat`,
     )
   }
 

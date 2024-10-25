@@ -1,9 +1,9 @@
 import { lookup$, unsafeApi$ } from "@/chain.state"
 import { EditCodec } from "@/codec-components/EditCodec"
 import { ActionButton } from "@/components/ActionButton"
+import { BinaryEditButton } from "@/components/BinaryEditButton"
 import { bytesToString } from "@/components/BinaryInput"
 import { CopyText } from "@/components/Copy"
-import { BinaryEdit } from "@/components/Icons"
 import SliderToggle from "@/components/Toggle"
 import {
   CodecComponentType,
@@ -14,7 +14,7 @@ import { getDynamicBuilder } from "@polkadot-api/metadata-builders"
 import { state, useStateObservable, withDefault } from "@react-rxjs/core"
 import { createSignal } from "@react-rxjs/utils"
 import { Binary } from "polkadot-api"
-import { FC, useState } from "react"
+import { FC } from "react"
 import {
   combineLatest,
   filter,
@@ -26,7 +26,6 @@ import {
   switchMap,
 } from "rxjs"
 import { twMerge } from "tailwind-merge"
-import { BinaryEditModal } from "../Extrinsics/BinaryEditModal"
 import { addStorageSubscription, selectedEntry$ } from "./storage.state"
 
 export const StorageQuery: FC = () => {
@@ -187,7 +186,6 @@ const StorageKeyInput: FC<{ idx: number; type: number; disabled: boolean }> = ({
   type,
   disabled,
 }) => {
-  const [binaryOpen, setBinaryOpen] = useState(false)
   const lookup = useStateObservable(lookupState$)
   const value = useStateObservable(keyInputValue$(idx))
 
@@ -236,10 +234,14 @@ const StorageKeyInput: FC<{ idx: number; type: number; disabled: boolean }> = ({
     >
       <div className="flex justify-between">
         <div>{getTypeName()}</div>
-        <BinaryEdit
-          size={18}
-          className={twMerge("cursor-pointer hover:text-polkadot-300")}
-          onClick={() => setBinaryOpen(true)}
+        <BinaryEditButton
+          initialValue={
+            typeof binaryValue === "string"
+              ? Binary.fromHex(binaryValue).asBytes()
+              : (binaryValue ?? undefined)
+          }
+          onValueChange={(value) => setKeyValue({ idx, value })}
+          decode={codec.dec}
         />
       </div>
       <EditCodec
@@ -249,23 +251,6 @@ const StorageKeyInput: FC<{ idx: number; type: number; disabled: boolean }> = ({
         onUpdate={(value) =>
           setKeyValue({ idx, value: value.empty ? NOTIN : value.decoded })
         }
-      />
-      <BinaryEditModal
-        status={{
-          encodedValue:
-            typeof binaryValue === "string"
-              ? Binary.fromHex(binaryValue).asBytes()
-              : (binaryValue ?? undefined),
-          onValueChanged: (value) => {
-            setKeyValue({ idx, value })
-            return true
-          },
-          decode: codec.dec,
-          type: "complete",
-        }}
-        open={binaryOpen}
-        path=""
-        onClose={() => setBinaryOpen(false)}
       />
     </div>
   )
@@ -293,7 +278,6 @@ const encodedKey$ = state(
   null,
 )
 const KeyDisplay: FC = () => {
-  const [binaryOpen, setBinaryOpen] = useState(false)
   const key = useStateObservable(encodedKey$)
   const lookup = useStateObservable(lookupState$)
   const selectedEntry = useStateObservable(selectedEntry$)
@@ -320,34 +304,18 @@ const KeyDisplay: FC = () => {
       </div>
       <CopyText text={key ?? ""} disabled={key === null} />
       {keys.length === keysEnabled && (
-        <BinaryEdit
-          size={20}
-          className="cursor-pointer hover:text-polkadot-300"
-          onClick={() => setBinaryOpen(true)}
+        <BinaryEditButton
+          initialValue={key ? Binary.fromHex(key).asBytes() : undefined}
+          onValueChange={(value: unknown[]) => {
+            value.forEach((value, idx) => setKeyValue({ idx, value }))
+          }}
+          decode={(v) =>
+            codec.keyDecoder(
+              typeof v === "string" ? v : Binary.fromBytes(v).asHex(),
+            )
+          }
         />
       )}
-      <BinaryEditModal
-        status={{
-          encodedValue: key ? Binary.fromHex(key).asBytes() : undefined,
-          onValueChanged: (value: any[]) => {
-            value.forEach((value, idx) => setKeyValue({ idx, value }))
-            return true
-          },
-          decode: (v) => {
-            try {
-              return codec.keyDecoder(
-                typeof v === "string" ? v : Binary.fromBytes(v).asHex(),
-              )
-            } catch (_) {
-              return NOTIN
-            }
-          },
-          type: "complete",
-        }}
-        open={binaryOpen}
-        path=""
-        onClose={() => setBinaryOpen(false)}
-      />
     </div>
   )
 }

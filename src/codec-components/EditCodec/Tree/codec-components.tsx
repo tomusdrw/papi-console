@@ -1,5 +1,5 @@
+import { BinaryEditModal } from "@/components/BinaryEditButton"
 import { BinaryEdit, Focus, TypeIcon, TypeIcons } from "@/components/Icons"
-import { BinaryEditModal } from "@/pages/Extrinsics/BinaryEditModal"
 import {
   EditAccountId,
   EditBigNumber,
@@ -212,7 +212,7 @@ export const ItemTitle: FC<
         </div>
       </div>
       {binaryStatus && (
-        <BinaryEditModal
+        <TreeBinaryEditModal
           status={binaryStatus}
           open={binaryOpen}
           path={path}
@@ -222,3 +222,20 @@ export const ItemTitle: FC<
     </>
   )
 }
+
+const TreeBinaryEditModal: FC<{
+  status: BinaryStatus
+  open: boolean
+  path: string
+  onClose: () => void
+}> = ({ status, path, open, onClose }) => (
+  <BinaryEditModal
+    decode={status.decode}
+    onClose={onClose}
+    open={open}
+    onValueChange={status.onValueChanged}
+    fileName={path.replace(/\./g, "__") || "root"}
+    initialValue={status.encodedValue}
+    title={path}
+  />
+)

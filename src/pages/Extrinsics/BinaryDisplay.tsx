@@ -1,10 +1,8 @@
+import { BinaryEditButton } from "@/components/BinaryEditButton"
 import { CopyText } from "@/components/Copy"
-import { BinaryEdit } from "@/components/Icons"
 import { NOTIN } from "@codec-components"
 import { Binary, HexString } from "@polkadot-api/substrate-bindings"
-import { FC, useState } from "react"
-import { twMerge } from "tailwind-merge"
-import { BinaryEditModal } from "./BinaryEditModal"
+import { FC } from "react"
 
 const DISPLAY_MAX_LEN = 1024
 const COPY_MAX_LEN = 5 * 1024 * 1024
@@ -14,8 +12,6 @@ export const BinaryDisplay: FC<{
   onValueChanged: (value: any | NOTIN) => boolean
   decode: (value: Uint8Array | HexString) => any | NOTIN
 }> = ({ value, isEmpty, onValueChanged, decode }) => {
-  const [binaryOpen, setBinaryOpen] = useState(false)
-
   const displayLength = DISPLAY_MAX_LEN * 2 + 2
 
   const copyLength = COPY_MAX_LEN * 2 + 2
@@ -44,24 +40,17 @@ export const BinaryDisplay: FC<{
             </div>
           )}
         </div>
-        <BinaryEdit
-          size={24}
-          className={twMerge("cursor-pointer hover:text-polkadot-300")}
-          onClick={() => setBinaryOpen(true)}
-        />
-        <BinaryEditModal
-          status={{
-            encodedValue:
-              typeof value === "string"
-                ? Binary.fromHex(value).asBytes()
-                : (value ?? undefined),
-            onValueChanged,
-            decode,
-            type: "complete",
+        <BinaryEditButton
+          initialValue={
+            typeof value === "string"
+              ? Binary.fromHex(value).asBytes()
+              : (value ?? undefined)
+          }
+          onValueChange={onValueChanged}
+          decode={decode}
+          iconProps={{
+            size: 24,
           }}
-          open={binaryOpen}
-          path=""
-          onClose={() => setBinaryOpen(false)}
         />
       </div>
     </div>
