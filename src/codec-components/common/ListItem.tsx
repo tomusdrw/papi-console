@@ -2,8 +2,8 @@ import { ExpandBtn } from "@/components/Expand"
 import { useStateObservable } from "@react-rxjs/core"
 import { Trash2 } from "lucide-react"
 import { twMerge as clsx } from "tailwind-merge"
-import { Marker } from "../common/Markers"
-import { isCollapsed$, toggleCollapsed } from "../common/paths.state"
+import { Marker } from "./Markers"
+import { isCollapsed$, toggleCollapsed } from "./paths.state"
 
 export const ListItem: React.FC<{
   idx: number

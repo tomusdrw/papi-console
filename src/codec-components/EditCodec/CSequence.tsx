@@ -1,8 +1,8 @@
 import { EditSequence, NOTIN } from "@codec-components"
 import { CirclePlus } from "lucide-react"
 import { twMerge as clsx } from "tailwind-merge"
+import { ListItem } from "../common/ListItem"
 import { useSubtreeFocus } from "../common/SubtreeFocus"
-import { ListItem } from "./ListItem"
 
 export const CSequence: EditSequence = ({
   innerComponents,

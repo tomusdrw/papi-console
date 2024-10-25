@@ -13,6 +13,7 @@ import {
 } from "@codec-components"
 import { useEffect, useRef, useState } from "react"
 import { FocusPath } from "./FocusPath"
+import { ViewCodec } from "@/codec-components/ViewCodec"
 
 export const EditMode: React.FC<{
   codecType: number
@@ -66,7 +67,7 @@ export const EditMode: React.FC<{
             </div>
             <div className="flex-1">
               <div className="p-2 rounded bg-polkadot-900">
-                <EditCodec {...props} />
+                <ViewCodec {...props} />
               </div>
             </div>
           </div>
