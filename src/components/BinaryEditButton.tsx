@@ -180,6 +180,7 @@ const BinaryEditModalContent: FC<
           !isValid && "opacity-50",
         )}
         onClick={submit}
+        disabled={!isValid}
       >
         OK
       </button>

@@ -2,11 +2,7 @@ import { metadata$ } from "@/chain.state"
 import { ActionButton } from "@/components/ActionButton"
 import { ButtonGroup } from "@/components/ButtonGroup"
 import { withSubscribe } from "@/components/withSuspense"
-import {
-  CodecComponentType,
-  CodecComponentValue,
-  NOTIN,
-} from "@codec-components"
+import { CodecComponentType, CodecComponentValue } from "@codec-components"
 import { getDynamicBuilder, getLookupFn } from "@polkadot-api/metadata-builders"
 import { Binary } from "@polkadot-api/substrate-bindings"
 import { state, useStateObservable } from "@react-rxjs/core"
@@ -28,17 +24,16 @@ const extrinsicProps$ = state(
     })),
   ),
 )
-const extrinsicDecoder = extrinsicProps$.pipeState(
-  map(
-    ({ metadata, codecType }) =>
-      getDynamicBuilder(getLookupFn(metadata)).buildDefinition(codecType).dec,
+const extrinsicCodec = extrinsicProps$.pipeState(
+  map(({ metadata, codecType }) =>
+    getDynamicBuilder(getLookupFn(metadata)).buildDefinition(codecType),
   ),
 )
 
 export const Extrinsics = withSubscribe(() => {
   const [viewMode, setViewMode] = useState<"edit" | "json">("edit")
   const extrinsicProps = useStateObservable(extrinsicProps$)
-  const decoder = useStateObservable(extrinsicDecoder)
+  const codec = useStateObservable(extrinsicCodec)
 
   const [componentValue, setComponentValue] = useState<CodecComponentValue>({
     type: CodecComponentType.Initial,
@@ -57,25 +52,12 @@ export const Extrinsics = withSubscribe(() => {
       <div>Extrinsics</div>
 
       <BinaryDisplay
-        value={binaryValue}
-        isEmpty={
-          componentValue.type === CodecComponentType.Initial &&
-          componentValue.value == null
+        {...extrinsicProps}
+        value={componentValue}
+        codec={codec}
+        onUpdate={(value) =>
+          setComponentValue({ type: CodecComponentType.Updated, value })
         }
-        decode={(value) => {
-          try {
-            return decoder(value)
-          } catch (_) {
-            return NOTIN
-          }
-        }}
-        onValueChanged={(decoded) => {
-          setComponentValue({
-            type: CodecComponentType.Updated,
-            value: { empty: false, decoded },
-          })
-          return true
-        }}
       />
 
       <div className="flex flex-row justify-between px-2">
@@ -112,7 +94,7 @@ export const Extrinsics = withSubscribe(() => {
               ? Binary.fromHex(binaryValue).asBytes()
               : binaryValue
           }
-          decode={decoder}
+          decode={codec.dec}
         />
       )}
     </div>

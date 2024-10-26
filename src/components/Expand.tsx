@@ -1,12 +1,24 @@
-import { FC } from "react"
+import { ComponentProps, FC } from "react"
 import { ChevronRight } from "lucide-react"
-import { twMerge as clsx } from "tailwind-merge"
+import { twMerge } from "tailwind-merge"
 
-export const ExpandBtn: FC<{
-  expanded: boolean
-}> = ({ expanded }) => (
+export const ExpandBtn: FC<
+  {
+    expanded: boolean
+    direction?: "horizontal" | "vertical"
+  } & ComponentProps<typeof ChevronRight>
+> = ({ expanded, direction = "horizontal", ...props }) => (
   <ChevronRight
     size={16}
-    className={clsx("transition-transform mt-[1px]", expanded && "rotate-90")}
+    {...props}
+    className={twMerge(
+      "transition-transform mt-[1px]",
+      direction === "horizontal"
+        ? expanded && "rotate-90"
+        : expanded
+          ? "-rotate-90"
+          : "rotate-90",
+      props.className,
+    )}
   />
 )
