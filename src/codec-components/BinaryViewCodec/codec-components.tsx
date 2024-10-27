@@ -45,6 +45,7 @@ export const CAccountId: EditAccountId = CPrimitive
 export const CBytes: EditBytes = CPrimitive
 
 export const COption: EditOption = ({ path, value, inner }) => {
+  const isActive = useStateObservable(isActive$(path.join(".")))
   const focus = useSubtreeFocus()
   const sub = focus.getNextPath(path)
   if (sub) {
@@ -55,14 +56,17 @@ export const COption: EditOption = ({ path, value, inner }) => {
   // TODO Looking at scale-ts, Option<Boolean> seems to be 00, 01 or 02! (None, Some(true), Some(false))
   // but can't find it at the docs? https://docs.substrate.io/reference/scale-codec/
   return (
-    <span>
-      {toConcatHex(u8.enc(value ? 1 : 0))}
+    <span className={highlight(isActive)}>
+      <span className={headerHighlight(isActive)}>
+        {toConcatHex(u8.enc(value ? 1 : 0))}
+      </span>
       {inner}
     </span>
   )
 }
 
 export const CResult: EditResult = ({ value, inner, path }) => {
+  const isActive = useStateObservable(isActive$(path.join(".")))
   const focus = useSubtreeFocus()
   const sub = focus.getNextPath(path)
   if (sub) return inner
@@ -70,8 +74,10 @@ export const CResult: EditResult = ({ value, inner, path }) => {
   if (value === NOTIN) return <MissingData />
 
   return (
-    <span>
-      {toConcatHex(u8.enc(value.success ? 0 : 1))}
+    <span className={highlight(isActive)}>
+      <span className={headerHighlight(isActive)}>
+        {toConcatHex(u8.enc(value.success ? 0 : 1))}
+      </span>
       {inner}
     </span>
   )

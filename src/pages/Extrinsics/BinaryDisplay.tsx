@@ -13,6 +13,7 @@ import { Binary, HexString } from "@polkadot-api/substrate-bindings"
 import { toHex } from "@polkadot-api/utils"
 import { FC, useState } from "react"
 import { twMerge } from "tailwind-merge"
+import "./binaryDisplay.css"
 
 export const BinaryDisplay: FC<{
   codecType: number
@@ -46,6 +47,7 @@ export const BinaryDisplay: FC<{
         <CopyText text={hex ?? ""} disabled={!hex} className="h-5" />
         <div
           className={twMerge(
+            "binary-display-codec",
             "text-sm tabular-nums overflow-hidden flex-1",
             wrap ? "break-words" : "whitespace-nowrap text-ellipsis h-5",
           )}
