@@ -38,7 +38,7 @@ export const StorageSubscriptions: FC = () => {
 const StorageSubscriptionBox: FC<{ subscription: string }> = ({
   subscription,
 }) => {
-  const [mode, setMode] = useState<"json" | "decoded">("json")
+  const [mode, setMode] = useState<"json" | "decoded">("decoded")
   const storageSubscription = useStateObservable(
     storageSubscription$(subscription),
   )
@@ -181,14 +181,16 @@ const ValueDisplay: FC<{
         <h3 className="overflow-hidden text-ellipsis">{title}</h3>
       </div>
       {mode === "decoded" ? (
-        <ViewCodec
-          codecType={storageSubscription.type}
-          value={{
-            type: CodecComponentType.Initial,
-            value: codec.enc(value),
-          }}
-          metadata={metadata}
-        />
+        <div className="leading-tight">
+          <ViewCodec
+            codecType={storageSubscription.type}
+            value={{
+              type: CodecComponentType.Initial,
+              value: codec.enc(value),
+            }}
+            metadata={metadata}
+          />
+        </div>
       ) : (
         <JsonDisplay src={value} />
       )}

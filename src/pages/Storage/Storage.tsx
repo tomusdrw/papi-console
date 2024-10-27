@@ -30,8 +30,8 @@ const metadataStorage$ = state(
 
 export const Storage = withSubscribe(() => {
   const { lookup, entries } = useStateObservable(metadataStorage$)
-  const [pallet, setPallet] = useState<string | null>("Staking")
-  const [entry, setEntry] = useState<string | null>("ErasStakersPaged")
+  const [pallet, setPallet] = useState<string | null>("System")
+  const [entry, setEntry] = useState<string | null>("Account")
 
   const selectedPallet =
     (pallet && lookup.metadata.pallets.find((p) => p.name === pallet)) || null

@@ -1,7 +1,14 @@
-import { EnumVar, StructVar } from "@polkadot-api/metadata-builders"
+import { EnumVar, StructVar, Var } from "@polkadot-api/metadata-builders"
 
-const complexTypes = new Set(["array", "sequence", "struct", "enum", "result"])
-export const isComplex = (type: string) => complexTypes.has(type)
+const complexTypes = new Set<Var["type"]>([
+  "array",
+  "sequence",
+  "struct",
+  "enum",
+  "result",
+  "option",
+])
+export const isComplex = (type: Var["type"]) => complexTypes.has(type)
 
 export const isEnumComplex = <T extends EnumVar>(
   shape: T,
@@ -13,15 +20,17 @@ export const isEnumComplex = <T extends EnumVar>(
   )
 }
 
+export const getEnumInnerVar = <T extends EnumVar>(
+  shape: T,
+  type: keyof T["value"],
+): Var => {
+  const innerShape = shape.value[type]
+  return innerShape.type === "lookupEntry" ? innerShape.value : innerShape
+}
 export const getEnumInnerType = <T extends EnumVar>(
   shape: T,
   type: keyof T["value"],
-) => {
-  const innerShape = shape.value[type]
-  return innerShape.type === "lookupEntry"
-    ? innerShape.value.type
-    : innerShape.type
-}
+) => getEnumInnerVar(shape, type).type
 
 export const getStructInnerType = <T extends StructVar>(
   shape: T,
