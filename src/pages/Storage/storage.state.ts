@@ -7,7 +7,16 @@ import {
   toKeySet,
 } from "@react-rxjs/utils"
 import { Binary } from "polkadot-api"
-import { map, Observable, startWith, switchMap, takeUntil } from "rxjs"
+import {
+  combineLatest,
+  distinctUntilChanged,
+  map,
+  Observable,
+  scan,
+  startWith,
+  switchMap,
+  takeUntil,
+} from "rxjs"
 import { v4 as uuid } from "uuid"
 
 export type StorageMetadataEntry = {
@@ -30,28 +39,38 @@ export const [newStorageSubscription$, addStorageSubscription] = createSignal<{
 }>()
 export const [removeStorageSubscription$, removeStorageSubscription] =
   createKeyedSignal<string>()
+export const [togglePause$, toggleSubscriptionPause] =
+  createKeyedSignal<string>()
 
 export type StorageSubscription = {
   name: string
   args: unknown[] | null
   type: number
   single: boolean
+  paused: boolean
 } & ({ result: unknown } | {})
 const [getStorageSubscription$, storageSubscriptionKeyChange$] = partitionByKey(
   newStorageSubscription$,
   () => uuid(),
   (src$, id) =>
     src$.pipe(
-      switchMap(
-        ({ stream, ...props }): Observable<StorageSubscription> =>
-          stream.pipe(
-            map((result) => ({
-              ...props,
-              result,
-            })),
-            startWith(props),
-          ),
-      ),
+      switchMap(({ stream, ...props }): Observable<StorageSubscription> => {
+        const paused$ = togglePause$(id).pipe(
+          scan((v) => !v, false),
+          startWith(false),
+        )
+        const result$ = stream.pipe(
+          map((result) => ({
+            ...props,
+            result,
+            paused: false,
+          })),
+          startWith(props),
+        )
+        return combineLatest([paused$, result$]).pipe(
+          map(([paused, result]) => ({ ...result, paused })),
+        )
+      }),
       takeUntil(removeStorageSubscription$(id)),
     ),
 )
@@ -66,7 +85,16 @@ export const storageSubscriptionKeys$ = state(
 
 export const storageSubscription$ = state(
   (key: string): Observable<StorageSubscription> =>
-    getStorageSubscription$(key),
+    getStorageSubscription$(key).pipe(
+      // Don't propagate if paused
+      distinctUntilChanged((prev, current) => {
+        // if it's not paused, mark it as "not equal" for the update to go through
+        if (!current.paused) return false
+        // otherwise, don't propagate if we were previously paused
+        // but do propagate if we weren't: Because we still need to show the "paused" status.
+        return prev.paused === current.paused
+      }),
+    ),
   null,
 )
 

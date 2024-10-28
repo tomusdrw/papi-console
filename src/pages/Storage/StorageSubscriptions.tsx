@@ -6,7 +6,7 @@ import { JsonDisplay } from "@/components/JsonDisplay"
 import { CodecComponentType, NOTIN } from "@codec-components"
 import { getDynamicBuilder } from "@polkadot-api/metadata-builders"
 import { state, useStateObservable } from "@react-rxjs/core"
-import { Trash2 } from "lucide-react"
+import { PauseCircle, PlayCircle, Trash2 } from "lucide-react"
 import { FC, useMemo, useState } from "react"
 import { Virtuoso } from "react-virtuoso"
 import { map } from "rxjs"
@@ -16,6 +16,7 @@ import {
   storageSubscription$,
   storageSubscriptionKeys$,
   stringifyArg,
+  toggleSubscriptionPause,
 } from "./storage.state"
 
 export const StorageSubscriptions: FC = () => {
@@ -44,6 +45,11 @@ const StorageSubscriptionBox: FC<{ subscription: string }> = ({
   )
   if (!storageSubscription) return null
 
+  const iconButtonProps = {
+    size: 20,
+    className: "text-polkadot-400 cursor-pointer hover:text-polkadot-500",
+  }
+
   return (
     <li className="border rounded border-polkadot-200 p-2">
       <div className="flex justify-between items-center pb-1 overflow-hidden">
@@ -56,21 +62,24 @@ const StorageSubscriptionBox: FC<{ subscription: string }> = ({
             onValueChange={setMode as any}
             items={[
               {
-                value: "json",
-                content: "JSON",
-              },
-              {
                 value: "decoded",
                 content: "Decoded",
               },
+              {
+                value: "json",
+                content: "JSON",
+              },
             ]}
           />
-          <button>
-            <Trash2
-              size={20}
-              className="text-polkadot-400 cursor-pointer hover:text-polkadot-500"
-              onClick={() => removeStorageSubscription(subscription)}
-            />
+          <button onClick={() => toggleSubscriptionPause(subscription)}>
+            {storageSubscription.paused ? (
+              <PlayCircle {...iconButtonProps} />
+            ) : (
+              <PauseCircle {...iconButtonProps} />
+            )}
+          </button>
+          <button onClick={() => removeStorageSubscription(subscription)}>
+            <Trash2 {...iconButtonProps} />
           </button>
         </div>
       </div>
@@ -89,12 +98,14 @@ const ResultDisplay: FC<{
 
   if (storageSubscription.single) {
     return (
-      <ValueDisplay
-        mode={mode}
-        storageSubscription={storageSubscription}
-        value={storageSubscription.result}
-        title={"Result"}
-      />
+      <div className="max-h-[60svh] overflow-auto">
+        <ValueDisplay
+          mode={mode}
+          storageSubscription={storageSubscription}
+          value={storageSubscription.result}
+          title={"Result"}
+        />
+      </div>
     )
   }
 

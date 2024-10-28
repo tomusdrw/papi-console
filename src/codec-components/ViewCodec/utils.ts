@@ -10,5 +10,9 @@ export const isComplexNested = (field: Var, value: any): boolean => {
   if (field.type === "option")
     return value == null ? false : isComplexNested(field.value, value)
 
+  if (field.type === "sequence" && value.length === 0) {
+    return false
+  }
+
   return true
 }

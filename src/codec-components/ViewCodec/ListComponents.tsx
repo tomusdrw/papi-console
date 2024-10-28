@@ -6,15 +6,25 @@ import { isActive$ } from "../common/paths.state"
 import { useSubtreeFocus } from "../common/SubtreeFocus"
 import { CopyChildBinary } from "./CopyBinary"
 import { ChildProvider } from "./TitleContext"
+import {
+  ArrayVar,
+  SequenceVar,
+  TupleVar,
+  Var,
+} from "@polkadot-api/metadata-builders"
+import { isComplexNested } from "./utils"
 
 const ListItemComponent: FC<
   PropsWithChildren<{
     idx: number
     path: string[]
+    field: Var
+    value: unknown
   }>
-> = ({ idx, path, children }) => {
+> = ({ idx, path, children, field, value }) => {
   const pathStr = path.join(".")
   const isActive = useStateObservable(isActive$(pathStr))
+  const isComplexShape = isComplexNested(field, value)
 
   return (
     <ChildProvider titleElement={null}>
@@ -26,6 +36,7 @@ const ListItemComponent: FC<
             <CopyChildBinary visible={isActive} />
           </div>
         }
+        inline={!isComplexShape}
       >
         {children}
       </ListItem>
@@ -36,7 +47,9 @@ const ListItemComponent: FC<
 const ListComponent: FC<{
   innerComponents: ReactNode[]
   path: string[]
-}> = ({ innerComponents, path }) => {
+  shape: ArrayVar | TupleVar | SequenceVar
+  value: unknown[]
+}> = ({ innerComponents, path, shape, value }) => {
   const focus = useSubtreeFocus()
   const sub = focus.getNextPath(path)
   if (sub) {
@@ -45,15 +58,25 @@ const ListComponent: FC<{
 
   return (
     <ul className="w-full">
-      {innerComponents.map((jsx, idx) => (
-        <ListItemComponent key={idx} idx={idx} path={[...path, String(idx)]}>
-          {jsx}
-        </ListItemComponent>
-      ))}
+      {innerComponents.length ? (
+        innerComponents.map((jsx, idx) => (
+          <ListItemComponent
+            key={idx}
+            idx={idx}
+            path={[...path, String(idx)]}
+            field={shape.type === "tuple" ? shape.value[idx] : shape.value}
+            value={value[idx]}
+          >
+            {jsx}
+          </ListItemComponent>
+        ))
+      ) : (
+        <span className="text-sm text-slate-400">(Empty)</span>
+      )}
     </ul>
   )
 }
 
-export const CArray: ViewArray = ListComponent
-export const CSequence: ViewSequence = ListComponent
-export const CTuple: ViewTuple = ListComponent
+export const CArray: ViewArray = (props) => <ListComponent {...props} />
+export const CSequence: ViewSequence = (props) => <ListComponent {...props} />
+export const CTuple: ViewTuple = (props) => <ListComponent {...props} />

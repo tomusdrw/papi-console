@@ -1,6 +1,7 @@
 import { EnumVar, StructVar, Var } from "@polkadot-api/metadata-builders"
 
 const complexTypes = new Set<Var["type"]>([
+  "tuple",
   "array",
   "sequence",
   "struct",

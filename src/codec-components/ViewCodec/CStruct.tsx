@@ -3,7 +3,7 @@ import { ViewStruct } from "@codec-components"
 import { Var } from "@polkadot-api/metadata-builders"
 import { useStateObservable } from "@react-rxjs/core"
 import React, { useContext, useState } from "react"
-import { twMerge as clsx, twMerge } from "tailwind-merge"
+import { twMerge } from "tailwind-merge"
 import { Marker } from "../common/Markers"
 import {
   isActive$,
@@ -16,6 +16,7 @@ import { ItemMarker } from "../EditCodec/Tree/codec-components"
 import { CopyChildBinary, useReportBinary } from "./CopyBinary"
 import { ChildProvider, TitleContext } from "./TitleContext"
 import { isComplexNested } from "./utils"
+import { Dot } from "lucide-react"
 
 const StructItem: React.FC<{
   name: string
@@ -49,6 +50,7 @@ const StructItem: React.FC<{
   ) : (
     <span className="flex items-center py-1 gap-1">
       {hasParentTitle && <ItemMarker />}
+      <Dot size={16} />
       <span className="select-none flex items-center gap-1">
         <span className="opacity-75">{name}</span>
         <span ref={setTitleElement} />
@@ -74,8 +76,9 @@ const StructItem: React.FC<{
         {title}
         {isComplexShape && (
           <div
-            className={clsx(
-              "flex flex-row pl-2 pb-2",
+            className={twMerge(
+              "flex flex-row pb-2",
+              hasParentTitle ? "pl-4" : "pl-2",
               isExpanded ? "" : "hidden",
             )}
           >
