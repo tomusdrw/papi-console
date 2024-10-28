@@ -1,4 +1,5 @@
 import {
+  Marker,
   MarkersContextProvider,
   VisibleWindow,
 } from "@/codec-components/common/Markers"
@@ -66,6 +67,7 @@ export const EditMode: React.FC<{
             </div>
             <div className="flex-1">
               <div className="p-2 rounded bg-polkadot-900">
+                <Marker id={[]} />
                 <EditCodec {...props} />
               </div>
             </div>

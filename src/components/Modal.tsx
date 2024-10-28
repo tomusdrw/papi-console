@@ -40,7 +40,24 @@ export const Modal: FC<ModalProps> = ({
     if (ref.open && !open) {
       ref.close()
     } else if (!ref.open && open) {
-      ref.showModal()
+      // Not sure why, having this run in a useEffect (or useLayoutEffect) causes
+      // an issue: on EditCodec+Tree, when hovering over a line of the tree view
+      // and pressing on "Edit binary", the modal causes the `mouseleave` event
+      // to not trigger, so the line becomes "Active" (and the binary view shows
+      // highlight of something not being hovered on).
+      // Seems that if `.showModal()` is called synchronously it doesn't happen.
+      // It doesn't happen if `.showModal()` is called in a setTimeout.
+      // But within a useEffect, the issue is present.
+      let canceled = false
+      setTimeout(() => {
+        if (canceled) {
+          return
+        }
+        ref.showModal()
+      })
+      return () => {
+        canceled = true
+      }
     }
   }, [open, ref])
 

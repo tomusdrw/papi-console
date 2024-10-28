@@ -23,9 +23,7 @@ import {
   PropsWithChildren,
   ReactElement,
   useContext,
-  useEffect,
   useLayoutEffect,
-  useRef,
   useState,
 } from "react"
 import { twMerge } from "tailwind-merge"
@@ -140,33 +138,17 @@ export const ItemTitle: FC<
   const [binaryOpen, setBinaryOpen] = useState(false)
   const isActive = useStateObservable(isActive$(path))
 
-  // react listeners don't work across portals, we need native listeners
-  const ref = useRef<HTMLDivElement | null>(null)
-  useEffect(() => {
-    if (!ref.current) return
-    const element = ref.current
-    const onMouseEnter = () => setHovered({ id: path, hover: true })
-    const onMouseLeave = () => setHovered({ id: path, hover: false })
-
-    element.addEventListener("mouseenter", onMouseEnter)
-    element.addEventListener("mouseleave", onMouseLeave)
-    return () => {
-      element.removeEventListener("mouseenter", onMouseEnter)
-      element.removeEventListener("mouseleave", onMouseLeave)
-      onMouseLeave()
-    }
-  }, [path])
-
   return (
     <>
       <div
-        ref={ref}
         className={twMerge(
           "flex items-center",
           isActive && "bg-polkadot-600 bg-opacity-20",
           className,
         )}
         data-marker={`marker-${path}`}
+        onMouseEnter={() => setHovered({ id: path, hover: true })}
+        onMouseLeave={() => setHovered({ id: path, hover: false })}
       >
         <span
           className={twMerge(

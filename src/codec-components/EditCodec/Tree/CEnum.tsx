@@ -11,6 +11,7 @@ import {
   TitleContext,
   useReportBinaryStatus,
 } from "./codec-components"
+import { setHovered } from "@/codec-components/common/paths.state"
 
 export const CEnum: EditEnum = ({
   value,
@@ -39,12 +40,17 @@ export const CEnum: EditEnum = ({
   if (value === NOTIN) return null
 
   const innerPath = [...path, value.type]
+  const pathStr = path.join(".")
   if (titleContainer) {
     return (
       <>
         {titleElement ? (
           <Portal node={titleElement}>
-            <span onClick={() => scrollToMarker(innerPath)}>
+            <span
+              onClick={() => scrollToMarker(innerPath)}
+              onMouseEnter={() => setHovered({ id: pathStr, hover: true })}
+              onMouseLeave={() => setHovered({ id: pathStr, hover: false })}
+            >
               / {value.type}
             </span>
           </Portal>
@@ -67,9 +73,9 @@ export const CEnum: EditEnum = ({
     <div className="border-l border-polkadot-700">
       <ItemTitle
         icon={Enum}
-        path={innerPath.join(".")}
+        path={path.join(".")}
         titleRef={setNewElement}
-        onNavigate={() => scrollToMarker(innerPath)}
+        onNavigate={() => scrollToMarker(path)}
         onZoom={innerIsComplex ? () => focus.setFocus(innerPath) : undefined}
         binaryStatus={{
           encodedValue,
