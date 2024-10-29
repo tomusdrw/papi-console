@@ -32,6 +32,7 @@ export const Storage = withSubscribe(() => {
   const { lookup, entries } = useStateObservable(metadataStorage$)
   const [pallet, setPallet] = useState<string | null>("System")
   const [entry, setEntry] = useState<string | null>("Account")
+  const selectedEntry = useStateObservable(selectedEntry$)
 
   const selectedPallet =
     (pallet && lookup.metadata.pallets.find((p) => p.name === pallet)) || null
@@ -49,33 +50,35 @@ export const Storage = withSubscribe(() => {
   )
 
   useEffect(() => {
-    const storageEntry = (
+    const storageEntry =
       (entry &&
         selectedPallet?.storage?.items.find((it) => it.name === entry)) ||
       null
-    )?.type
-    if (!storageEntry) {
+    const storageEntryType = storageEntry?.type
+    if (!storageEntryType) {
       return setSelectedEntry(null)
     }
 
-    if (storageEntry.tag === "plain") {
+    if (storageEntryType.tag === "plain") {
       return setSelectedEntry({
-        value: storageEntry.value,
+        value: storageEntryType.value,
         key: [],
         pallet: pallet!,
         entry: entry!,
+        docs: storageEntry.docs,
       })
     }
-    if (storageEntry.value.hashers.length === 1) {
+    if (storageEntryType.value.hashers.length === 1) {
       return setSelectedEntry({
-        value: storageEntry.value.value,
-        key: [storageEntry.value.key],
+        value: storageEntryType.value.value,
+        key: [storageEntryType.value.key],
         pallet: pallet!,
         entry: entry!,
+        docs: storageEntry.docs,
       })
     }
 
-    const keyDef = lookup(storageEntry.value.key)
+    const keyDef = lookup(storageEntryType.value.key)
     const key = (() => {
       if (keyDef.type === "array") {
         return new Array(keyDef.len).fill(keyDef.value.id)
@@ -87,9 +90,10 @@ export const Storage = withSubscribe(() => {
     })()
     setSelectedEntry({
       key,
-      value: storageEntry.value.value,
+      value: storageEntryType.value.value,
       pallet: pallet!,
       entry: entry!,
+      docs: storageEntry.docs,
     })
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedPallet, entry])
@@ -124,6 +128,16 @@ export const Storage = withSubscribe(() => {
           </label>
         )}
       </div>
+      {selectedEntry?.docs.length && (
+        <div className="w-full">
+          Docs
+          <div className="text-sm text-slate-400 max-h-20 overflow-auto">
+            {selectedEntry.docs.map((d, i) => (
+              <p key={i}>{d}</p>
+            ))}
+          </div>
+        </div>
+      )}
       <StorageEntry />
       <StorageSubscriptions />
     </div>

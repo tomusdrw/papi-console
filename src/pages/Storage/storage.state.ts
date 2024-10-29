@@ -24,6 +24,7 @@ export type StorageMetadataEntry = {
   entry: string
   key: number[]
   value: number
+  docs: string[]
 }
 
 export const [entryChange$, setSelectedEntry] =
