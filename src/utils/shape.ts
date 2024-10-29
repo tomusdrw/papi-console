@@ -62,3 +62,57 @@ export const getFinalType = (shape: any, name: string) => {
       return innerType.type
   }
 }
+
+type TypeComplexity = "inline" | "multiple" | "tree"
+export const getTypeComplexity = (lookupType: Var): TypeComplexity => {
+  switch (lookupType.type) {
+    case "array":
+    case "sequence":
+      if (
+        lookupType.value.type === "primitive" &&
+        lookupType.value.value === "u8"
+      ) {
+        return "inline"
+      }
+      return maxComplexity("multiple", getTypeComplexity(lookupType.value))
+    case "tuple":
+      return reduceMaxComplexity(
+        "multiple",
+        lookupType.value.map((v) => () => getTypeComplexity(v)),
+      )
+    case "enum":
+      return reduceMaxComplexity(
+        "inline",
+        Object.values(lookupType.value).map((v) => () => {
+          const inner = getTypeComplexity(
+            v.type === "lookupEntry" ? v.value : v,
+          )
+          return inner === "inline" ? "inline" : "tree"
+        }),
+      )
+    case "struct":
+      return reduceMaxComplexity(
+        "multiple",
+        Object.values(lookupType.value).map((v) => () => {
+          const inner = getTypeComplexity(v)
+          return inner === "inline" ? "inline" : "tree"
+        }),
+      )
+    case "option":
+    case "result":
+      return "multiple"
+    default:
+      return "inline"
+  }
+}
+const highCx: Array<TypeComplexity> = ["tree", "multiple"]
+const maxComplexity = (a: TypeComplexity, b: TypeComplexity) =>
+  highCx.find((c) => a === c || b == c) ?? "inline"
+const reduceMaxComplexity = (
+  initial: TypeComplexity,
+  fns: Array<() => TypeComplexity>,
+) =>
+  fns.reduce((acc, fn) => {
+    if (acc === "tree") return acc
+    return maxComplexity(acc, fn())
+  }, initial)

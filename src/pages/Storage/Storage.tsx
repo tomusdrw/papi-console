@@ -9,6 +9,7 @@ import { selectedEntry$, setSelectedEntry } from "./storage.state"
 import { StorageDecode } from "./StorageDecode"
 import { StorageQuery } from "./StorageQuery"
 import { StorageSubscriptions } from "./StorageSubscriptions"
+import { DocsRenderer } from "@/components/DocsRenderer"
 
 const metadataStorage$ = state(
   lookup$.pipe(
@@ -131,11 +132,7 @@ export const Storage = withSubscribe(() => {
       {selectedEntry?.docs.length && (
         <div className="w-full">
           Docs
-          <div className="text-sm text-slate-400 max-h-20 overflow-auto">
-            {selectedEntry.docs.map((d, i) => (
-              <p key={i}>{d}</p>
-            ))}
-          </div>
+          <DocsRenderer docs={selectedEntry.docs} />
         </div>
       )}
       <StorageEntry />

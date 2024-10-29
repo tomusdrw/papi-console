@@ -1,10 +1,15 @@
 import { lookup$, unsafeApi$ } from "@/chain.state"
-import { LookupTypeEdit } from "@/codec-components/LookupTypeEdit"
+import {
+  InlineLookupTypeEdit,
+  LookupTypeEdit,
+} from "@/codec-components/LookupTypeEdit"
 import { ActionButton } from "@/components/ActionButton"
 import { ExpandBtn } from "@/components/Expand"
+import { getTypeComplexity } from "@/utils/shape"
 import { getDynamicBuilder } from "@polkadot-api/metadata-builders"
 import { state, useStateObservable, withDefault } from "@react-rxjs/core"
 import { createSignal } from "@react-rxjs/utils"
+import { Circle, Dot } from "lucide-react"
 import { FC, useState } from "react"
 import {
   combineLatest,
@@ -15,9 +20,8 @@ import {
   startWith,
   switchMap,
 } from "rxjs"
-import { addRuntimeCallQuery, selectedEntry$ } from "./runtimeCalls.state"
-import { Circle } from "lucide-react"
 import { twMerge } from "tailwind-merge"
+import { addRuntimeCallQuery, selectedEntry$ } from "./runtimeCalls.state"
 
 export const RuntimeCallQuery: FC = () => {
   const selectedEntry = useStateObservable(selectedEntry$)
@@ -109,6 +113,7 @@ const inputValue$ = state(
   (idx: number) => inputValues$.pipe(map((v) => v[idx])),
   null,
 )
+const lookupState$ = state(lookup$, null)
 const RuntimeValueInput: FC<{ idx: number; name: string; type: number }> = ({
   idx,
   type,
@@ -116,14 +121,26 @@ const RuntimeValueInput: FC<{ idx: number; name: string; type: number }> = ({
 }) => {
   const value = useStateObservable(inputValue$(idx))
   const [expanded, setExpanded] = useState(false)
+  const lookup = useStateObservable(lookupState$)
+
+  if (!lookup) return null
+  const shape = lookup(type)
+  const complexity = getTypeComplexity(shape)
 
   return (
     <li key={idx} className="border rounded p-2 w-full">
       <div
-        className="flex items-center cursor-pointer select-none"
+        className={twMerge(
+          "flex items-center select-none",
+          complexity !== "inline" && "cursor-pointer",
+        )}
         onClick={() => setExpanded((e) => !e)}
       >
-        <ExpandBtn expanded={expanded} />
+        {complexity === "inline" ? (
+          <Dot size={16} />
+        ) : (
+          <ExpandBtn expanded={expanded} />
+        )}
         <Circle
           size={8}
           strokeWidth={4}
@@ -137,13 +154,23 @@ const RuntimeValueInput: FC<{ idx: number; name: string; type: number }> = ({
           )}
         />
         <div className="text-polkadot-200">{name}</div>
+        {complexity === "inline" ? (
+          <div className="px-2">
+            <InlineLookupTypeEdit
+              type={type}
+              value={value}
+              onValueChange={(value) => setInputValue({ idx, value })}
+            />
+          </div>
+        ) : null}
       </div>
-      {expanded && (
-        <div className="py-2 max-h-[60svh] overflow-hidden flex">
+      {expanded && complexity !== "inline" && (
+        <div className="py-2 max-h-[60svh] overflow-hidden flex flex-col justify-stretch">
           <LookupTypeEdit
             type={type}
             value={value}
             onValueChange={(value) => setInputValue({ idx, value })}
+            tree={complexity === "tree"}
           />
         </div>
       )}

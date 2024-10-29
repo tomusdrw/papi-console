@@ -7,6 +7,7 @@ import { map } from "rxjs"
 import { RuntimeCallQuery } from "./RuntimeCallQuery"
 import { selectedEntry$, setSelectedMethod } from "./runtimeCalls.state"
 import { RuntimeCallResults } from "./RuntimeCallResults"
+import { DocsRenderer } from "@/components/DocsRenderer"
 
 const metadataRuntimeCalls$ = state(
   lookup$.pipe(
@@ -84,11 +85,7 @@ export const RuntimeCalls = withSubscribe(() => {
       {entry?.docs.length && (
         <div className="w-full">
           Docs
-          <div className="text-sm text-slate-400 max-h-20 overflow-auto">
-            {entry.docs.map((d, i) => (
-              <p key={i}>{d}</p>
-            ))}
-          </div>
+          <DocsRenderer docs={entry.docs} />
         </div>
       )}
       <RuntimeCallQuery />
