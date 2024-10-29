@@ -1,23 +1,20 @@
 import { lookup$ } from "@/chain.state"
-import { SearchableSelect } from "@/components/Select"
-import { withSubscribe } from "@/components/withSuspense"
-import { state, useStateObservable } from "@react-rxjs/core"
-import { FC, useEffect, useState } from "react"
-import { map } from "rxjs"
-import { DocsRenderer } from "@/components/DocsRenderer"
-import { HexString } from "polkadot-api"
-import { ButtonGroup } from "@/components/ButtonGroup"
-import { ValueDisplay } from "./Storage/StorageSubscriptions"
-import {
-  getDynamicBuilder,
-  MetadataLookup,
-} from "@polkadot-api/metadata-builders"
-import { getTypeComplexity } from "@/utils/shape"
 import { ViewCodec } from "@/codec-components/ViewCodec"
-import { CodecComponentType } from "@/lib/codecComponents"
+import { ButtonGroup } from "@/components/ButtonGroup"
 import { ExpandBtn } from "@/components/Expand"
+import { withSubscribe } from "@/components/withSuspense"
+import { CodecComponentType } from "@/lib/codecComponents"
+import { getTypeComplexity } from "@/utils/shape"
+import { getDynamicBuilder } from "@polkadot-api/metadata-builders"
+import { state, useStateObservable } from "@react-rxjs/core"
 import { Dot } from "lucide-react"
+import { HexString } from "polkadot-api"
+import { FC, useState } from "react"
+import { map } from "rxjs"
 import { twMerge } from "tailwind-merge"
+import { ValueDisplay } from "./Storage/StorageSubscriptions"
+import { Tooltip } from "@/components/Tooltip"
+import { DocsRenderer } from "@/components/DocsRenderer"
 
 const metadataConstants$ = state(
   lookup$.pipe(
@@ -69,8 +66,8 @@ const PalletConstants: FC<{
       </div>
       {expanded && (
         <ul>
-          {entries.map(({ name, type, value }) => (
-            <ConstantEntry name={name} type={type} value={value} />
+          {entries.map((props) => (
+            <ConstantEntry key={props.name} {...props} />
           ))}
         </ul>
       )}
@@ -85,11 +82,12 @@ const constantValueProps$ = state(
   null,
 )
 
-const ConstantEntry: FC<{ name: string; type: number; value: HexString }> = ({
-  name,
-  type,
-  value,
-}) => {
+const ConstantEntry: FC<{
+  name: string
+  type: number
+  value: HexString
+  docs: string[]
+}> = ({ name, type, value, docs }) => {
   const props = useStateObservable(constantValueProps$)
   const [expanded, setExpanded] = useState(false)
 
@@ -106,9 +104,18 @@ const ConstantEntry: FC<{ name: string; type: number; value: HexString }> = ({
       onClick={() => setExpanded((e) => !e)}
     >
       {isInline ? <Dot size={16} /> : <ExpandBtn expanded={expanded} />}
-      <div className={isInline ? "text-slate-400" : ""}>
-        {name + (isInline ? ":" : "")}
-      </div>
+      <Tooltip
+        content={
+          docs.length ? (
+            <DocsRenderer docs={docs} className="text-slate-700 max-h-none" />
+          ) : null
+        }
+        disableHoverableContent
+      >
+        <div className={isInline ? "text-slate-400" : ""}>
+          {name + (isInline ? ":" : "")}
+        </div>
+      </Tooltip>
       {isInline ? (
         <ViewCodec
           codecType={type}
@@ -139,7 +146,7 @@ const ConstantValue: FC<{ type: number; decoded: unknown }> = ({
   type,
   decoded,
 }) => {
-  const [mode, setMode] = useState<"json" | "decoded">("decoded")
+  const [mode, setMode] = useState<"json" | "decoded">("json")
 
   return (
     <div className="pl-6 py-2 flex flex-col gap-2 items-start overflow-hidden w-full">
