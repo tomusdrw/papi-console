@@ -1,7 +1,10 @@
 import { FC } from "react"
 import { twMerge } from "tailwind-merge"
 
-export const DocsRenderer: FC<{ docs: string[] }> = ({ docs }) => {
+export const DocsRenderer: FC<{ docs: string[]; className?: string }> = ({
+  docs,
+  className,
+}) => {
   if (!docs.length) return null
   if (docs.length === 1) {
     return (
@@ -18,6 +21,7 @@ export const DocsRenderer: FC<{ docs: string[] }> = ({ docs }) => {
       className={twMerge(
         "text-slate-400 max-h-20 overflow-auto",
         normalizedDocs.length > 1 && "text-sm font-mono whitespace-pre",
+        className,
       )}
     >
       {normalizedDocs.map((d, i) => (

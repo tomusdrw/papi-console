@@ -64,7 +64,10 @@ export const getFinalType = (shape: any, name: string) => {
 }
 
 type TypeComplexity = "inline" | "multiple" | "tree"
-export const getTypeComplexity = (lookupType: Var): TypeComplexity => {
+export const getTypeComplexity = (
+  lookupType: Var,
+  viewMode = false,
+): TypeComplexity => {
   switch (lookupType.type) {
     case "array":
     case "sequence":
@@ -100,7 +103,7 @@ export const getTypeComplexity = (lookupType: Var): TypeComplexity => {
       )
     case "option":
     case "result":
-      return "multiple"
+      return viewMode ? "inline" : "multiple"
     default:
       return "inline"
   }
