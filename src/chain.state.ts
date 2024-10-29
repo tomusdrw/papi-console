@@ -108,7 +108,11 @@ function getProvider(source: ChainSource) {
   }
 
   if (!smoldot) {
-    smoldot = startFromWorker(new SmWorker())
+    smoldot = startFromWorker(new SmWorker(), {
+      logCallback: (level, target, message) => {
+        console.debug("[%s(%s)] %s", target, level, message)
+      },
+    })
   }
   const chain = source.value.relayChain
     ? smoldot

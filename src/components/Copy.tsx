@@ -1,12 +1,14 @@
 import { CheckCircle, Copy } from "lucide-react"
 import { useEffect, useState } from "react"
 import { twMerge } from "tailwind-merge"
+import { CopyBinaryIcon } from "./Icons"
 
 export const CopyText: React.FC<{
   text: string
   disabled?: boolean
   className?: string
-}> = ({ text, className, disabled = false }) => {
+  binary?: boolean
+}> = ({ text, className, binary = false, disabled = false }) => {
   const [copied, setCopied] = useState(false)
   const copy = async (evt: React.MouseEvent) => {
     if (disabled) return
@@ -29,6 +31,8 @@ export const CopyText: React.FC<{
     >
       {copied ? (
         <CheckCircle size={16} className="text-green-300" />
+      ) : binary ? (
+        <CopyBinaryIcon size={16} />
       ) : (
         <Copy size={16} />
       )}

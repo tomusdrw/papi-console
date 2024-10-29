@@ -2,29 +2,23 @@ import { BinaryViewCodec } from "@/codec-components/BinaryViewCodec"
 import { BinaryEditButton } from "@/components/BinaryEditButton"
 import { CopyText } from "@/components/Copy"
 import { ExpandBtn } from "@/components/Expand"
-import {
-  CodecComponentType,
-  CodecComponentUpdate,
-  CodecComponentValue,
-  MetadataType,
-  NOTIN,
-} from "@codec-components"
+import { CodecComponentType, NOTIN } from "@codec-components"
 import { Binary, HexString } from "@polkadot-api/substrate-bindings"
 import { toHex } from "@polkadot-api/utils"
-import { FC, useState } from "react"
+import { ComponentProps, FC, useState } from "react"
 import { twMerge } from "tailwind-merge"
+import { EditCodec } from "../EditCodec"
 import "./binaryDisplay.css"
 
-export const BinaryDisplay: FC<{
-  codecType: number
-  metadata: MetadataType
-  value: CodecComponentValue
-  onUpdate: (value: CodecComponentUpdate) => void
-  codec: {
-    enc: (value: any | NOTIN) => Uint8Array
-    dec: (value: Uint8Array | HexString) => any | NOTIN
+export const BinaryDisplay: FC<
+  ComponentProps<typeof EditCodec> & {
+    codec: {
+      enc: (value: any | NOTIN) => Uint8Array
+      dec: (value: Uint8Array | HexString) => any | NOTIN
+    }
+    className?: string
   }
-}> = ({ codecType, metadata, value, onUpdate, codec }) => {
+> = ({ codecType, metadata, value, onUpdate, codec, className }) => {
   const [wrap, setWrap] = useState(false)
   const encoded = (() => {
     if (value.type === CodecComponentType.Initial) {
@@ -42,7 +36,7 @@ export const BinaryDisplay: FC<{
     (value.type === CodecComponentType.Updated && value.value.empty)
 
   return (
-    <div className="px-2 w-full">
+    <div className={twMerge("px-2 w-full", className)}>
       <div className="px-3 py-2 gap-2 rounded flex flex-row bg-polkadot-800 items-start">
         <CopyText text={hex ?? ""} disabled={!hex} className="h-5" />
         <div
@@ -54,8 +48,8 @@ export const BinaryDisplay: FC<{
         >
           {isEmpty ? (
             <div className="flex flex-row items-center gap-1 text-slate-400">
-              Start by filling out your extrinsic, or enter a binary using the
-              edit binary button at the end of this line.
+              Start by filling out the value, or enter a binary using the edit
+              binary button at the end of this line.
             </div>
           ) : (
             <>
@@ -72,14 +66,17 @@ export const BinaryDisplay: FC<{
           <ExpandBtn
             expanded={wrap}
             direction="vertical"
-            className="cursor-pointer"
+            className={twMerge(
+              "cursor-pointer",
+              isEmpty && "opacity-50 pointer-events-none",
+            )}
             onClick={() => setWrap((v) => !v)}
           />
           <BinaryEditButton
             initialValue={encoded ?? undefined}
             onValueChange={(decoded) => {
               const encoded = codec.enc(decoded)
-              onUpdate({ empty: false, decoded, encoded })
+              onUpdate?.({ empty: false, decoded, encoded })
               return true
             }}
             decode={codec.dec}

@@ -1,39 +1,37 @@
-import { metadata$ } from "@/chain.state"
+import { lookup$ } from "@/chain.state"
 import { ActionButton } from "@/components/ActionButton"
 import { ButtonGroup } from "@/components/ButtonGroup"
 import { withSubscribe } from "@/components/withSuspense"
 import { CodecComponentType, CodecComponentValue } from "@codec-components"
-import { getDynamicBuilder, getLookupFn } from "@polkadot-api/metadata-builders"
+import { getDynamicBuilder } from "@polkadot-api/metadata-builders"
 import { Binary } from "@polkadot-api/substrate-bindings"
 import { state, useStateObservable } from "@react-rxjs/core"
 import { useState } from "react"
 import { map } from "rxjs"
-import { BinaryDisplay } from "./BinaryDisplay"
 import { EditMode } from "./EditMode"
 import { JsonMode } from "./JsonMode"
+import { BinaryDisplay } from "@/codec-components/LookupTypeEdit"
 
 const extrinsicProps$ = state(
-  metadata$.pipe(
-    map((metadata) => ({
-      metadata,
-      codecType:
-        "call" in metadata.extrinsic
-          ? metadata.extrinsic.call
+  lookup$.pipe(
+    map((lookup) => {
+      const codecType =
+        "call" in lookup.metadata.extrinsic
+          ? lookup.metadata.extrinsic.call
           : // TODO v14 is this one?
-            metadata.extrinsic.type,
-    })),
-  ),
-)
-const extrinsicCodec = extrinsicProps$.pipeState(
-  map(({ metadata, codecType }) =>
-    getDynamicBuilder(getLookupFn(metadata)).buildDefinition(codecType),
+            lookup.metadata.extrinsic.type
+      return {
+        metadata: lookup.metadata,
+        codecType,
+        codec: getDynamicBuilder(lookup).buildDefinition(codecType),
+      }
+    }),
   ),
 )
 
 export const Extrinsics = withSubscribe(() => {
   const [viewMode, setViewMode] = useState<"edit" | "json">("edit")
   const extrinsicProps = useStateObservable(extrinsicProps$)
-  const codec = useStateObservable(extrinsicCodec)
 
   const [componentValue, setComponentValue] = useState<CodecComponentValue>({
     type: CodecComponentType.Initial,
@@ -54,7 +52,6 @@ export const Extrinsics = withSubscribe(() => {
       <BinaryDisplay
         {...extrinsicProps}
         value={componentValue}
-        codec={codec}
         onUpdate={(value) =>
           setComponentValue({ type: CodecComponentType.Updated, value })
         }
@@ -94,7 +91,7 @@ export const Extrinsics = withSubscribe(() => {
               ? Binary.fromHex(binaryValue).asBytes()
               : binaryValue
           }
-          decode={codec.dec}
+          decode={extrinsicProps.codec.dec}
         />
       )}
     </div>

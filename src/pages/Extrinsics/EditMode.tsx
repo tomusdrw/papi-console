@@ -7,13 +7,13 @@ import { synchronizeScroll } from "@/codec-components/common/scroll"
 import { SubtreeFocus } from "@/codec-components/common/SubtreeFocus"
 import { EditCodec } from "@/codec-components/EditCodec"
 import { TreeCodec } from "@/codec-components/EditCodec/Tree/index"
+import { FocusPath } from "@/codec-components/LookupTypeEdit"
 import {
   CodecComponentUpdate,
   CodecComponentValue,
   MetadataType,
 } from "@codec-components"
 import { useEffect, useRef, useState } from "react"
-import { FocusPath } from "./FocusPath"
 
 export const EditMode: React.FC<{
   codecType: number

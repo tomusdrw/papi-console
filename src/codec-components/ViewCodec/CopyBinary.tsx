@@ -57,5 +57,6 @@ export const CopyBinary: FC<{ value: Uint8Array; visible?: boolean }> = ({
   <CopyText
     text={Binary.fromBytes(value).asHex()}
     className={twMerge("transition-opacity", !visible ? "opacity-0" : "")}
+    binary
   />
 )

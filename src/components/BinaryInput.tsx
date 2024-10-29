@@ -1,3 +1,4 @@
+import { byteArraysAreEqual } from "@/utils/byteArray"
 import { NOTIN } from "@codec-components"
 import { Binary } from "@polkadot-api/substrate-bindings"
 import { FileUp } from "lucide-react"
@@ -175,13 +176,5 @@ export const checkEqualInputBinary = (
   const inputBytes = parsed.asBytes()
   const valueBytes = value.asBytes()
 
-  if (inputBytes.length !== valueBytes.length) {
-    return false
-  }
-  for (let i = 0; i < inputBytes.length; i++) {
-    if (inputBytes[i] !== valueBytes[i]) {
-      return false
-    }
-  }
-  return true
+  return byteArraysAreEqual(inputBytes, valueBytes)
 }

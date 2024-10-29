@@ -11,6 +11,12 @@ export const Header = () => (
         Storage
       </Link>
       <Link
+        to="/runtimeCalls"
+        className="text-polkadot-200 border-polkadot-200 cursor-pointer border-b hover:text-polkadot-500 hover:border-polkadot-500"
+      >
+        Runtime Calls
+      </Link>
+      <Link
         to="/extrinsics"
         className="text-polkadot-200 border-polkadot-200 cursor-pointer border-b hover:text-polkadot-500 hover:border-polkadot-500"
       >

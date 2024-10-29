@@ -12,7 +12,7 @@ export const ExpandBtn: FC<
     size={16}
     {...props}
     className={twMerge(
-      "transition-transform mt-[1px]",
+      "transition-transform",
       direction === "horizontal"
         ? expanded && "rotate-90"
         : expanded

@@ -1,6 +1,7 @@
 import { Navigate, Route, Routes } from "react-router-dom"
-import { Header } from "./pages/Header"
 import { Extrinsics } from "./pages/Extrinsics"
+import { Header } from "./pages/Header"
+import { RuntimeCalls } from "./pages/RuntimeCalls"
 import { Storage } from "./pages/Storage"
 
 export default function App() {
@@ -11,6 +12,7 @@ export default function App() {
       <Routes>
         <Route path="extrinsics/*" element={<Extrinsics />} />
         <Route path="storage/*" element={<Storage />} />
+        <Route path="runtimeCalls/*" element={<RuntimeCalls />} />
         <Route path="*" element={<Navigate to="/extrinsics" replace />} />
       </Routes>
     </div>

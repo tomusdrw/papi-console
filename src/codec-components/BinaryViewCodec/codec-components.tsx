@@ -18,6 +18,7 @@ import { useStateObservable } from "@react-rxjs/core"
 import { FC } from "react"
 import { isActive$ } from "../common/paths.state"
 import { useSubtreeFocus } from "../common/SubtreeFocus"
+import { Circle } from "lucide-react"
 
 export const CVoid: EditVoid = () => null
 
@@ -53,8 +54,6 @@ export const COption: EditOption = ({ path, value, inner }) => {
   }
   if (value === NOTIN) return <MissingData />
 
-  // TODO Looking at scale-ts, Option<Boolean> seems to be 00, 01 or 02! (None, Some(true), Some(false))
-  // but can't find it at the docs? https://docs.substrate.io/reference/scale-codec/
   return (
     <span className={highlight(isActive)}>
       <span className={headerHighlight(isActive)}>
@@ -84,7 +83,11 @@ export const CResult: EditResult = ({ value, inner, path }) => {
 }
 
 export const MissingData = () => (
-  <span className="mx-0.5 text-slate-400 text-sm">(…)</span>
+  <span className="mx-0.5 text-slate-400 text-sm">
+    (
+    <Circle size={8} strokeWidth={4} className="text-orange-600 inline-block" />
+    )
+  </span>
 )
 export const toConcatHex = (value: Uint8Array) => toHex(value).slice(2)
 export const highlight = (isActive: boolean) =>

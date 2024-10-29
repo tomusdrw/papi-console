@@ -3,12 +3,22 @@ import focusSvg from "./icons/focus.svg"
 import enumSvg from "./icons/enum.svg"
 import binarySvg from "./icons/binary.svg"
 import { useEffect, useRef } from "react"
-import { Ban, Binary, Braces, CircleHelp, Hash, List, User } from "lucide-react"
+import {
+  Ban,
+  Binary,
+  Braces,
+  CircleHelp,
+  Copy,
+  Hash,
+  List,
+  User,
+} from "lucide-react"
 import { LookupEntry } from "@polkadot-api/metadata-builders"
 
+type CustomIconProps = Omit<Props, "ref" | "src"> & { size?: number }
 const customIcon =
   (url: string) =>
-  ({ size = 16, ...props }: Omit<Props, "ref" | "src"> & { size?: number }) => {
+  ({ size = 16, ...props }: CustomIconProps) => {
     const ref = useRef<SVGSVGElement | null>(null)
 
     useEffect(() => {
@@ -61,3 +71,27 @@ export const lookupToType: Record<LookupEntry["type"], TypeIcon> = {
   result: "maybe",
   enum: "enum",
 }
+
+export const CopyBinaryIcon = ({ size = 16, ...props }: CustomIconProps) => (
+  <svg
+    width={size}
+    height={size}
+    {...props}
+    viewBox="0 0 24 24"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <Copy className="text-current" />
+    <text
+      x="15"
+      y="14.5"
+      fontSize="9"
+      fill="currentColor"
+      className="font-mono font-bold"
+      textAnchor="middle"
+      dominantBaseline="central"
+    >
+      0x
+    </text>
+  </svg>
+)

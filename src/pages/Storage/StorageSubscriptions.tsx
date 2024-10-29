@@ -101,7 +101,7 @@ const ResultDisplay: FC<{
       <div className="max-h-[60svh] overflow-auto">
         <ValueDisplay
           mode={mode}
-          storageSubscription={storageSubscription}
+          type={storageSubscription.type}
           value={storageSubscription.result}
           title={"Result"}
         />
@@ -125,7 +125,7 @@ const ResultDisplay: FC<{
           mode={mode}
           title={title}
           value={value}
-          storageSubscription={storageSubscription}
+          type={storageSubscription.type}
         />
       </div>
     )
@@ -158,18 +158,18 @@ const dynamicBuilder$ = state(
   lookup$.pipe(map((v) => getDynamicBuilder(v))),
   null,
 )
-const ValueDisplay: FC<{
-  storageSubscription: StorageSubscription
+export const ValueDisplay: FC<{
+  type: number
   title: string
   value: unknown | NOTIN
-  mode: string
-}> = ({ storageSubscription, title, value, mode }) => {
+  mode: "decoded" | "json"
+}> = ({ type, title, value, mode }) => {
   const metadata = useStateObservable(metadataState$)
   const builder = useStateObservable(dynamicBuilder$)
 
   const [codec, encodedValue] = useMemo(() => {
     if (!builder) return [null!, null!]
-    const codec = builder.buildDefinition(storageSubscription.type)
+    const codec = builder.buildDefinition(type)
     const encodedValue = (() => {
       try {
         return codec.enc(value)
@@ -178,7 +178,7 @@ const ValueDisplay: FC<{
       }
     })()
     return [codec, encodedValue] as const
-  }, [builder, value, storageSubscription.type])
+  }, [builder, value, type])
 
   if (!metadata || !builder) return null
   if (!encodedValue) {
@@ -194,7 +194,7 @@ const ValueDisplay: FC<{
       {mode === "decoded" ? (
         <div className="leading-tight">
           <ViewCodec
-            codecType={storageSubscription.type}
+            codecType={type}
             value={{
               type: CodecComponentType.Initial,
               value: codec.enc(value),
