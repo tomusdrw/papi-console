@@ -8,98 +8,75 @@ import { DocsRenderer } from "@/components/DocsRenderer"
 import { HexString } from "polkadot-api"
 import { ButtonGroup } from "@/components/ButtonGroup"
 import { ValueDisplay } from "./Storage/StorageSubscriptions"
-import { getDynamicBuilder } from "@polkadot-api/metadata-builders"
+import {
+  getDynamicBuilder,
+  MetadataLookup,
+} from "@polkadot-api/metadata-builders"
 import { getTypeComplexity } from "@/utils/shape"
 import { ViewCodec } from "@/codec-components/ViewCodec"
 import { CodecComponentType } from "@/lib/codecComponents"
+import { ExpandBtn } from "@/components/Expand"
+import { Dot } from "lucide-react"
+import { twMerge } from "tailwind-merge"
 
 const metadataConstants$ = state(
   lookup$.pipe(
-    map((lookup) => ({
-      lookup,
-      entries: Object.fromEntries(
-        lookup.metadata.pallets
-          .filter((p) => p.constants.length > 0)
-          .map((p) => [
-            p.name,
-            Object.fromEntries(p.constants.map((ct) => [ct.name, ct])),
-          ]),
-      ),
-    })),
+    map((lookup) =>
+      lookup.metadata.pallets
+        .filter((p) => p.constants.length > 0)
+        .sort((a, b) => a.name.localeCompare(b.name))
+        .map((p) => ({
+          name: p.name,
+          constants: p.constants.sort((a, b) => a.name.localeCompare(b.name)),
+        })),
+    ),
   ),
 )
 
 export const Constants = withSubscribe(() => {
-  const { lookup, entries } = useStateObservable(metadataConstants$)
-  const [pallet, setPallet] = useState<string | null>("System")
-  const [constant, setConstant] = useState<string | null>("Version")
-
-  const selectedPallet =
-    (pallet && lookup.metadata.pallets.find((p) => p.name === pallet)) || null
-
-  useEffect(
-    () =>
-      setConstant((prev) => {
-        if (!selectedPallet?.constants[0]) return null
-        return selectedPallet.constants.some((v) => v.name === prev)
-          ? prev
-          : selectedPallet.constants[0].name
-      }),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [selectedPallet?.name],
-  )
-
-  const selectedConstant =
-    (constant &&
-      selectedPallet?.constants.find((it) => it.name === constant)) ||
-    null
+  const entries = useStateObservable(metadataConstants$)
 
   return (
-    <div className="p-2 flex flex-col gap-2 items-start overflow-hidden">
-      <div className="flex items-center gap-2">
-        <label>
-          Pallet
-          <SearchableSelect
-            value={pallet}
-            setValue={(v) => setPallet(v)}
-            options={Object.keys(entries).map((e) => ({
-              text: e,
-              value: e,
-            }))}
-          />
-        </label>
-        {selectedPallet && pallet && (
-          <label>
-            Constant
-            <SearchableSelect
-              value={constant}
-              setValue={(v) => setConstant(v)}
-              options={
-                Object.keys(entries[pallet]).map((s) => ({
-                  text: s,
-                  value: s,
-                })) ?? []
-              }
-            />
-          </label>
-        )}
-      </div>
-      {selectedConstant?.docs.length && (
-        <div className="w-full">
-          Docs
-          <DocsRenderer docs={selectedConstant.docs} className="max-h-none" />
-        </div>
-      )}
-      {selectedConstant && (
-        <ConstantValue
-          title={`${pallet}.${constant}`}
-          type={selectedConstant.type}
-          value={selectedConstant.value}
-        />
-      )}
+    <div className="p-2 flex flex-col gap-2 items-start overflow-auto leading-relaxed">
+      <ul>
+        {entries.map(({ name, constants }) => (
+          <PalletConstants key={name} name={name} entries={constants} />
+        ))}
+      </ul>
     </div>
   )
 })
+
+const PalletConstants: FC<{
+  name: string
+  entries: Array<{
+    name: string
+    type: number
+    value: HexString
+    docs: string[]
+  }>
+}> = ({ name, entries }) => {
+  const [expanded, setExpanded] = useState(false)
+
+  return (
+    <li>
+      <div
+        className="flex items-center gap-2 cursor-pointer"
+        onClick={() => setExpanded((e) => !e)}
+      >
+        <ExpandBtn expanded={expanded} />
+        <div>{name}</div>
+      </div>
+      {expanded && (
+        <ul>
+          {entries.map(({ name, type, value }) => (
+            <ConstantEntry name={name} type={type} value={value} />
+          ))}
+        </ul>
+      )}
+    </li>
+  )
+}
 
 const constantValueProps$ = state(
   lookup$.pipe(
@@ -108,23 +85,31 @@ const constantValueProps$ = state(
   null,
 )
 
-const ConstantValue: FC<{ title: string; type: number; value: HexString }> = ({
-  title,
+const ConstantEntry: FC<{ name: string; type: number; value: HexString }> = ({
+  name,
   type,
   value,
 }) => {
   const props = useStateObservable(constantValueProps$)
-  const [mode, setMode] = useState<"json" | "decoded">("decoded")
+  const [expanded, setExpanded] = useState(false)
 
   if (!props) return null
 
-  const decoded = props.builder.buildDefinition(type).dec(value)
-  const complexity = getTypeComplexity(props.lookup(type), true)
+  const isInline = getTypeComplexity(props.lookup(type), true) === "inline"
 
-  if (complexity === "inline") {
-    return (
-      <div className="flex items-center gap-2">
-        Value:
+  const titleElement = (
+    <div
+      className={twMerge(
+        "flex items-center gap-2",
+        !isInline && "cursor-pointer",
+      )}
+      onClick={() => setExpanded((e) => !e)}
+    >
+      {isInline ? <Dot size={16} /> : <ExpandBtn expanded={expanded} />}
+      <div className={isInline ? "text-slate-400" : ""}>
+        {name + (isInline ? ":" : "")}
+      </div>
+      {isInline ? (
         <ViewCodec
           codecType={type}
           value={{
@@ -133,12 +118,31 @@ const ConstantValue: FC<{ title: string; type: number; value: HexString }> = ({
           }}
           metadata={props.lookup.metadata}
         />
-      </div>
-    )
-  }
+      ) : null}
+    </div>
+  )
 
   return (
-    <div className="px-2 flex flex-col gap-2 items-start overflow-hidden w-full">
+    <li className="pl-4">
+      {titleElement}
+      {!isInline && expanded && (
+        <ConstantValue
+          type={type}
+          decoded={props.builder.buildDefinition(type).dec(value)}
+        />
+      )}
+    </li>
+  )
+}
+
+const ConstantValue: FC<{ type: number; decoded: unknown }> = ({
+  type,
+  decoded,
+}) => {
+  const [mode, setMode] = useState<"json" | "decoded">("decoded")
+
+  return (
+    <div className="pl-6 py-2 flex flex-col gap-2 items-start overflow-hidden w-full">
       <ButtonGroup
         value={mode}
         onValueChange={setMode as any}
@@ -154,7 +158,7 @@ const ConstantValue: FC<{ title: string; type: number; value: HexString }> = ({
         ]}
       />
       <div className="overflow-auto w-full">
-        <ValueDisplay mode={mode} type={type} value={decoded} title={title} />
+        <ValueDisplay mode={mode} type={type} value={decoded} title="Value" />
       </div>
     </div>
   )
