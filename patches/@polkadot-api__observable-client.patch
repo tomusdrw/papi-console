@@ -1,0 +1,44 @@
+diff --git a/dist/esm/getObservableClient.mjs b/dist/esm/getObservableClient.mjs
+index 511be34f2b04e0125858e03ff1dfce2759d3041b..b86e02a655903e3f5277269c5f46ca03b00b7ada 100644
+--- a/dist/esm/getObservableClient.mjs
++++ b/dist/esm/getObservableClient.mjs
+@@ -2,15 +2,30 @@ import { getChainHead$ } from './chainHead/chainHead.mjs';
+ import 'rxjs';
+ import getBroadcastTx$ from './tx.mjs';
+ 
+-const getObservableClient = ({
+-  chainHead,
+-  transaction,
+-  destroy
+-}) => ({
+-  chainHead$: () => getChainHead$(chainHead),
+-  broadcastTx$: getBroadcastTx$(transaction),
+-  destroy
+-});
++const clientCache = /* @__PURE__ */ new Map();
++const getObservableClient = (substrateClient) => {
++  const cached = clientCache.get(substrateClient);
++  if (cached) {
++    cached.refCount++;
++    return cached.client;
++  }
++  const destroy = () => {
++    const cached2 = clientCache.get(substrateClient);
++    if (!cached2 || cached2.refCount <= 1) {
++      clientCache.delete(substrateClient);
++      substrateClient.destroy();
++    } else {
++      cached2.refCount--;
++    }
++  };
++  const client = {
++    chainHead$: () => getChainHead$(substrateClient.chainHead),
++    broadcastTx$: getBroadcastTx$(substrateClient.transaction),
++    destroy
++  };
++  clientCache.set(substrateClient, { client, refCount: 1 });
++  return client;
++};
+ 
+ export { getObservableClient };
+ //# sourceMappingURL=getObservableClient.mjs.map

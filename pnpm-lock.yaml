@@ -5,6 +5,12 @@ settings:
   excludeLinksFromLockfile: false
 
 patchedDependencies:
+  '@polkadot-api/observable-client':
+    hash: 2dyuwkurmwrhcez6heyjslsxsu
+    path: patches/@polkadot-api__observable-client.patch
+  '@polkadot-api/substrate-client':
+    hash: lsuryiezeyeaoedwoxh2e4wda4
+    path: patches/@polkadot-api__substrate-client.patch
   react18-json-view@0.2.8:
     hash: tfqbi5gr5whnc64n7zptszjgcy
     path: patches/react18-json-view@0.2.8.patch
@@ -24,7 +30,7 @@ importers:
         version: 0.9.3
       '@polkadot-api/substrate-client':
         specifier: ^0.2.2
-        version: 0.2.2
+        version: 0.2.2(patch_hash=lsuryiezeyeaoedwoxh2e4wda4)
       '@polkadot-api/utils':
         specifier: ^0.1.2
         version: 0.1.2
@@ -2965,12 +2971,12 @@ snapshots:
       '@polkadot-api/json-rpc-provider': 0.0.4
       '@polkadot-api/known-chains': 0.5.5
       '@polkadot-api/metadata-compatibility': 0.1.11
-      '@polkadot-api/observable-client': 0.5.14(@polkadot-api/substrate-client@0.2.2)(rxjs@7.8.1)
+      '@polkadot-api/observable-client': 0.5.14(patch_hash=2dyuwkurmwrhcez6heyjslsxsu)(@polkadot-api/substrate-client@0.2.2(patch_hash=lsuryiezeyeaoedwoxh2e4wda4))(rxjs@7.8.1)
       '@polkadot-api/polkadot-sdk-compat': 2.3.1
       '@polkadot-api/sm-provider': 0.1.3(smoldot@2.0.30)
       '@polkadot-api/smoldot': 0.3.3
       '@polkadot-api/substrate-bindings': 0.9.3
-      '@polkadot-api/substrate-client': 0.2.2
+      '@polkadot-api/substrate-client': 0.2.2(patch_hash=lsuryiezeyeaoedwoxh2e4wda4)
       '@polkadot-api/utils': 0.1.2
       '@polkadot-api/wasm-executor': 0.1.1
       '@polkadot-api/ws-provider': 0.3.2
@@ -3032,11 +3038,11 @@ snapshots:
       '@polkadot-api/metadata-builders': 0.9.1
       '@polkadot-api/substrate-bindings': 0.9.3
 
-  '@polkadot-api/observable-client@0.5.14(@polkadot-api/substrate-client@0.2.2)(rxjs@7.8.1)':
+  '@polkadot-api/observable-client@0.5.14(patch_hash=2dyuwkurmwrhcez6heyjslsxsu)(@polkadot-api/substrate-client@0.2.2(patch_hash=lsuryiezeyeaoedwoxh2e4wda4))(rxjs@7.8.1)':
     dependencies:
       '@polkadot-api/metadata-builders': 0.9.1
       '@polkadot-api/substrate-bindings': 0.9.3
-      '@polkadot-api/substrate-client': 0.2.2
+      '@polkadot-api/substrate-client': 0.2.2(patch_hash=lsuryiezeyeaoedwoxh2e4wda4)
       '@polkadot-api/utils': 0.1.2
       rxjs: 7.8.1
 
@@ -3090,7 +3096,7 @@ snapshots:
       '@scure/base': 1.1.9
       scale-ts: 1.6.1
 
-  '@polkadot-api/substrate-client@0.2.2':
+  '@polkadot-api/substrate-client@0.2.2(patch_hash=lsuryiezeyeaoedwoxh2e4wda4)':
     dependencies:
       '@polkadot-api/json-rpc-provider': 0.0.4
       '@polkadot-api/utils': 0.1.2
@@ -4319,7 +4325,7 @@ snapshots:
       '@polkadot-api/logs-provider': 0.0.6
       '@polkadot-api/metadata-builders': 0.9.1
       '@polkadot-api/metadata-compatibility': 0.1.11
-      '@polkadot-api/observable-client': 0.5.14(@polkadot-api/substrate-client@0.2.2)(rxjs@7.8.1)
+      '@polkadot-api/observable-client': 0.5.14(patch_hash=2dyuwkurmwrhcez6heyjslsxsu)(@polkadot-api/substrate-client@0.2.2(patch_hash=lsuryiezeyeaoedwoxh2e4wda4))(rxjs@7.8.1)
       '@polkadot-api/pjs-signer': 0.5.2
       '@polkadot-api/polkadot-sdk-compat': 2.3.1
       '@polkadot-api/polkadot-signer': 0.1.6
@@ -4327,7 +4333,7 @@ snapshots:
       '@polkadot-api/sm-provider': 0.1.3(smoldot@2.0.30)
       '@polkadot-api/smoldot': 0.3.3
       '@polkadot-api/substrate-bindings': 0.9.3
-      '@polkadot-api/substrate-client': 0.2.2
+      '@polkadot-api/substrate-client': 0.2.2(patch_hash=lsuryiezeyeaoedwoxh2e4wda4)
       '@polkadot-api/utils': 0.1.2
       '@polkadot-api/ws-provider': 0.3.2
       rxjs: 7.8.1

@@ -27,7 +27,7 @@ export const CEnum: EditEnum = ({
       case "primitive":
         return ` (${innerType.value.value})`
       case "compact":
-        return ` (${(innerType.value as any).size ?? "u128"})`
+        return ` (${innerType.value.size})`
       case "AccountId20":
       case "AccountId32":
         return ` (${innerType.value.type})`

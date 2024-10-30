@@ -201,7 +201,7 @@ const StorageKeyInput: FC<{ idx: number; type: number; disabled: boolean }> = ({
       case "primitive":
         return lookupEntry.value
       case "compact":
-        return (lookupEntry as any).size ?? "u128"
+        return lookupEntry.size
       case "enum":
         return "Enum"
       case "array":

@@ -1,0 +1,42 @@
+diff --git a/dist/esm/index.mjs b/dist/esm/index.mjs
+index 67004332b2bd4d8ce97a6e2c04f64a810597a95a..6219a52e26932c9b9f698eeb2491281175660b16 100644
+--- a/dist/esm/index.mjs
++++ b/dist/esm/index.mjs
+@@ -8,18 +8,35 @@ import { abortablePromiseFn } from './internal-utils/abortablePromiseFn.mjs';
+ import { createGetChainSpec } from './chainspec.mjs';
+ export { AbortError } from '@polkadot-api/utils';
+ 
++const clientCache = /* @__PURE__ */ new Map();
+ const createClient = (provider) => {
++  const cached = clientCache.get(provider);
++  if (cached) {
++    cached.refCount++;
++    return cached.client;
++  }
+   const { request, disconnect } = createClient$1(provider);
+-  return {
++  const destroy = () => {
++    const cached2 = clientCache.get(provider);
++    if (!cached2 || cached2.refCount <= 1) {
++      clientCache.delete(provider);
++      disconnect();
++    } else {
++      cached2.refCount--;
++    }
++  };
++  const client = {
+     chainHead: getChainHead(request),
+     transaction: getTransaction(request),
+     getChainSpecData: createGetChainSpec(request),
+-    destroy: disconnect,
++    destroy,
+     request: abortablePromiseFn(
+       (onSuccess, onError, method, params) => request(method, params, { onSuccess, onError })
+     ),
+     _request: request
+   };
++  clientCache.set(provider, { client, refCount: 1 });
++  return client;
+ };
+ 
+ export { createClient };
