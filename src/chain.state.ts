@@ -8,6 +8,7 @@ import {
   V15,
 } from "@polkadot-api/substrate-bindings"
 import { toHex } from "@polkadot-api/utils"
+import { createClient as createSubstrateClient } from "@polkadot-api/substrate-client"
 import { shareLatest } from "@react-rxjs/core"
 import { createClient, PolkadotClient } from "polkadot-api"
 import { chainSpec } from "polkadot-api/chains/polkadot"
@@ -30,6 +31,7 @@ import {
   switchMap,
   tap,
 } from "rxjs"
+import { getObservableClient } from "@polkadot-api/observable-client"
 
 export type ChainSource = { id: string } & (
   | {
@@ -57,8 +59,16 @@ export const chainClient$ = selectedSource$.pipe(
   map((src) => [src.id, getProvider(src)] as const),
   switchMap(([id, provider]) => {
     const client = createClient(provider)
-    return concat(of({ id, client }), NEVER).pipe(
-      finalize(() => client.destroy()),
+    const substrateClient = createSubstrateClient(provider)
+    const observableClient = getObservableClient(substrateClient)
+    return concat(
+      of({ id, client, substrateClient, observableClient }),
+      NEVER,
+    ).pipe(
+      finalize(() => {
+        client.destroy()
+        observableClient.destroy()
+      }),
     )
   }),
   shareLatest(),

@@ -25,6 +25,9 @@ importers:
       '@polkadot-api/metadata-builders':
         specifier: ^0.9.1
         version: 0.9.1
+      '@polkadot-api/observable-client':
+        specifier: ^0.5.14
+        version: 0.5.14(patch_hash=2dyuwkurmwrhcez6heyjslsxsu)(@polkadot-api/substrate-client@0.2.2(patch_hash=lsuryiezeyeaoedwoxh2e4wda4))(rxjs@7.8.1)
       '@polkadot-api/substrate-bindings':
         specifier: ^0.9.3
         version: 0.9.3
