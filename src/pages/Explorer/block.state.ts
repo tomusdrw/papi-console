@@ -111,7 +111,9 @@ const [blockInfo$, recordedBlocks$] = partitionByKey(
 export const blocksByHeight$ = state(
   recordedBlocks$.pipe(
     mergeMap((change) => {
-      const targets$ = forkJoin([...change.keys].map(blockInfo$))
+      const targets$ = forkJoin(
+        [...change.keys].map((hash) => blockInfo$(hash).pipe(take(1))),
+      )
 
       return targets$.pipe(
         map((targets) => ({
