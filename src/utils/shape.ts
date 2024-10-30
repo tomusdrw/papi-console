@@ -77,11 +77,14 @@ export const getTypeComplexity = (
       ) {
         return "inline"
       }
-      return maxComplexity("multiple", getTypeComplexity(lookupType.value))
+      return maxComplexity(
+        "multiple",
+        getTypeComplexity(lookupType.value, viewMode),
+      )
     case "tuple":
       return reduceMaxComplexity(
         "multiple",
-        lookupType.value.map((v) => () => getTypeComplexity(v)),
+        lookupType.value.map((v) => () => getTypeComplexity(v, viewMode)),
       )
     case "enum":
       return reduceMaxComplexity(
@@ -89,6 +92,7 @@ export const getTypeComplexity = (
         Object.values(lookupType.value).map((v) => () => {
           const inner = getTypeComplexity(
             v.type === "lookupEntry" ? v.value : v,
+            viewMode,
           )
           return inner === "inline" ? "inline" : "tree"
         }),
@@ -97,13 +101,20 @@ export const getTypeComplexity = (
       return reduceMaxComplexity(
         "multiple",
         Object.values(lookupType.value).map((v) => () => {
-          const inner = getTypeComplexity(v)
+          const inner = getTypeComplexity(v, viewMode)
           return inner === "inline" ? "inline" : "tree"
         }),
       )
     case "option":
+      return maxComplexity(
+        viewMode ? "inline" : "multiple",
+        getTypeComplexity(lookupType.value, viewMode),
+      )
     case "result":
-      return viewMode ? "inline" : "multiple"
+      return reduceMaxComplexity(viewMode ? "inline" : "multiple", [
+        () => getTypeComplexity(lookupType.value.ok, viewMode),
+        () => getTypeComplexity(lookupType.value.ko, viewMode),
+      ])
     default:
       return "inline"
   }
