@@ -1,14 +1,17 @@
 import { chainClient$ } from "@/chain.state"
-import { FollowEventWithRuntime } from "@polkadot-api/substrate-client"
 import { SystemEvent } from "@polkadot-api/observable-client"
+import { FollowEventWithRuntime } from "@polkadot-api/substrate-client"
 import { state } from "@react-rxjs/core"
 import { partitionByKey } from "@react-rxjs/utils"
 import {
   combineLatest,
+  concat,
   concatMap,
+  finalize,
   forkJoin,
   map,
   mergeMap,
+  NEVER,
   Observable,
   of,
   scan,
@@ -22,7 +25,10 @@ import {
 
 export const chainHead$ = state(
   chainClient$.pipe(
-    map(({ observableClient }) => observableClient.chainHead$()),
+    switchMap(({ observableClient }) => {
+      const chainHead = observableClient.chainHead$()
+      return concat(of(chainHead), NEVER).pipe(finalize(chainHead.unfollow))
+    }),
   ),
 )
 

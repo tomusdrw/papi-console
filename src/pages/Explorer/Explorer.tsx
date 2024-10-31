@@ -1,16 +1,18 @@
 import { withSubscribe } from "@/components/withSuspense"
 import { state, useStateObservable } from "@react-rxjs/core"
+import { FC } from "react"
 import {
   animationFrames,
+  combineLatest,
+  debounceTime,
   distinctUntilChanged,
   map,
   merge,
   switchMap,
   withLatestFrom,
 } from "rxjs"
-import { BlockInfo, blocksByHeight$, chainHead$ } from "./block.state"
-import { FC } from "react"
 import { twMerge } from "tailwind-merge"
+import { BlockInfo, blocksByHeight$, chainHead$ } from "./block.state"
 
 const finalized$ = state(
   chainHead$.pipe(switchMap((chainHead) => chainHead.finalized$)),
@@ -68,68 +70,70 @@ export interface PositionedBlock {
   branched: number | null
   branches: number[]
 }
-const blockTable$ = blocksByHeight$.pipeState(
-  withLatestFrom(best$),
-  map(([blocks, best]) => {
-    const result: Array<PositionedBlock> = []
+const blockTable$ = state(
+  combineLatest([blocksByHeight$, best$]).pipe(
+    debounceTime(0),
+    map(([blocks, best]) => {
+      const result: Array<PositionedBlock> = []
 
-    const blockPositions: Record<string, number> = {}
-    const positionsTaken = new Set<number>()
-    const lockFreePosition = () => {
-      for (let i = 0; ; i++) {
-        if (!positionsTaken.has(i)) {
-          positionsTaken.add(i)
-          return i
+      const blockPositions: Record<string, number> = {}
+      const positionsTaken = new Set<number>()
+      const lockFreePosition = () => {
+        for (let i = 0; ; i++) {
+          if (!positionsTaken.has(i)) {
+            positionsTaken.add(i)
+            return i
+          }
         }
       }
-    }
-    for (let height = best.number; blocks[height]; height--) {
-      const competingBlocks = [...blocks[height].values()]
-      if (competingBlocks.length > 1) {
-        if (height === best.number) {
-          competingBlocks.sort((a) => (a.hash === best.hash ? -1 : 1))
-        } else {
-          competingBlocks.sort((a, b) =>
-            (blockPositions[a.hash] ?? Number.POSITIVE_INFINITY) <
-            (blockPositions[b.hash] ?? Number.POSITIVE_INFINITY)
-              ? -1
-              : 1,
+      for (let height = best.number; blocks[height]; height--) {
+        const competingBlocks = [...blocks[height].values()]
+        if (competingBlocks.length > 1) {
+          if (height === best.number) {
+            competingBlocks.sort((a) => (a.hash === best.hash ? -1 : 1))
+          } else {
+            competingBlocks.sort((a, b) =>
+              (blockPositions[a.hash] ?? Number.POSITIVE_INFINITY) <
+              (blockPositions[b.hash] ?? Number.POSITIVE_INFINITY)
+                ? -1
+                : 1,
+            )
+          }
+        }
+        const positionsMerged: number[] = []
+        competingBlocks.forEach((block) => {
+          const branches = [...positionsTaken].filter(
+            (v) => !positionsMerged.includes(v),
           )
-        }
+
+          const position = blockPositions[block.hash] ?? lockFreePosition()
+          if (blockPositions[block.parent] != null) {
+            // then it means the parent was already discovered by a previous
+            // so this is the start of a branch
+            result.push({
+              block,
+              branched: blockPositions[block.parent],
+              branches,
+              position,
+            })
+            positionsMerged.push(position)
+          } else {
+            // We put our parent underneath us
+            blockPositions[block.parent] = position
+            result.push({
+              block,
+              branched: null,
+              branches,
+              position,
+            })
+          }
+        })
+        positionsMerged.forEach((v) => positionsTaken.delete(v))
       }
-      const positionsMerged: number[] = []
-      competingBlocks.forEach((block) => {
-        const branches = [...positionsTaken].filter(
-          (v) => !positionsMerged.includes(v),
-        )
 
-        const position = blockPositions[block.hash] ?? lockFreePosition()
-        if (blockPositions[block.parent] != null) {
-          // then it means the parent was already discovered by a previous
-          // so this is the start of a branch
-          result.push({
-            block,
-            branched: blockPositions[block.parent],
-            branches,
-            position,
-          })
-          positionsMerged.push(position)
-        } else {
-          // We put our parent underneath us
-          blockPositions[block.parent] = position
-          result.push({
-            block,
-            branched: null,
-            branches,
-            position,
-          })
-        }
-      })
-      positionsMerged.forEach((v) => positionsTaken.delete(v))
-    }
-
-    return result
-  }),
+      return result
+    }),
+  ),
 )
 
 const BlockTable = () => {
@@ -166,8 +170,16 @@ const BlockTable = () => {
             )}
           >
             {rows[i - 1]?.block.number !== row.block.number ? (
-              <td rowSpan={numberSpan(i)} className="px-2">
-                {row.block.number}
+              <td
+                rowSpan={numberSpan(i)}
+                className={twMerge(
+                  "px-2",
+                  numberSpan(i) > 1 && "border-y border-slate-500",
+                  row.block.number === finalized.number && "border-t-white",
+                  row.block.number === finalized.number + 1 && "border-b-white",
+                )}
+              >
+                {row.block.number.toLocaleString()}
               </td>
             ) : null}
             <td className="p-0">
@@ -191,8 +203,8 @@ const BlockTable = () => {
   )
 }
 
-const CELL_WIDTH = 26
-const CELL_HEIGHT = 26
+const CELL_WIDTH = 20
+const CELL_HEIGHT = 36
 const CIRCLE_R = 5
 const ForkRenderer: FC<{ row: PositionedBlock }> = ({ row }) => {
   const totalCells = Math.max(row.position, ...row.branches) + 1
@@ -211,7 +223,11 @@ const ForkRenderer: FC<{ row: PositionedBlock }> = ({ row }) => {
           x1={getPositionCenter(branch)}
           y1={0}
           x2={getPositionCenter(branch)}
-          y2={CELL_HEIGHT}
+          y2={
+            row.branched != null && branch === row.position
+              ? CELL_HEIGHT / 2
+              : CELL_HEIGHT
+          }
         />
       ))}
       {row.branched != null ? (
