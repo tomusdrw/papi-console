@@ -1,13 +1,18 @@
 import { chainClient$ } from "@/chain.state"
-import { SystemEvent } from "@polkadot-api/observable-client"
+import {
+  ChainHead$,
+  PinnedBlocks,
+  SystemEvent,
+} from "@polkadot-api/observable-client"
 import { FollowEventWithRuntime } from "@polkadot-api/substrate-client"
-import { state } from "@react-rxjs/core"
+import { state, withDefault } from "@react-rxjs/core"
 import { partitionByKey } from "@react-rxjs/utils"
 import {
   catchError,
   combineLatest,
   concat,
   concatMap,
+  filter,
   finalize,
   forkJoin,
   map,
@@ -21,6 +26,7 @@ import {
   switchMap,
   take,
   takeUntil,
+  takeWhile,
   withLatestFrom,
 } from "rxjs"
 
@@ -33,6 +39,17 @@ export const chainHead$ = state(
   ),
 )
 
+export const finalized$ = chainHead$.pipeState(
+  switchMap((chainHead) => chainHead.finalized$),
+  withDefault(null),
+)
+
+export enum BlockState {
+  Fork = "fork",
+  Best = "best",
+  Finalized = "finalized",
+  Pruned = "pruned",
+}
 export interface BlockInfo {
   hash: string
   parent: string
@@ -40,8 +57,9 @@ export interface BlockInfo {
   body: string[] | null
   events: SystemEvent[] | null
   header: unknown | null
+  status: BlockState
 }
-const [blockInfo$, recordedBlocks$] = partitionByKey(
+export const [blockInfo$, recordedBlocks$] = partitionByKey(
   chainHead$.pipe(
     switchMap((chainHead) =>
       chainHead.follow$.pipe(
@@ -101,23 +119,27 @@ const [blockInfo$, recordedBlocks$] = partitionByKey(
       withLatestFrom(chainHead$),
       switchMap(
         ([{ hash, parent, number }, chainHead]): Observable<BlockInfo> =>
-          combineLatest({
-            hash: of(hash),
-            parent: of(parent),
-            number: of(number),
-            body: chainHead.body$(hash).pipe(
-              startWith(null),
-              catchError(() => of(null)),
-            ),
-            events: chainHead.eventsAt$(hash).pipe(
-              startWith(null),
-              catchError(() => of(null)),
-            ),
-            header: chainHead.header$(hash).pipe(
-              startWith(null),
-              catchError(() => of(null)),
-            ),
-          }),
+          concat(
+            combineLatest({
+              hash: of(hash),
+              parent: of(parent),
+              number: of(number),
+              body: chainHead.body$(hash).pipe(
+                startWith(null),
+                catchError(() => of(null)),
+              ),
+              events: chainHead.eventsAt$(hash).pipe(
+                startWith(null),
+                catchError(() => of(null)),
+              ),
+              header: chainHead.header$(hash).pipe(
+                startWith(null),
+                catchError(() => of(null)),
+              ),
+              status: getBlockStatus$(chainHead, hash, number),
+            }),
+            NEVER,
+          ),
       ),
       // Reset when chainHead is changed
       takeUntil(chainHead$.pipe(skip(1))),
@@ -178,3 +200,53 @@ function withInitializedNumber() {
       }),
     )
 }
+
+const getBlockStatus$ = (
+  chainHead: ChainHead$,
+  hash: string,
+  number: number,
+): Observable<BlockState> =>
+  chainHead.pinnedBlocks$.pipe(
+    take(1),
+    switchMap((pinnedBlocks) => {
+      const block = (hash: string) => pinnedBlocks.blocks.get(hash)
+      const blockNum = (hash: string) => block(hash)?.number
+      const finalized = blockNum(pinnedBlocks.finalized)!
+      if (number <= finalized) {
+        // assume we are in the list of finalized blocks on `initialized`
+        return of(BlockState.Finalized)
+      }
+
+      const getInitialState = (pinnedBlocks: PinnedBlocks) => {
+        let bestBranch = pinnedBlocks.best
+        while (blockNum(bestBranch)! > finalized && hash !== bestBranch) {
+          bestBranch = block(bestBranch)!.parent
+        }
+        return block(bestBranch)?.hash === hash
+          ? BlockState.Best
+          : BlockState.Fork
+      }
+      const initialState = getInitialState(pinnedBlocks)
+
+      return chainHead.follow$.pipe(
+        concatMap((evt) => {
+          switch (evt.type) {
+            case "bestBlockChanged":
+              return chainHead.pinnedBlocks$.pipe(take(1), map(getInitialState))
+            case "finalized":
+              if (evt.finalizedBlockHashes.includes(hash))
+                return of(BlockState.Finalized)
+              if (evt.prunedBlockHashes.includes(hash))
+                return of(BlockState.Pruned)
+          }
+          return of(null)
+        }),
+        filter((v) => v !== null),
+        takeWhile(
+          (v) => v !== BlockState.Finalized && v !== BlockState.Pruned,
+          true,
+        ),
+        startWith(initialState),
+      )
+    }),
+  )

@@ -1,16 +1,16 @@
-import { state, useStateObservable, withDefault } from "@react-rxjs/core"
+import { CopyText } from "@/components/Copy"
+import { state, useStateObservable } from "@react-rxjs/core"
 import { FC } from "react"
 import { combineLatest, debounceTime, map, switchMap } from "rxjs"
 import { twMerge } from "tailwind-merge"
-import { BlockInfo, blocksByHeight$, chainHead$ } from "./block.state"
-import { CopyText } from "@/components/Copy"
+import {
+  BlockInfo,
+  blocksByHeight$,
+  chainHead$,
+  finalized$,
+} from "./block.state"
 
 const best$ = chainHead$.pipeState(switchMap((chainHead) => chainHead.best$))
-const finalized$ = chainHead$.pipeState(
-  switchMap((chainHead) => chainHead.finalized$),
-  map((block) => block.number),
-  withDefault(null),
-)
 
 interface PositionedBlock {
   block: BlockInfo
@@ -18,6 +18,9 @@ interface PositionedBlock {
   branched: number | null
   branches: number[]
 }
+
+// 1 hour in polkadot
+export const MAX_LENGTH = 3600 / 6
 const blockTable$ = state(
   combineLatest([blocksByHeight$, best$]).pipe(
     debounceTime(0),
@@ -34,7 +37,11 @@ const blockTable$ = state(
           }
         }
       }
-      for (let height = best.number; blocks[height]; height--) {
+      for (
+        let height = best.number;
+        blocks[height] && result.length < MAX_LENGTH;
+        height--
+      ) {
         const competingBlocks = [...blocks[height].values()]
         if (competingBlocks.length > 1) {
           if (height === best.number) {
@@ -100,23 +107,18 @@ export const BlockTable = () => {
   if (!finalized) return null
 
   return (
-    <div>
-      <h2 className="font-bold">Recent Blocks</h2>
-      <table className="border-collapse">
-        <thead>
-          <tr>
-            <th>Number</th>
-            <th>Forks</th>
-            <th>Hash</th>
-          </tr>
-        </thead>
+    <div className="w-full p-2 border border-polkadot-800 rounded">
+      <h2 className="font-bold p-2 border-b border-slate-400 mb-2">
+        Recent Blocks
+      </h2>
+      <table className="border-collapse m-auto">
         <tbody>
           {rows.map((row, i) => (
             <tr
               key={row.block.hash}
               className={twMerge(
-                row.block.number <= finalized ? "bg-polkadot-900" : "",
-                row.block.number === finalized &&
+                row.block.number <= finalized.number ? "bg-polkadot-900" : "",
+                row.block.number === finalized.number &&
                   row.position === 0 &&
                   "border-t",
               )}
@@ -126,9 +128,15 @@ export const BlockTable = () => {
                   rowSpan={numberSpan(i)}
                   className={twMerge(
                     "px-2",
-                    numberSpan(i) > 1 && "border-y border-slate-500",
-                    row.block.number === finalized && "border-t-white",
-                    row.block.number === finalized + 1 && "border-b-white",
+                    numberSpan(i) > 1
+                      ? twMerge(
+                          i > 0 ? "border-y" : "border-b",
+                          "border-slate-500",
+                        )
+                      : null,
+                    row.block.number === finalized.number && "border-t-white",
+                    row.block.number === finalized.number + 1 &&
+                      "border-b-white",
                   )}
                 >
                   {row.block.number.toLocaleString()}
@@ -137,14 +145,14 @@ export const BlockTable = () => {
               <td className="p-0">
                 <ForkRenderer row={row} />
               </td>
-              <td className="max-w-xs">
+              <td className="max-w-xs w-full">
                 <div className="flex gap-1">
                   <div
                     className={twMerge(
-                      "overflow-hidden text-ellipsis whitespace-nowrap tabular-nums text-sm",
+                      "overflow-hidden text-ellipsis whitespace-nowrap font-mono text-sm",
                       row.position === 0
                         ? ""
-                        : row.block.number > finalized
+                        : row.block.number > finalized.number
                           ? "opacity-80"
                           : "opacity-50",
                     )}
@@ -163,7 +171,7 @@ export const BlockTable = () => {
 }
 
 const CELL_WIDTH = 20
-const CELL_HEIGHT = 36
+const CELL_HEIGHT = 40
 const CIRCLE_R = 5
 const ForkRenderer: FC<{ row: PositionedBlock }> = ({ row }) => {
   const totalCells = Math.max(row.position, ...row.branches) + 1
