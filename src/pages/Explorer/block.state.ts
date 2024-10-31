@@ -4,6 +4,7 @@ import { FollowEventWithRuntime } from "@polkadot-api/substrate-client"
 import { state } from "@react-rxjs/core"
 import { partitionByKey } from "@react-rxjs/utils"
 import {
+  catchError,
   combineLatest,
   concat,
   concatMap,
@@ -104,9 +105,18 @@ const [blockInfo$, recordedBlocks$] = partitionByKey(
             hash: of(hash),
             parent: of(parent),
             number: of(number),
-            body: chainHead.body$(hash).pipe(startWith(null)),
-            events: chainHead.eventsAt$(hash).pipe(startWith(null)),
-            header: chainHead.header$(hash).pipe(startWith(null)),
+            body: chainHead.body$(hash).pipe(
+              startWith(null),
+              catchError(() => of(null)),
+            ),
+            events: chainHead.eventsAt$(hash).pipe(
+              startWith(null),
+              catchError(() => of(null)),
+            ),
+            header: chainHead.header$(hash).pipe(
+              startWith(null),
+              catchError(() => of(null)),
+            ),
           }),
       ),
       // Reset when chainHead is changed
