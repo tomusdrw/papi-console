@@ -89,9 +89,9 @@ const blockTable$ = blocksByHeight$.pipeState(
         if (height === best.number) {
           competingBlocks.sort((a) => (a.hash === best.hash ? -1 : 1))
         } else {
-          competingBlocks.sort((a) =>
+          competingBlocks.sort((a, b) =>
             (blockPositions[a.hash] ?? Number.POSITIVE_INFINITY) <
-            (blockPositions[best.hash] ?? Number.POSITIVE_INFINITY)
+            (blockPositions[b.hash] ?? Number.POSITIVE_INFINITY)
               ? -1
               : 1,
           )
