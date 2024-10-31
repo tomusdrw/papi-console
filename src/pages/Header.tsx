@@ -5,6 +5,12 @@ export const Header = () => (
     <h1 className="text-xl flex-1">PAPI Console</h1>
     <div className="flex flex-row items-center justify-end gap-2">
       <Link
+        to="/explorer"
+        className="text-polkadot-200 border-polkadot-200 cursor-pointer border-b hover:text-polkadot-500 hover:border-polkadot-500"
+      >
+        Explorer
+      </Link>
+      <Link
         to="/storage"
         className="text-polkadot-200 border-polkadot-200 cursor-pointer border-b hover:text-polkadot-500 hover:border-polkadot-500"
       >
