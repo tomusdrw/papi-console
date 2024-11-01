@@ -1,3 +1,5 @@
+import { Popover } from "@/components/Popover"
+import type { SystemEvent } from "@polkadot-api/observable-client"
 import { state, useStateObservable } from "@react-rxjs/core"
 import { combineKeys } from "@react-rxjs/utils"
 import { filter, map, takeWhile } from "rxjs"
@@ -9,14 +11,25 @@ import {
   recordedBlocks$,
 } from "./block.state"
 import { MAX_LENGTH } from "./BlockTable"
+import { FC } from "react"
+import { JsonDisplay } from "@/components/JsonDisplay"
 
 export const Events = () => {
   const events = useStateObservable(recentEvents$)
   const finalized = useStateObservable(finalized$)
 
-  const firstFinalized = finalized
-    ? events.find((evt) => evt.number <= finalized?.number)
-    : events[0]
+  const finalizedIdx = finalized
+    ? events.findIndex((evt) => evt.number <= finalized.number)
+    : -1
+
+  const numberSpan = (idx: number) => {
+    const initialIdx = idx
+    const key = eventKey(events[idx])
+    do {
+      idx++
+    } while (key === eventKey(events[idx]))
+    return idx - initialIdx
+  }
 
   return (
     <div className="w-full p-2 border border-polkadot-800 rounded">
@@ -25,25 +38,69 @@ export const Events = () => {
       </h2>
       <table className="w-full">
         <tbody>
-          {events.map((evt) => (
-            <tr
-              key={`${evt.hash}-${evt.index}`}
-              className={twMerge(
-                evt === firstFinalized ? "border-t border-white" : "",
-                finalized && evt.number <= finalized.number
-                  ? "bg-polkadot-900"
-                  : "",
-              )}
-            >
-              <td className="p-2 w-full">{`${evt.event.type}.${evt.event.value.type}`}</td>
-              <td className="p-2 whitespace-nowrap">{`${evt.number}-${evt.extrinsicNumber}`}</td>
-            </tr>
-          ))}
+          {events.map((evt, idx) => {
+            const key = eventKey(evt)
+            const span = numberSpan(idx)
+
+            return (
+              <tr
+                key={`${evt.hash}-${evt.index}`}
+                className={twMerge(
+                  idx === finalizedIdx ? "border-t border-white" : "",
+                  finalized && evt.number <= finalized.number
+                    ? "bg-polkadot-900"
+                    : "",
+                )}
+              >
+                {eventKey(events[idx - 1]) !== key && (
+                  <td
+                    className={twMerge(
+                      "p-2 whitespace-nowrap",
+                      span > 1 &&
+                        twMerge(
+                          idx > 0 ? "border-y" : "border-b",
+                          "border-slate-500",
+                        ),
+                      idx === finalizedIdx && "border-t-white",
+                      idx === finalizedIdx - span && "border-b-white",
+                    )}
+                    rowSpan={span}
+                  >
+                    {key}
+                  </td>
+                )}
+                <td className="p-1 w-full">
+                  <Popover content={<EventPopover event={evt} />}>
+                    <button className="w-full p-1 text-left hover:text-polkadot-200">{`${evt.event.type}.${evt.event.value.type}`}</button>
+                  </Popover>
+                </td>
+              </tr>
+            )
+          })}
         </tbody>
       </table>
       {events.length === 0 ? (
         <div className="text-slate-400">(No events yet)</div>
       ) : null}
+    </div>
+  )
+}
+
+const EventPopover: FC<{ event: EventInfo }> = ({ event }) => {
+  return (
+    <div>
+      <div className="flex justify-between">
+        <h3 className="font-bold text-lg">Event {eventKey(event)}</h3>
+        <p>
+          Status:{" "}
+          {event.status === BlockState.Finalized ? "Finalized" : "Pending"}
+        </p>
+      </div>
+      <p className="overflow-hidden text-ellipsis whitespace-nowrap text-slate-400">
+        Block: {event.hash}
+      </p>
+      <p className="font-bold">{`${event.event.type}.${event.event.value.type}`}</p>
+      <JsonDisplay src={event.event.value.value} />
     </div>
   )
 }
@@ -59,6 +116,17 @@ const blackList = new Set([
   "TransactionPayment.TransactionFeePaid",
   "Staking.Rewarded",
 ])
+
+interface EventInfo {
+  status: BlockState
+  hash: string
+  number: number
+  event: SystemEvent["event"]
+  extrinsicNumber: number
+  index: number
+}
+const eventKey = (evt: EventInfo) =>
+  `${evt?.number.toLocaleString()}-${evt?.extrinsicNumber}`
 const recentEvents$ = state(
   combineKeys(recordedBlocks$, (key) =>
     blockInfo$(key).pipe(
@@ -97,14 +165,16 @@ const recentEvents$ = state(
             evt.status === BlockState.Finalized,
         )
         .flatMap(({ status, hash, number, events }) =>
-          events!.map(({ event, extrinsicNumber }, index) => ({
-            status,
-            hash,
-            number,
-            event,
-            extrinsicNumber,
-            index,
-          })),
+          events!.map(
+            ({ event, extrinsicNumber }, index): EventInfo => ({
+              status,
+              hash,
+              number,
+              event,
+              extrinsicNumber,
+              index,
+            }),
+          ),
         )
         .slice(0, MAX_LENGTH),
     ),
