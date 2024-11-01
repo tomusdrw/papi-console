@@ -142,7 +142,7 @@ interface EventEllipsis {
 }
 const eventKey = (evt: EventInfo | EventEllipsis) =>
   `${evt?.number.toLocaleString()}-${evt?.extrinsicNumber}`
-const MAX_GROUP_LENGTH = 6
+const MAX_GROUP_LENGTH = 7
 const recentEvents$ = state(
   combineKeys(recordedBlocks$, (key) =>
     blockInfo$(key).pipe(

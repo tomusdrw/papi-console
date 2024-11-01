@@ -31,10 +31,9 @@ const blockTable$ = state(
 
       const blockPositions: Record<string, number> = {}
       const positionsTaken = new Set<number>()
-      const lockFreePosition = () => {
+      const getFreePosition = () => {
         for (let i = 0; ; i++) {
           if (!positionsTaken.has(i)) {
-            positionsTaken.add(i)
             return i
           }
         }
@@ -57,13 +56,10 @@ const blockTable$ = state(
             )
           }
         }
-        const positionsMerged: number[] = []
         competingBlocks.forEach((block) => {
-          const branches = [...positionsTaken].filter(
-            (v) => !positionsMerged.includes(v),
-          )
+          const branches = [...positionsTaken]
 
-          const position = blockPositions[block.hash] ?? lockFreePosition()
+          const position = blockPositions[block.hash] ?? getFreePosition()
           if (blockPositions[block.parent] != null) {
             // then it means the parent was already discovered by a previous
             // so this is the start of a branch
@@ -73,10 +69,11 @@ const blockTable$ = state(
               branches,
               position,
             })
-            positionsMerged.push(position)
+            positionsTaken.delete(position)
           } else {
             // We put our parent underneath us
             blockPositions[block.parent] = position
+            positionsTaken.add(position)
             result.push({
               block,
               branched: null,
@@ -85,7 +82,6 @@ const blockTable$ = state(
             })
           }
         })
-        positionsMerged.forEach((v) => positionsTaken.delete(v))
       }
 
       return result

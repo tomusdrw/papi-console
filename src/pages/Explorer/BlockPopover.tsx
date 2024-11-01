@@ -54,7 +54,7 @@ export const BlockPopover: FC<{ hash: string }> = ({ hash }) => {
     <div>
       <h3 className="font-bold text-lg">
         Block{" "}
-        <span className="font-mono text-sm font-normal text-slate-200">
+        <span className="font-mono text-sm font-normal text-slate-300">
           {hash}
         </span>
       </h3>
