@@ -7,6 +7,7 @@ import {
 import { FollowEventWithRuntime } from "@polkadot-api/substrate-client"
 import { state, withDefault } from "@react-rxjs/core"
 import { partitionByKey } from "@react-rxjs/utils"
+import { HexString } from "polkadot-api"
 import {
   catchError,
   combineLatest,
@@ -56,7 +57,13 @@ export interface BlockInfo {
   number: number
   body: string[] | null
   events: SystemEvent[] | null
-  header: unknown | null
+  header: {
+    parentHash: HexString
+    number: number
+    stateRoot: HexString
+    extrinsicRoot: HexString
+    digests: unknown[]
+  } | null
   status: BlockState
 }
 export const [blockInfo$, recordedBlocks$] = partitionByKey(

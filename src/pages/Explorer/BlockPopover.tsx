@@ -1,14 +1,14 @@
 import { lookup$ } from "@/chain.state"
+import { CircularProgress } from "@/components/CircularProgress"
 import { groupBy } from "@/lib/groupBy"
 import { getDynamicBuilder } from "@polkadot-api/metadata-builders"
 import { state, useStateObservable } from "@react-rxjs/core"
-import { FC, ReactNode } from "react"
-import { map } from "rxjs"
-import { blockInfo$, blockInfoState$, BlockState } from "./block.state"
-import { filterEvt } from "./Events"
-import { CircularProgress } from "@/components/CircularProgress"
-import { CircleAlert, CircleCheck, CircleX, Clock } from "lucide-react"
+import { FC } from "react"
 import { Link } from "react-router-dom"
+import { map } from "rxjs"
+import { blockInfoState$ } from "./block.state"
+import { BlockStatusIcon, statusText } from "./Detail/BlockState"
+import { filterEvt } from "./Events"
 
 const maxBlockWeight$ = state(
   lookup$.pipe(
@@ -60,7 +60,13 @@ export const BlockPopover: FC<{ hash: string }> = ({ hash }) => {
           </span>
         </Link>
       </h3>
-      <p>Status: {statusRep[block.status]}</p>
+      <p>
+        Status:{" "}
+        <span className="inline-flex gap-1 items-center align-middle">
+          <BlockStatusIcon state={block.status} />
+          {statusText[block.status]}
+        </span>
+      </p>
       <div className="flex justify-between items-start">
         {eventGroups && (
           <div>
@@ -133,31 +139,4 @@ function addWeight(a: Weight, b: Weight | null): Weight {
     proof_size: a.proof_size + b.proof_size,
     ref_time: a.ref_time + b.ref_time,
   }
-}
-
-const statusRep: Record<BlockState, ReactNode> = {
-  [BlockState.Best]: (
-    <span className="inline-flex gap-1 items-center align-middle">
-      <Clock className="text-blue-400" />
-      Pending
-    </span>
-  ),
-  [BlockState.Fork]: (
-    <span className="inline-flex gap-1 items-center align-middle">
-      <CircleAlert className="text-orange-400" />
-      Fork
-    </span>
-  ),
-  [BlockState.Finalized]: (
-    <span className="inline-flex gap-1 items-center align-middle">
-      <CircleCheck className="text-green-400" />
-      Finalized
-    </span>
-  ),
-  [BlockState.Pruned]: (
-    <span className="inline-flex gap-1 items-center align-middle">
-      <CircleX className="text-red-400" />
-      Pruned
-    </span>
-  ),
 }
