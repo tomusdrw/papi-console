@@ -4,12 +4,12 @@ import { getDynamicBuilder } from "@polkadot-api/metadata-builders"
 import { state, useStateObservable } from "@react-rxjs/core"
 import { FC, ReactNode } from "react"
 import { map } from "rxjs"
-import { blockInfo$, BlockState } from "./block.state"
+import { blockInfo$, blockInfoState$, BlockState } from "./block.state"
 import { filterEvt } from "./Events"
 import { CircularProgress } from "@/components/CircularProgress"
 import { CircleAlert, CircleCheck, CircleX, Clock } from "lucide-react"
+import { Link } from "react-router-dom"
 
-const blockInfoState$ = state((hash: string) => blockInfo$(hash), null)
 const maxBlockWeight$ = state(
   lookup$.pipe(
     map((lookup) => {
@@ -52,11 +52,13 @@ export const BlockPopover: FC<{ hash: string }> = ({ hash }) => {
 
   return (
     <div>
-      <h3 className="font-bold text-lg">
-        Block{" "}
-        <span className="font-mono text-sm font-normal text-slate-300">
-          {hash}
-        </span>
+      <h3 className="font-bold text-lg hover:text-polkadot-200">
+        <Link to={hash}>
+          Block{" "}
+          <span className="font-mono text-sm font-normal text-slate-300 hover:text-polkadot-200">
+            {hash}
+          </span>
+        </Link>
       </h3>
       <p>Status: {statusRep[block.status]}</p>
       <div className="flex justify-between items-start">

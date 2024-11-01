@@ -146,6 +146,8 @@ export const [blockInfo$, recordedBlocks$] = partitionByKey(
     ),
 )
 
+export const blockInfoState$ = state((hash: string) => blockInfo$(hash), null)
+
 export const blocksByHeight$ = state(
   recordedBlocks$.pipe(
     mergeMap((change) => {

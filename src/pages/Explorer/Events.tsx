@@ -14,6 +14,7 @@ import { MAX_LENGTH } from "./BlockTable"
 import { FC } from "react"
 import { JsonDisplay } from "@/components/JsonDisplay"
 import { groupBy } from "@/lib/groupBy"
+import { Link } from "react-router-dom"
 
 export const Events = () => {
   const events = useStateObservable(recentEvents$)
@@ -95,7 +96,11 @@ const EventPopover: FC<{ event: EventInfo }> = ({ event }) => {
   return (
     <div>
       <div className="flex justify-between">
-        <h3 className="font-bold text-lg">Event {eventKey(event)}</h3>
+        <h3 className="font-bold text-lg">
+          <Link to={`${event.hash}#event=${event.index}`}>
+            Event {eventKey(event)}
+          </Link>
+        </h3>
         <p>
           Status:{" "}
           {event.status === BlockState.Finalized ? "Finalized" : "Pending"}
@@ -151,9 +156,11 @@ const recentEvents$ = state(
         hash: block.hash,
         number: block.number,
         events: block.events
-          ?.filter((evt) => evt.phase.type === "ApplyExtrinsic")
+          ?.map((evt, index) => ({ ...evt, index }))
+          .filter((evt) => evt.phase.type === "ApplyExtrinsic")
           .filter(filterEvt)
           .map((evt) => ({
+            index: evt.index,
             event: evt.event,
             extrinsicNumber: (evt.phase as any).value as number,
           })),
@@ -178,7 +185,7 @@ const recentEvents$ = state(
         )
         .flatMap(({ status, hash, number, events }) => {
           const eventInfo = events!.map(
-            ({ event, extrinsicNumber }, index): EventInfo => ({
+            ({ event, extrinsicNumber, index }): EventInfo => ({
               status,
               hash,
               number,
