@@ -1,4 +1,5 @@
 import { CopyText } from "@/components/Copy"
+import { Popover } from "@/components/Popover"
 import { state, useStateObservable } from "@react-rxjs/core"
 import { FC } from "react"
 import { combineLatest, debounceTime, map, switchMap } from "rxjs"
@@ -9,6 +10,7 @@ import {
   chainHead$,
   finalized$,
 } from "./block.state"
+import { BlockPopover } from "./BlockPopover"
 
 const best$ = chainHead$.pipeState(switchMap((chainHead) => chainHead.best$))
 
@@ -147,18 +149,21 @@ export const BlockTable = () => {
               </td>
               <td className="max-w-xs w-full">
                 <div className="flex gap-1">
-                  <div
-                    className={twMerge(
-                      "overflow-hidden text-ellipsis whitespace-nowrap font-mono text-sm",
-                      row.position === 0
-                        ? ""
-                        : row.block.number > finalized.number
-                          ? "opacity-80"
-                          : "opacity-50",
-                    )}
-                  >
-                    {row.block.hash}
-                  </div>
+                  <Popover content={<BlockPopover hash={row.block.hash} />}>
+                    <button
+                      className={twMerge(
+                        "overflow-hidden text-ellipsis whitespace-nowrap font-mono text-sm",
+                        "hover:text-polkadot-200",
+                        row.position === 0
+                          ? ""
+                          : row.block.number > finalized.number
+                            ? "opacity-80"
+                            : "opacity-50",
+                      )}
+                    >
+                      {row.block.hash}
+                    </button>
+                  </Popover>
                   <CopyText text={row.block.hash} binary />
                 </div>
               </td>

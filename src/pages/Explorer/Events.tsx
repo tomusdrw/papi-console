@@ -45,7 +45,7 @@ export const Events = () => {
 
             return (
               <tr
-                key={`${evt.hash}-${evt.index}`}
+                key={`${evt.hash}-${evt.extrinsicNumber}-${evt.index}`}
                 className={twMerge(
                   idx === finalizedIdx ? "border-t border-white" : "",
                   finalized && evt.number <= finalized.number
@@ -121,6 +121,9 @@ const blackList = new Set([
   "TransactionPayment.TransactionFeePaid",
   "Staking.Rewarded",
 ])
+export const filterEvt = (evt: SystemEvent) =>
+  !blackList.has(`${evt.event.type}.*`) &&
+  !blackList.has(`${evt.event.type}.${evt.event.value.type}`)
 
 interface EventInfo {
   status: BlockState
@@ -149,11 +152,7 @@ const recentEvents$ = state(
         number: block.number,
         events: block.events
           ?.filter((evt) => evt.phase.type === "ApplyExtrinsic")
-          .filter(
-            (evt) =>
-              !blackList.has(`${evt.event.type}.*`) &&
-              !blackList.has(`${evt.event.type}.${evt.event.value.type}`),
-          )
+          .filter(filterEvt)
           .map((evt) => ({
             event: evt.event,
             extrinsicNumber: (evt.phase as any).value as number,
