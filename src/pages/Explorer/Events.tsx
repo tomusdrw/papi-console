@@ -13,6 +13,7 @@ import {
 import { MAX_LENGTH } from "./BlockTable"
 import { FC } from "react"
 import { JsonDisplay } from "@/components/JsonDisplay"
+import { groupBy } from "@/lib/groupBy"
 
 export const Events = () => {
   const events = useStateObservable(recentEvents$)
@@ -70,9 +71,13 @@ export const Events = () => {
                   </td>
                 )}
                 <td className="p-1 w-full">
-                  <Popover content={<EventPopover event={evt} />}>
-                    <button className="w-full p-1 text-left hover:text-polkadot-200">{`${evt.event.type}.${evt.event.value.type}`}</button>
-                  </Popover>
+                  {"event" in evt ? (
+                    <Popover content={<EventPopover event={evt} />}>
+                      <button className="w-full p-1 text-left hover:text-polkadot-200">{`${evt.event.type}.${evt.event.value.type}`}</button>
+                    </Popover>
+                  ) : (
+                    `… ${evt.length} more`
+                  )}
                 </td>
               </tr>
             )
@@ -125,8 +130,16 @@ interface EventInfo {
   extrinsicNumber: number
   index: number
 }
-const eventKey = (evt: EventInfo) =>
+interface EventEllipsis {
+  number: number
+  extrinsicNumber: number
+  length: number
+  hash: string
+  index: number
+}
+const eventKey = (evt: EventInfo | EventEllipsis) =>
   `${evt?.number.toLocaleString()}-${evt?.extrinsicNumber}`
+const MAX_GROUP_LENGTH = 6
 const recentEvents$ = state(
   combineKeys(recordedBlocks$, (key) =>
     blockInfo$(key).pipe(
@@ -164,8 +177,8 @@ const recentEvents$ = state(
             evt.status === BlockState.Best ||
             evt.status === BlockState.Finalized,
         )
-        .flatMap(({ status, hash, number, events }) =>
-          events!.map(
+        .flatMap(({ status, hash, number, events }) => {
+          const eventInfo = events!.map(
             ({ event, extrinsicNumber }, index): EventInfo => ({
               status,
               hash,
@@ -174,8 +187,23 @@ const recentEvents$ = state(
               extrinsicNumber,
               index,
             }),
-          ),
-        )
+          )
+          const groupedEventInfo = groupBy(eventInfo, eventKey)
+
+          return Object.values(groupedEventInfo).flatMap((group) => {
+            if (group.length > MAX_GROUP_LENGTH) {
+              const ellipsis: EventEllipsis = {
+                length: group.length - MAX_GROUP_LENGTH + 1,
+                extrinsicNumber: group[0].extrinsicNumber,
+                number,
+                hash,
+                index: group.length,
+              }
+              return [...group.slice(0, MAX_GROUP_LENGTH - 1), ellipsis]
+            }
+            return group
+          })
+        })
         .slice(0, MAX_LENGTH),
     ),
   ),
