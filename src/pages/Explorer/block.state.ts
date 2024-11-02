@@ -133,15 +133,24 @@ export const [blockInfo$, recordedBlocks$] = partitionByKey(
               number: of(number),
               body: chainHead.body$(hash).pipe(
                 startWith(null),
-                catchError(() => of(null)),
+                catchError((err) => {
+                  console.error("fetch body failed", err)
+                  return of(null)
+                }),
               ),
               events: chainHead.eventsAt$(hash).pipe(
                 startWith(null),
-                catchError(() => of(null)),
+                catchError((err) => {
+                  console.error("fetch events failed", err)
+                  return of(null)
+                }),
               ),
               header: chainHead.header$(hash).pipe(
                 startWith(null),
-                catchError(() => of(null)),
+                catchError((err) => {
+                  console.error("fetch header failed", err)
+                  return of(null)
+                }),
               ),
               status: getBlockStatus$(chainHead, hash, number),
             }),

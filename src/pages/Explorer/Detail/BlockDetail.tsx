@@ -1,30 +1,22 @@
 import { lookup$ } from "@/chain.state"
+import { AccountIdDisplay } from "@/components/AccountIdDisplay"
 import { ExpandBtn } from "@/components/Expand"
 import { JsonDisplay } from "@/components/JsonDisplay"
 import { groupBy } from "@/lib/groupBy"
-import {
-  getDynamicBuilder,
-  MetadataLookup,
-} from "@polkadot-api/metadata-builders"
 import { SystemEvent } from "@polkadot-api/observable-client"
-import {
-  _void,
-  AccountId,
-  Bytes,
-  compact,
-  enhanceDecoder,
-  Enum,
-  SS58String,
-  Struct,
-  u8,
-  Variant,
-} from "@polkadot-api/substrate-bindings"
 import { state, useStateObservable } from "@react-rxjs/core"
 import { combineKeys } from "@react-rxjs/utils"
-import { Codec, HexString } from "polkadot-api"
 import { FC, useEffect, useRef, useState } from "react"
 import { Link, useLocation, useParams } from "react-router-dom"
-import { map, startWith, switchMap, take } from "rxjs"
+import {
+  combineLatest,
+  distinctUntilChanged,
+  filter,
+  map,
+  startWith,
+  switchMap,
+  take,
+} from "rxjs"
 import { twMerge } from "tailwind-merge"
 import {
   blockInfo$,
@@ -33,11 +25,32 @@ import {
   BlockState,
 } from "../block.state"
 import { BlockStatusIcon, statusText } from "./BlockState"
+import { createExtrinsicCodec, DecodedExtrinsic } from "./extrinsicDecoder"
+import * as Tabs from "@radix-ui/react-tabs"
+
+const blockExtrinsics$ = state((hash: string) => {
+  const decoder$ = lookup$.pipe(map(createExtrinsicCodec))
+  const body$ = blockInfo$(hash).pipe(
+    map((v) => v.body),
+    filter((v) => !!v),
+    distinctUntilChanged(),
+  )
+
+  return combineLatest([body$, decoder$]).pipe(
+    map(([body, decoder]): Array<DecodedExtrinsic> => body.map(decoder)),
+    // Assuming the body or the decoder won't change or won't have any effect.
+    take(1),
+  )
+}, [])
 
 type ApplyExtrinsicEvent = SystemEvent & { phase: { type: "ApplyExtrinsic" } }
 export const BlockDetail = () => {
   const { hash } = useParams()
+  const [selectedTab, setSelectedTab] = useState<"signed" | "unsigned" | null>(
+    null,
+  )
   const block = useStateObservable(blockInfoState$(hash ?? ""))
+  const extrinsics = useStateObservable(blockExtrinsics$(hash ?? ""))
   const location = useLocation()
   const hashParams = new URLSearchParams(location.hash.slice(1))
   const eventParam = hashParams.get("event")
@@ -56,6 +69,26 @@ export const BlockDetail = () => {
     : null
 
   if (!block) return null
+
+  const groupedExtrinsics = groupBy(
+    extrinsics.map((e, index) => ({ ...e, index })),
+    (e) => (e.signed ? "signed" : ("unsigned" as const)),
+  )
+  const defaultTab =
+    defaultEventOpen?.phase.type === "ApplyExtrinsic"
+      ? extrinsics[defaultEventOpen.phase.value].signed
+        ? "signed"
+        : "unsigned"
+      : groupedExtrinsics.signed?.length
+        ? "signed"
+        : "unsigned"
+  const effectiveTab = selectedTab
+    ? groupedExtrinsics[selectedTab]?.length
+      ? selectedTab
+      : selectedTab === "signed"
+        ? "unsigned"
+        : "signed"
+    : defaultTab
 
   return (
     <div className="overflow-auto">
@@ -87,17 +120,58 @@ export const BlockDetail = () => {
         </div>
       </div>
       <div className="p-2">
-        <h3>Extrinsics TODO separate unsigned</h3>
-        <ol>
-          {block.body?.map((extrinsic, i) => (
-            <Extrinsic
-              key={i}
-              data={extrinsic}
-              highlightedEvent={defaultEventOpen}
-              events={eventsByExtrinsic?.[i] ?? []}
-            />
-          ))}
-        </ol>
+        <Tabs.Root
+          className="flex flex-col"
+          value={effectiveTab}
+          onValueChange={(t) => setSelectedTab(t as any)}
+        >
+          <Tabs.List className="flex-shrink-0 flex border-b border-polkadot-200">
+            <Tabs.Trigger
+              className={twMerge(
+                "bg-polkadot-950 px-4 py-2 text-polkadot-400 hover:text-polkadot-500 border-t border-x rounded-tl border-polkadot-200",
+                "disabled:text-opacity-50 disabled:pointer-events-none data-[state=active]:font-bold",
+              )}
+              value="signed"
+              disabled={!groupedExtrinsics.signed?.length}
+            >
+              Signed
+            </Tabs.Trigger>
+            <Tabs.Trigger
+              className={twMerge(
+                "bg-polkadot-950 px-4 py-2 text-polkadot-400 hover:text-polkadot-500 border-t border-r rounded-tr border-polkadot-200",
+                "disabled:text-opacity-50 disabled:pointer-events-none data-[state=active]:font-bold",
+              )}
+              value="unsigned"
+              disabled={!groupedExtrinsics.unsigned?.length}
+            >
+              Unsigned
+            </Tabs.Trigger>
+          </Tabs.List>
+          <Tabs.Content value="signed" className="p-2">
+            <ol>
+              {groupedExtrinsics.signed?.map((extrinsic) => (
+                <Extrinsic
+                  key={extrinsic.index}
+                  extrinsic={extrinsic}
+                  highlightedEvent={defaultEventOpen}
+                  events={eventsByExtrinsic?.[extrinsic.index] ?? []}
+                />
+              ))}
+            </ol>
+          </Tabs.Content>
+          <Tabs.Content value="unsigned" className="p-2">
+            <ol>
+              {groupedExtrinsics.unsigned?.map((extrinsic) => (
+                <Extrinsic
+                  key={extrinsic.index}
+                  extrinsic={extrinsic}
+                  highlightedEvent={defaultEventOpen}
+                  events={eventsByExtrinsic?.[extrinsic.index] ?? []}
+                />
+              ))}
+            </ol>
+          </Tabs.Content>
+        </Tabs.Root>
       </div>
     </div>
   )
@@ -173,23 +247,14 @@ const BlockLink: FC<{ hash: string }> = ({ hash }) => {
   )
 }
 
-const extrinsicDecoder$ = state(
-  lookup$.pipe(map((lookup) => createExtrinsicCodec(lookup))),
-  null,
-)
-
 const Extrinsic: FC<{
-  data: HexString
+  extrinsic: DecodedExtrinsic
   highlightedEvent: ApplyExtrinsicEvent | null
   events: ApplyExtrinsicEvent[]
-}> = ({ data, events, highlightedEvent }) => {
-  const decode = useStateObservable(extrinsicDecoder$)
+}> = ({ extrinsic, events, highlightedEvent }) => {
   const [expanded, setExpanded] = useState(
     (highlightedEvent && events.includes(highlightedEvent)) ?? false,
   )
-
-  if (!decode) return null
-  const decoded = decode(data)
 
   return (
     <li className="p-2 border rounded border-polkadot-700 mb-2">
@@ -198,12 +263,23 @@ const Extrinsic: FC<{
         className="flex gap-1 items-center"
       >
         <ExpandBtn expanded={expanded} />
-        {decoded.call.type}.{decoded.call.value.type}
+        {extrinsic.call.type}.{extrinsic.call.value.type}
       </button>
       {expanded ? (
         <div className="overflow-hidden">
+          {extrinsic.signed && (
+            <div>
+              {"type" in extrinsic.sender && extrinsic.sender.type === "Id" && (
+                <div className="flex gap-2 items-center py-2">
+                  Signer:
+                  <AccountIdDisplay value={extrinsic.sender.value} />
+                </div>
+              )}
+              <SignedExtensions extra={extrinsic.extra} />
+            </div>
+          )}
           <div className="overflow-auto max-h-[80vh] p-2">
-            <JsonDisplay src={decoded.call.value.value} />
+            <JsonDisplay src={extrinsic.call.value.value} />
           </div>
           <div className="p-2 overflow-auto max-h-[80vh] border-t">
             <ol className="flex flex-col gap-1">
@@ -221,6 +297,11 @@ const Extrinsic: FC<{
       ) : null}
     </li>
   )
+}
+
+const SignedExtensions: FC<{ extra: unknown }> = () => {
+  // TODO maybe?
+  return null
 }
 
 const ExtrinsicEvent: FC<{
@@ -258,79 +339,3 @@ const ExtrinsicEvent: FC<{
     </li>
   )
 }
-
-const createExtrinsicCodec = (lookup: MetadataLookup) => {
-  const dynamicBuilder = getDynamicBuilder(lookup)
-
-  // https://spec.polkadot.network/id-extrinsics#id-extrinsics-body
-  const extrinsicHeader = enhanceDecoder(u8.dec, (value) => ({
-    signed: (value & 0x80) > 0,
-    version: value & 0x7f,
-  }))
-  const sender =
-    "address" in lookup.metadata.extrinsic
-      ? (dynamicBuilder.buildDefinition(
-          lookup.metadata.extrinsic.address,
-        ) as Codec<
-          // TODO Assume MultiAddress, but can be anything really :/
-          Enum<{
-            Id: SS58String
-          }>
-        >)
-      : AccountId()
-  const v14Signature = Variant({
-    Ed25519: Bytes(64),
-    Sr25519: Bytes(64),
-    Ecdsa: Bytes(65),
-  })
-  const signature =
-    "signature" in lookup.metadata.extrinsic
-      ? (dynamicBuilder.buildDefinition(
-          lookup.metadata.extrinsic.signature,
-        ) as typeof v14Signature)
-      : v14Signature
-  const extra =
-    "extra" in lookup.metadata.extrinsic
-      ? (dynamicBuilder.buildDefinition(
-          lookup.metadata.extrinsic.extra,
-        ) as Codec<unknown[]>)
-      : Struct({
-          mortality: Variant({
-            Immortal: _void,
-            ...Object.fromEntries(
-              new Array(255).fill(0).map((_, i) => [`Mortal${i}`, u8]),
-            ),
-          }),
-          nonce: compact,
-          tip: compact,
-        })
-  const call = dynamicBuilder.buildDefinition(
-    "call" in lookup.metadata.extrinsic
-      ? lookup.metadata.extrinsic.call
-      : lookup.metadata.extrinsic.type,
-  ) as Codec<{ type: string; value: { type: string; value: unknown } }>
-  const signedExtrinsicV4 = Struct({
-    sender,
-    signature,
-    extra,
-    call,
-  })
-
-  // Externally, it's an opaque
-  return enhanceDecoder(Bytes().dec, (bytes: Uint8Array) => {
-    const header = extrinsicHeader(bytes)
-
-    return header.signed
-      ? {
-          version: header.version,
-          signed: true as const,
-          ...signedExtrinsicV4.dec(bytes.slice(1)),
-        }
-      : {
-          version: header.version,
-          signed: false as const,
-          call: call.dec(bytes.slice(1)),
-        }
-  })
-}
-type DecodedExtrinsic = ReturnType<ReturnType<typeof createExtrinsicCodec>>

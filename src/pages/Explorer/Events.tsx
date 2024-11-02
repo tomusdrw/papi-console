@@ -15,6 +15,7 @@ import { FC } from "react"
 import { JsonDisplay } from "@/components/JsonDisplay"
 import { groupBy } from "@/lib/groupBy"
 import { Link } from "react-router-dom"
+import { BlockStatusIcon, statusText } from "./Detail/BlockState"
 
 export const Events = () => {
   const events = useStateObservable(recentEvents$)
@@ -101,9 +102,10 @@ const EventPopover: FC<{ event: EventInfo }> = ({ event }) => {
             Event {eventKey(event)}
           </Link>
         </h3>
-        <p>
-          Status:{" "}
-          {event.status === BlockState.Finalized ? "Finalized" : "Pending"}
+        <p className="flex gap-1">
+          Status:
+          <BlockStatusIcon state={event.status} />
+          {statusText[event.status]}
         </p>
       </div>
       <p className="overflow-hidden text-ellipsis whitespace-nowrap text-slate-400">
