@@ -6,6 +6,7 @@ import { Header } from "./pages/Header"
 import { Metadata } from "./pages/Metadata"
 import { RuntimeCalls } from "./pages/RuntimeCalls"
 import { Storage } from "./pages/Storage"
+import { Transactions } from "./components/Transactions"
 
 export default function App() {
   return (
@@ -21,6 +22,7 @@ export default function App() {
         <Route path="metadata/*" element={<Metadata />} />
         <Route path="*" element={<Navigate to="/extrinsics" replace />} />
       </Routes>
+      <Transactions />
     </div>
   )
 }

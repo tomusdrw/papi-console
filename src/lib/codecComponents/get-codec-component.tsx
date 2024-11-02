@@ -41,12 +41,11 @@ export const enum CodecComponentType {
   Updated,
 }
 
-export type CodecComponentInitial = Uint8Array | HexString
 export type CodecComponentUpdate =
   | { empty: true }
   | { empty: false; decoded: any; encoded?: Uint8Array }
 export type CodecComponentValue =
-  | { type: CodecComponentType.Initial; value?: CodecComponentInitial }
+  | { type: CodecComponentType.Initial; value?: Uint8Array | HexString }
   | { type: CodecComponentType.Updated; value: CodecComponentUpdate }
 
 export type LookupType = Var["type"]

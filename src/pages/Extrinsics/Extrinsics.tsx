@@ -46,11 +46,46 @@ export const Extrinsics = withSubscribe(
           ? null
           : componentValue.value.encoded) ?? null
 
-    return (
-      <div className="flex flex-col overflow-hidden gap-2">
-        <div>Extrinsics</div>
+  const calllData =
+    componentValue.type === CodecComponentType.Initial
+      ? componentValue.value
+      : !componentValue.value.empty
+        ? componentValue.value.encoded
+        : undefined
 
-        <BinaryDisplay
+  return (
+    <div className="flex flex-col overflow-hidden gap-2">
+      <div>Extrinsics</div>
+
+      <BinaryDisplay
+        {...extrinsicProps}
+        value={componentValue}
+        onUpdate={(value) =>
+          setComponentValue({ type: CodecComponentType.Updated, value })
+        }
+      />
+
+      <div className="flex flex-row justify-between px-2">
+        <ButtonGroup
+          value={viewMode}
+          onValueChange={setViewMode as any}
+          items={[
+            {
+              value: "edit",
+              content: "Edit",
+            },
+            {
+              value: "json",
+              content: "JSON",
+              disabled: !binaryValue,
+            },
+          ]}
+        />
+        <ExtrinsicModal callData={calllData} />
+      </div>
+
+      {viewMode === "edit" ? (
+        <EditMode
           {...extrinsicProps}
           value={componentValue}
           onUpdate={(value) =>
