@@ -1,5 +1,6 @@
 import { ExpandBtn } from "@/components/Expand"
 import { V14Lookup } from "@polkadot-api/substrate-bindings"
+import { Edit } from "lucide-react"
 import {
   createContext,
   FC,
@@ -7,6 +8,7 @@ import {
   useContext,
   useState,
 } from "react"
+import { Link } from "react-router-dom"
 
 export const Lookup: FC<{ lookup: V14Lookup }> = ({ lookup }) => {
   const [id, setId] = useState(0)
@@ -175,9 +177,14 @@ const GenericLookupNode: FC<PropsWithChildren<{ entry: V14Entry }>> = ({
   children,
 }) => {
   return (
-    <div className="flex flex-col gap-2 w-full">
+    <div className="flex flex-col gap-2 w-full py-2">
       <div>
-        <h4 className="font-bold">Type: {entry.def.tag}</h4>
+        <div className="flex gap-2 items-center">
+          <Link to={`editor/${entry.id}`} className="hover:text-polkadot-400">
+            <Edit size={20} />
+          </Link>
+          <h4 className="font-bold">Type: {entry.def.tag}</h4>
+        </div>
         {entry.path.length ? <p>Path: {entry.path.join(".")}</p> : null}
       </div>
       {children}
