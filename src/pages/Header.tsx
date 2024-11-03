@@ -11,6 +11,12 @@ export const Header = () => (
         Explorer
       </Link>
       <Link
+        to="/metadata"
+        className="text-polkadot-200 border-polkadot-200 cursor-pointer border-b hover:text-polkadot-500 hover:border-polkadot-500"
+      >
+        Metadata
+      </Link>
+      <Link
         to="/storage"
         className="text-polkadot-200 border-polkadot-200 cursor-pointer border-b hover:text-polkadot-500 hover:border-polkadot-500"
       >

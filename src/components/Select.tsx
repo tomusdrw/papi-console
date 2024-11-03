@@ -14,7 +14,7 @@ export const SearchableSelect = <T,>({
   setValue,
   options,
 }: {
-  value: T
+  value: T | null
   setValue: (val: T | null) => void
   options: { value: T; text: string }[]
 }) => {
