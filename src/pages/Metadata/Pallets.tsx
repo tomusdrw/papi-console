@@ -31,7 +31,7 @@ export const Pallets: FC<{ pallets: Array<Pallet> }> = ({ pallets }) => {
               <PalletStorage pallet={pallet} />
             </div>
           )}
-          {pallet.constants.length && (
+          {pallet.constants.length > 0 && (
             <div>
               <h4>Constants</h4>
               <PalletConstants pallet={pallet} />

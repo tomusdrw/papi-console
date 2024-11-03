@@ -122,6 +122,7 @@ const CompositeNode: FC<NodeProps<"composite">> = ({ entry, value }) => (
         </div>
       )
     })}
+    {value.value.length === 0 && <Void />}
   </GenericLookupNode>
 )
 
@@ -145,6 +146,7 @@ const TupleNode: FC<NodeProps<"tuple">> = ({ entry, value }) => (
         <LookupLink id={field} />
       </div>
     ))}
+    {value.value.length === 0 && <Void />}
   </GenericLookupNode>
 )
 
@@ -189,3 +191,5 @@ const GenericLookupNode: FC<PropsWithChildren<{ entry: V14Entry }>> = ({
     </div>
   )
 }
+
+const Void = () => <span className="text-slate-300">(void)</span>
