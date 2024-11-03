@@ -9,9 +9,11 @@ import { V14, V15 } from "@polkadot-api/substrate-bindings"
 import { useStateObservable } from "@react-rxjs/core"
 import { FC, useState } from "react"
 import { Route, Routes, useParams } from "react-router-dom"
+import { Extrinsic } from "./Extrinsic"
 import { Lookup, LookupContext } from "./Lookup"
 import { Pallets } from "./Pallets"
 import { RuntimeApis } from "./RuntimeApis"
+import { V15Fields } from "./V15Fields"
 
 export const Metadata = withSubscribe(
   () => (
@@ -61,6 +63,8 @@ const DecodedExplorer: FC<{ value: V14 | V15 }> = ({ value }) => {
         <Lookup />
         <Pallets pallets={value.pallets} />
         <RuntimeApis apis={value.apis} />
+        <Extrinsic extrinsic={value.extrinsic} />
+        {"outerEnums" in value && <V15Fields metadata={value} />}
       </LookupContext.Provider>
     </div>
   )
