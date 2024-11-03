@@ -9,7 +9,8 @@ import { V14, V15 } from "@polkadot-api/substrate-bindings"
 import { useStateObservable } from "@react-rxjs/core"
 import { FC, useState } from "react"
 import { Route, Routes, useParams } from "react-router-dom"
-import { Lookup } from "./Lookup"
+import { Lookup, LookupContext } from "./Lookup"
+import { Pallets } from "./Pallets"
 
 export const Metadata = withSubscribe(
   () => (
@@ -54,8 +55,11 @@ const MetadataExplorer = () => {
 
 const DecodedExplorer: FC<{ value: V14 | V15 }> = ({ value }) => {
   return (
-    <div className="w-full">
-      <Lookup lookup={value.lookup} />
+    <div className="w-full flex flex-col gap-2">
+      <LookupContext.Provider value={value.lookup}>
+        <Lookup />
+        <Pallets pallets={value.pallets} />
+      </LookupContext.Provider>
     </div>
   )
 }

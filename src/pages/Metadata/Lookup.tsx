@@ -10,7 +10,7 @@ import {
 } from "react"
 import { Link } from "react-router-dom"
 
-export const Lookup: FC<{ lookup: V14Lookup }> = ({ lookup }) => {
+export const Lookup: FC = () => {
   const [id, setId] = useState(0)
 
   return (
@@ -26,9 +26,7 @@ export const Lookup: FC<{ lookup: V14Lookup }> = ({ lookup }) => {
         />
       </label>
       <div className="border-t max-h-[75vh] overflow-auto">
-        <LookupContext.Provider value={lookup}>
-          <LookupNode id={id} />
-        </LookupContext.Provider>
+        <LookupNode id={id} />
       </div>
     </div>
   )
@@ -42,7 +40,7 @@ type NodeProps<T extends V14Def["tag"]> = {
   value: V14SpecificDef<T>
 }
 
-const LookupContext = createContext<V14Lookup>(null as any)
+export const LookupContext = createContext<V14Lookup>(null as any)
 
 const LookupNode: FC<{ id: number }> = ({ id }) => {
   const lookup = useContext(LookupContext)
@@ -69,7 +67,7 @@ const LookupNode: FC<{ id: number }> = ({ id }) => {
   }
 }
 
-const LookupLink: FC<{ id: number }> = ({ id }) => {
+export const LookupLink: FC<{ id: number }> = ({ id }) => {
   const [expanded, setExpanded] = useState(false)
 
   return (
