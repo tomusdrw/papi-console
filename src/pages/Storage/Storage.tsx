@@ -10,6 +10,7 @@ import { StorageDecode } from "./StorageDecode"
 import { StorageQuery } from "./StorageQuery"
 import { StorageSubscriptions } from "./StorageSubscriptions"
 import { DocsRenderer } from "@/components/DocsRenderer"
+import { LoadingMetadata } from "@/components/Loading"
 
 const metadataStorage$ = state(
   lookup$.pipe(
@@ -29,117 +30,122 @@ const metadataStorage$ = state(
   ),
 )
 
-export const Storage = withSubscribe(() => {
-  const { lookup, entries } = useStateObservable(metadataStorage$)
-  const [pallet, setPallet] = useState<string | null>("System")
-  const [entry, setEntry] = useState<string | null>("Account")
-  const selectedEntry = useStateObservable(selectedEntry$)
+export const Storage = withSubscribe(
+  () => {
+    const { lookup, entries } = useStateObservable(metadataStorage$)
+    const [pallet, setPallet] = useState<string | null>("System")
+    const [entry, setEntry] = useState<string | null>("Account")
+    const selectedEntry = useStateObservable(selectedEntry$)
 
-  const selectedPallet =
-    (pallet && lookup.metadata.pallets.find((p) => p.name === pallet)) || null
+    const selectedPallet =
+      (pallet && lookup.metadata.pallets.find((p) => p.name === pallet)) || null
 
-  useEffect(
-    () =>
-      setEntry((prev) => {
-        if (!selectedPallet?.storage?.items[0]) return null
-        return selectedPallet.storage.items.some((v) => v.name === prev)
-          ? prev
-          : selectedPallet.storage.items[0].name
-      }),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [selectedPallet?.name],
-  )
+    useEffect(
+      () =>
+        setEntry((prev) => {
+          if (!selectedPallet?.storage?.items[0]) return null
+          return selectedPallet.storage.items.some((v) => v.name === prev)
+            ? prev
+            : selectedPallet.storage.items[0].name
+        }),
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+      [selectedPallet?.name],
+    )
 
-  useEffect(() => {
-    const storageEntry =
-      (entry &&
-        selectedPallet?.storage?.items.find((it) => it.name === entry)) ||
-      null
-    const storageEntryType = storageEntry?.type
-    if (!storageEntryType) {
-      return setSelectedEntry(null)
-    }
+    useEffect(() => {
+      const storageEntry =
+        (entry &&
+          selectedPallet?.storage?.items.find((it) => it.name === entry)) ||
+        null
+      const storageEntryType = storageEntry?.type
+      if (!storageEntryType) {
+        return setSelectedEntry(null)
+      }
 
-    if (storageEntryType.tag === "plain") {
-      return setSelectedEntry({
-        value: storageEntryType.value,
-        key: [],
-        pallet: pallet!,
-        entry: entry!,
-        docs: storageEntry.docs,
-      })
-    }
-    if (storageEntryType.value.hashers.length === 1) {
-      return setSelectedEntry({
+      if (storageEntryType.tag === "plain") {
+        return setSelectedEntry({
+          value: storageEntryType.value,
+          key: [],
+          pallet: pallet!,
+          entry: entry!,
+          docs: storageEntry.docs,
+        })
+      }
+      if (storageEntryType.value.hashers.length === 1) {
+        return setSelectedEntry({
+          value: storageEntryType.value.value,
+          key: [storageEntryType.value.key],
+          pallet: pallet!,
+          entry: entry!,
+          docs: storageEntry.docs,
+        })
+      }
+
+      const keyDef = lookup(storageEntryType.value.key)
+      const key = (() => {
+        if (keyDef.type === "array") {
+          return new Array(keyDef.len).fill(keyDef.value.id)
+        }
+        if (keyDef.type === "tuple") {
+          return keyDef.value.map((e) => e.id)
+        }
+        throw new Error("Invalid key type " + keyDef.type)
+      })()
+      setSelectedEntry({
+        key,
         value: storageEntryType.value.value,
-        key: [storageEntryType.value.key],
         pallet: pallet!,
         entry: entry!,
         docs: storageEntry.docs,
       })
-    }
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [selectedPallet, entry])
 
-    const keyDef = lookup(storageEntryType.value.key)
-    const key = (() => {
-      if (keyDef.type === "array") {
-        return new Array(keyDef.len).fill(keyDef.value.id)
-      }
-      if (keyDef.type === "tuple") {
-        return keyDef.value.map((e) => e.id)
-      }
-      throw new Error("Invalid key type " + keyDef.type)
-    })()
-    setSelectedEntry({
-      key,
-      value: storageEntryType.value.value,
-      pallet: pallet!,
-      entry: entry!,
-      docs: storageEntry.docs,
-    })
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedPallet, entry])
-
-  return (
-    <div className="p-2 flex flex-col gap-2 items-start">
-      <div className="flex items-center gap-2">
-        <label>
-          Pallet
-          <SearchableSelect
-            value={pallet}
-            setValue={(v) => setPallet(v)}
-            options={Object.keys(entries).map((e) => ({
-              text: e,
-              value: e,
-            }))}
-          />
-        </label>
-        {selectedPallet && pallet && (
+    return (
+      <div className="p-2 flex flex-col gap-2 items-start">
+        <div className="flex items-center gap-2">
           <label>
-            Entry
+            Pallet
             <SearchableSelect
-              value={entry}
-              setValue={(v) => setEntry(v)}
-              options={
-                Object.keys(entries[pallet]).map((s) => ({
-                  text: s,
-                  value: s,
-                })) ?? []
-              }
+              value={pallet}
+              setValue={(v) => setPallet(v)}
+              options={Object.keys(entries).map((e) => ({
+                text: e,
+                value: e,
+              }))}
             />
           </label>
-        )}
-      </div>
-      {selectedEntry?.docs.length && (
-        <div className="w-full">
-          Docs
-          <DocsRenderer docs={selectedEntry.docs} />
+          {selectedPallet && pallet && (
+            <label>
+              Entry
+              <SearchableSelect
+                value={entry}
+                setValue={(v) => setEntry(v)}
+                options={
+                  Object.keys(entries[pallet]).map((s) => ({
+                    text: s,
+                    value: s,
+                  })) ?? []
+                }
+              />
+            </label>
+          )}
         </div>
-      )}
-      <StorageEntry />
-      <StorageSubscriptions />
-    </div>
-  )
-})
+        {selectedEntry?.docs.length && (
+          <div className="w-full">
+            Docs
+            <DocsRenderer docs={selectedEntry.docs} />
+          </div>
+        )}
+        <StorageEntry />
+        <StorageSubscriptions />
+      </div>
+    )
+  },
+  {
+    fallback: <LoadingMetadata />,
+  },
+)
 
 const StorageEntry: FC = () => {
   const selectedEntry = useStateObservable(selectedEntry$)

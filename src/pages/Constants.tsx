@@ -3,6 +3,7 @@ import { ViewCodec } from "@/codec-components/ViewCodec"
 import { ButtonGroup } from "@/components/ButtonGroup"
 import { DocsRenderer } from "@/components/DocsRenderer"
 import { ExpandBtn } from "@/components/Expand"
+import { LoadingMetadata } from "@/components/Loading"
 import { Tooltip } from "@/components/Tooltip"
 import { withSubscribe } from "@/components/withSuspense"
 import { CodecComponentType } from "@/lib/codecComponents"
@@ -29,19 +30,24 @@ const metadataConstants$ = state(
   ),
 )
 
-export const Constants = withSubscribe(() => {
-  const entries = useStateObservable(metadataConstants$)
+export const Constants = withSubscribe(
+  () => {
+    const entries = useStateObservable(metadataConstants$)
 
-  return (
-    <div className="p-2 flex flex-col gap-2 items-start overflow-auto leading-relaxed">
-      <ul>
-        {entries.map(({ name, constants }) => (
-          <PalletConstants key={name} name={name} entries={constants} />
-        ))}
-      </ul>
-    </div>
-  )
-})
+    return (
+      <div className="p-2 flex flex-col gap-2 items-start overflow-auto leading-relaxed">
+        <ul>
+          {entries.map(({ name, constants }) => (
+            <PalletConstants key={name} name={name} entries={constants} />
+          ))}
+        </ul>
+      </div>
+    )
+  },
+  {
+    fallback: <LoadingMetadata />,
+  },
+)
 
 const PalletConstants: FC<{
   name: string

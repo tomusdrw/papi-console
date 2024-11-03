@@ -2,6 +2,7 @@ import { dynamicBuilder$ } from "@/chain.state"
 import { BinaryDisplay } from "@/codec-components/LookupTypeEdit"
 import { ActionButton } from "@/components/ActionButton"
 import { ButtonGroup } from "@/components/ButtonGroup"
+import { LoadingMetadata } from "@/components/Loading"
 import { withSubscribe } from "@/components/withSuspense"
 import { CodecComponentType, CodecComponentValue } from "@codec-components"
 import { Binary } from "@polkadot-api/substrate-bindings"
@@ -28,71 +29,76 @@ const extrinsicProps$ = state(
   ),
 )
 
-export const Extrinsics = withSubscribe(() => {
-  const [viewMode, setViewMode] = useState<"edit" | "json">("edit")
-  const extrinsicProps = useStateObservable(extrinsicProps$)
+export const Extrinsics = withSubscribe(
+  () => {
+    const [viewMode, setViewMode] = useState<"edit" | "json">("edit")
+    const extrinsicProps = useStateObservable(extrinsicProps$)
 
-  const [componentValue, setComponentValue] = useState<CodecComponentValue>({
-    type: CodecComponentType.Initial,
-    value:
-      "0x630b040101010031323334353637383934353631363531363531363531363531363531353631350100000108000100002c00000000080000000000",
-  })
-  const binaryValue =
-    (componentValue.type === CodecComponentType.Initial
-      ? componentValue.value
-      : componentValue.value.empty
-        ? null
-        : componentValue.value.encoded) ?? null
+    const [componentValue, setComponentValue] = useState<CodecComponentValue>({
+      type: CodecComponentType.Initial,
+      value:
+        "0x630b040101010031323334353637383934353631363531363531363531363531363531353631350100000108000100002c00000000080000000000",
+    })
+    const binaryValue =
+      (componentValue.type === CodecComponentType.Initial
+        ? componentValue.value
+        : componentValue.value.empty
+          ? null
+          : componentValue.value.encoded) ?? null
 
-  return (
-    <div className="flex flex-col overflow-hidden gap-2">
-      <div>Extrinsics</div>
+    return (
+      <div className="flex flex-col overflow-hidden gap-2">
+        <div>Extrinsics</div>
 
-      <BinaryDisplay
-        {...extrinsicProps}
-        value={componentValue}
-        onUpdate={(value) =>
-          setComponentValue({ type: CodecComponentType.Updated, value })
-        }
-      />
-
-      <div className="flex flex-row justify-between px-2">
-        <ButtonGroup
-          value={viewMode}
-          onValueChange={setViewMode as any}
-          items={[
-            {
-              value: "edit",
-              content: "Edit",
-            },
-            {
-              value: "json",
-              content: "JSON",
-              disabled: !binaryValue,
-            },
-          ]}
-        />
-        <ActionButton disabled>Submit extrinsic</ActionButton>
-      </div>
-
-      {viewMode === "edit" ? (
-        <EditMode
+        <BinaryDisplay
           {...extrinsicProps}
           value={componentValue}
           onUpdate={(value) =>
             setComponentValue({ type: CodecComponentType.Updated, value })
           }
         />
-      ) : (
-        <JsonMode
-          value={
-            typeof binaryValue === "string"
-              ? Binary.fromHex(binaryValue).asBytes()
-              : binaryValue
-          }
-          decode={extrinsicProps.codec.dec}
-        />
-      )}
-    </div>
-  )
-})
+
+        <div className="flex flex-row justify-between px-2">
+          <ButtonGroup
+            value={viewMode}
+            onValueChange={setViewMode as any}
+            items={[
+              {
+                value: "edit",
+                content: "Edit",
+              },
+              {
+                value: "json",
+                content: "JSON",
+                disabled: !binaryValue,
+              },
+            ]}
+          />
+          <ActionButton disabled>Submit extrinsic</ActionButton>
+        </div>
+
+        {viewMode === "edit" ? (
+          <EditMode
+            {...extrinsicProps}
+            value={componentValue}
+            onUpdate={(value) =>
+              setComponentValue({ type: CodecComponentType.Updated, value })
+            }
+          />
+        ) : (
+          <JsonMode
+            value={
+              typeof binaryValue === "string"
+                ? Binary.fromHex(binaryValue).asBytes()
+                : binaryValue
+            }
+            decode={extrinsicProps.codec.dec}
+          />
+        )}
+      </div>
+    )
+  },
+  {
+    fallback: <LoadingMetadata />,
+  },
+)
