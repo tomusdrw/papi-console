@@ -11,6 +11,7 @@ import { FC, useState } from "react"
 import { Route, Routes, useParams } from "react-router-dom"
 import { Lookup, LookupContext } from "./Lookup"
 import { Pallets } from "./Pallets"
+import { RuntimeApis } from "./RuntimeApis"
 
 export const Metadata = withSubscribe(
   () => (
@@ -59,6 +60,7 @@ const DecodedExplorer: FC<{ value: V14 | V15 }> = ({ value }) => {
       <LookupContext.Provider value={value.lookup}>
         <Lookup />
         <Pallets pallets={value.pallets} />
+        <RuntimeApis apis={value.apis} />
       </LookupContext.Provider>
     </div>
   )
