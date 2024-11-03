@@ -1,4 +1,4 @@
-import { lookup$, unsafeApi$ } from "@/chain.state"
+import { dynamicBuilder$, lookup$, unsafeApi$ } from "@/chain.state"
 import {
   InlineLookupTypeEdit,
   LookupTypeEdit,
@@ -6,7 +6,6 @@ import {
 import { ActionButton } from "@/components/ActionButton"
 import { ExpandBtn } from "@/components/Expand"
 import { getTypeComplexity } from "@/utils/shape"
-import { getDynamicBuilder } from "@polkadot-api/metadata-builders"
 import { state, useStateObservable, withDefault } from "@react-rxjs/core"
 import { createSignal } from "@react-rxjs/utils"
 import { Circle, Dot } from "lucide-react"
@@ -35,7 +34,7 @@ export const RuntimeCallQuery: FC = () => {
         selectedEntry$,
         unsafeApi$,
         inputValues$,
-        lookup$.pipe(map(getDynamicBuilder)),
+        dynamicBuilder$,
       ]),
     )
     const decodedValues = inputValues.map((v, i) =>

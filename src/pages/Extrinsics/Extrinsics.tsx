@@ -1,29 +1,28 @@
-import { lookup$ } from "@/chain.state"
+import { dynamicBuilder$ } from "@/chain.state"
+import { BinaryDisplay } from "@/codec-components/LookupTypeEdit"
 import { ActionButton } from "@/components/ActionButton"
 import { ButtonGroup } from "@/components/ButtonGroup"
 import { withSubscribe } from "@/components/withSuspense"
 import { CodecComponentType, CodecComponentValue } from "@codec-components"
-import { getDynamicBuilder } from "@polkadot-api/metadata-builders"
 import { Binary } from "@polkadot-api/substrate-bindings"
 import { state, useStateObservable } from "@react-rxjs/core"
 import { useState } from "react"
 import { map } from "rxjs"
 import { EditMode } from "./EditMode"
 import { JsonMode } from "./JsonMode"
-import { BinaryDisplay } from "@/codec-components/LookupTypeEdit"
 
 const extrinsicProps$ = state(
-  lookup$.pipe(
-    map((lookup) => {
+  dynamicBuilder$.pipe(
+    map((builder) => {
       const codecType =
-        "call" in lookup.metadata.extrinsic
-          ? lookup.metadata.extrinsic.call
+        "call" in builder.lookup.metadata.extrinsic
+          ? builder.lookup.metadata.extrinsic.call
           : // TODO v14 is this one?
-            lookup.metadata.extrinsic.type
+            builder.lookup.metadata.extrinsic.type
       return {
-        metadata: lookup.metadata,
+        metadata: builder.lookup.metadata,
         codecType,
-        codec: getDynamicBuilder(lookup).buildDefinition(codecType),
+        codec: builder.buildDefinition(codecType),
       }
     }),
   ),

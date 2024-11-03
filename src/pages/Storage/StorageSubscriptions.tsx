@@ -1,15 +1,13 @@
-import { lookup$, metadata$ } from "@/chain.state"
+import { dynamicBuilder$, metadata$ } from "@/chain.state"
 import { ViewCodec } from "@/codec-components/ViewCodec"
 import { CopyBinary } from "@/codec-components/ViewCodec/CopyBinary"
 import { ButtonGroup } from "@/components/ButtonGroup"
 import { JsonDisplay } from "@/components/JsonDisplay"
 import { CodecComponentType, NOTIN } from "@codec-components"
-import { getDynamicBuilder } from "@polkadot-api/metadata-builders"
 import { state, useStateObservable } from "@react-rxjs/core"
 import { PauseCircle, PlayCircle, Trash2 } from "lucide-react"
 import { FC, useMemo, useState } from "react"
 import { Virtuoso } from "react-virtuoso"
-import { map } from "rxjs"
 import {
   removeStorageSubscription,
   StorageSubscription,
@@ -154,10 +152,7 @@ const itemClasses = "py-2 border-b first:pt-0 last:pb-0 last:border-b-0"
 const VirtuosoItem: FC = (props) => <div {...props} className={itemClasses} />
 
 const metadataState$ = state(metadata$, null)
-const dynamicBuilder$ = state(
-  lookup$.pipe(map((v) => getDynamicBuilder(v))),
-  null,
-)
+const dynamicBuilderState$ = state(dynamicBuilder$, null)
 export const ValueDisplay: FC<{
   type: number
   title: string
@@ -165,7 +160,7 @@ export const ValueDisplay: FC<{
   mode: "decoded" | "json"
 }> = ({ type, title, value, mode }) => {
   const metadata = useStateObservable(metadataState$)
-  const builder = useStateObservable(dynamicBuilder$)
+  const builder = useStateObservable(dynamicBuilderState$)
 
   const [codec, encodedValue] = useMemo(() => {
     if (!builder) return [null!, null!]

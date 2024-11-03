@@ -1,7 +1,6 @@
-import { lookup$ } from "@/chain.state"
+import { dynamicBuilder$ } from "@/chain.state"
 import { byteArraysAreEqual } from "@/utils/byteArray"
 import { CodecComponentType, CodecComponentValue } from "@codec-components"
-import { getDynamicBuilder } from "@polkadot-api/metadata-builders"
 import { state, useStateObservable } from "@react-rxjs/core"
 import { Codec } from "polkadot-api"
 import { ComponentProps, FC, useEffect, useRef, useState } from "react"
@@ -19,10 +18,10 @@ import { BinaryDisplay } from "./BinaryDisplay"
 import { FocusPath } from "./FocusPath"
 
 const editTypeMetadataProps$ = state(
-  lookup$.pipe(
-    map((lookup) => ({
-      metadata: lookup.metadata,
-      builder: getDynamicBuilder(lookup),
+  dynamicBuilder$.pipe(
+    map((builder) => ({
+      builder,
+      metadata: builder.lookup.metadata,
     })),
   ),
   null,

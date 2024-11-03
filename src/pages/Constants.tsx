@@ -1,11 +1,12 @@
-import { lookup$ } from "@/chain.state"
+import { dynamicBuilder$, lookup$ } from "@/chain.state"
 import { ViewCodec } from "@/codec-components/ViewCodec"
 import { ButtonGroup } from "@/components/ButtonGroup"
+import { DocsRenderer } from "@/components/DocsRenderer"
 import { ExpandBtn } from "@/components/Expand"
+import { Tooltip } from "@/components/Tooltip"
 import { withSubscribe } from "@/components/withSuspense"
 import { CodecComponentType } from "@/lib/codecComponents"
 import { getTypeComplexity } from "@/utils/shape"
-import { getDynamicBuilder } from "@polkadot-api/metadata-builders"
 import { state, useStateObservable } from "@react-rxjs/core"
 import { Dot } from "lucide-react"
 import { HexString } from "polkadot-api"
@@ -13,8 +14,6 @@ import { FC, useState } from "react"
 import { map } from "rxjs"
 import { twMerge } from "tailwind-merge"
 import { ValueDisplay } from "./Storage/StorageSubscriptions"
-import { Tooltip } from "@/components/Tooltip"
-import { DocsRenderer } from "@/components/DocsRenderer"
 
 const metadataConstants$ = state(
   lookup$.pipe(
@@ -76,8 +75,11 @@ const PalletConstants: FC<{
 }
 
 const constantValueProps$ = state(
-  lookup$.pipe(
-    map((lookup) => ({ lookup, builder: getDynamicBuilder(lookup) })),
+  dynamicBuilder$.pipe(
+    map((builder) => ({
+      builder,
+      lookup: builder.lookup,
+    })),
   ),
   null,
 )

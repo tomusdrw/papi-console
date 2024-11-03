@@ -1,4 +1,4 @@
-import { chainClient$ } from "@/chain.state"
+import { chainHead$ } from "@/chain.state"
 import {
   ChainHead$,
   PinnedBlocks,
@@ -14,7 +14,6 @@ import {
   concat,
   concatMap,
   filter,
-  finalize,
   forkJoin,
   map,
   mergeMap,
@@ -30,15 +29,6 @@ import {
   takeWhile,
   withLatestFrom,
 } from "rxjs"
-
-export const chainHead$ = state(
-  chainClient$.pipe(
-    switchMap(({ observableClient }) => {
-      const chainHead = observableClient.chainHead$()
-      return concat(of(chainHead), NEVER).pipe(finalize(chainHead.unfollow))
-    }),
-  ),
-)
 
 export const finalized$ = chainHead$.pipeState(
   switchMap((chainHead) => chainHead.finalized$),

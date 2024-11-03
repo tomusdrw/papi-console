@@ -1,4 +1,5 @@
-import { getLookupFn } from "@polkadot-api/metadata-builders"
+import { getDynamicBuilder, getLookupFn } from "@polkadot-api/metadata-builders"
+import { getObservableClient } from "@polkadot-api/observable-client"
 import {
   Binary,
   CodecType,
@@ -7,9 +8,9 @@ import {
   V14,
   V15,
 } from "@polkadot-api/substrate-bindings"
-import { toHex } from "@polkadot-api/utils"
 import { createClient as createSubstrateClient } from "@polkadot-api/substrate-client"
-import { shareLatest } from "@react-rxjs/core"
+import { toHex } from "@polkadot-api/utils"
+import { state } from "@react-rxjs/core"
 import { createClient, PolkadotClient } from "polkadot-api"
 import { chainSpec } from "polkadot-api/chains/polkadot"
 import { withLogsRecorder } from "polkadot-api/logs-provider"
@@ -26,12 +27,10 @@ import {
   map,
   NEVER,
   of,
-  shareReplay,
   startWith,
   switchMap,
   tap,
 } from "rxjs"
-import { getObservableClient } from "@polkadot-api/observable-client"
 
 export type ChainSource = { id: string } & (
   | {
@@ -55,30 +54,39 @@ const selectedSource$ = of<ChainSource>({
 
 type AnyMetadata = CodecType<typeof metadataCodec>
 
-export const chainClient$ = selectedSource$.pipe(
-  map((src) => [src.id, getProvider(src)] as const),
-  switchMap(([id, provider]) => {
-    const client = createClient(provider)
-    const substrateClient = createSubstrateClient(provider)
-    const observableClient = getObservableClient(substrateClient)
-    return concat(
-      of({ id, client, substrateClient, observableClient }),
-      NEVER,
-    ).pipe(
-      finalize(() => {
-        client.destroy()
-        observableClient.destroy()
-      }),
-    )
-  }),
-  shareLatest(),
+export const chainClient$ = state(
+  selectedSource$.pipe(
+    map((src) => [src.id, getProvider(src)] as const),
+    switchMap(([id, provider]) => {
+      const client = createClient(provider)
+      const substrateClient = createSubstrateClient(provider)
+      const observableClient = getObservableClient(substrateClient)
+      return concat(
+        of({ id, client, substrateClient, observableClient }),
+        NEVER,
+      ).pipe(
+        finalize(() => {
+          client.destroy()
+          observableClient.destroy()
+        }),
+      )
+    }),
+  ),
 )
-export const unsafeApi$ = chainClient$.pipe(
-  map(({ client }) => client.getUnsafeApi()),
-  shareLatest(),
+export const chainHead$ = state(
+  chainClient$.pipe(
+    switchMap(({ observableClient }) => {
+      const chainHead = observableClient.chainHead$()
+      return concat(of(chainHead), NEVER).pipe(finalize(chainHead.unfollow))
+    }),
+  ),
 )
 
-export const metadata$ = chainClient$.pipe(
+export const unsafeApi$ = chainClient$.pipeState(
+  map(({ client }) => client.getUnsafeApi()),
+)
+
+export const metadata$ = chainClient$.pipeState(
   switchMap(({ id, client }) => {
     const metadata = from(getMetadata(client)).pipe(
       tap((v) => {
@@ -98,9 +106,12 @@ export const metadata$ = chainClient$.pipe(
     }
     throw new Error("Incompatible metadata")
   }),
-  shareReplay(1),
 )
-export const lookup$ = metadata$.pipe(map(getLookupFn), shareLatest())
+export const lookup$ = metadata$.pipeState(map(getLookupFn))
+
+export const dynamicBuilder$ = lookup$.pipeState(
+  map((lookup) => ({ lookup, ...getDynamicBuilder(lookup) })),
+)
 
 async function getMetadata(client: PolkadotClient): Promise<AnyMetadata> {
   const unsafeApi = client.getUnsafeApi()

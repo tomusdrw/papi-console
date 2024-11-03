@@ -1,6 +1,5 @@
-import { lookup$ } from "@/chain.state"
+import { chainHead$, dynamicBuilder$ } from "@/chain.state"
 import { CircularProgress } from "@/components/CircularProgress"
-import { getDynamicBuilder } from "@polkadot-api/metadata-builders"
 import { state, useStateObservable } from "@react-rxjs/core"
 import {
   animationFrames,
@@ -9,7 +8,6 @@ import {
   map,
   switchMap,
 } from "rxjs"
-import { chainHead$ } from "./block.state"
 
 const best$ = chainHead$.pipeState(switchMap((chainHead) => chainHead.best$))
 const bestBlockTime$ = best$.pipeState(
@@ -22,16 +20,14 @@ const bestBlockTime$ = best$.pipeState(
   }),
 )
 const targetTime$ = state(
-  lookup$.pipe(
-    map((lookup) => {
-      const ct = lookup.metadata.pallets
+  dynamicBuilder$.pipe(
+    map((builder) => {
+      const ct = builder.lookup.metadata.pallets
         .find((p) => p.name === "Babe")
         ?.constants.find((ct) => ct.name === "ExpectedBlockTime")
       if (!ct) return null
       try {
-        const res = getDynamicBuilder(lookup)
-          .buildDefinition(ct.type)
-          .dec(ct.value)
+        const res = builder.buildDefinition(ct.type).dec(ct.value)
         return Number(res)
       } catch (_) {
         return null

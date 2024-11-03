@@ -16,9 +16,10 @@ import {
 } from "@polkadot-api/substrate-bindings"
 import { Codec } from "polkadot-api"
 
-export const createExtrinsicCodec = (lookup: MetadataLookup) => {
-  const dynamicBuilder = getDynamicBuilder(lookup)
-
+export const createExtrinsicCodec = (
+  dynamicBuilder: ReturnType<typeof getDynamicBuilder>,
+  lookup: MetadataLookup,
+) => {
   // https://spec.polkadot.network/id-extrinsics#id-extrinsics-body
   const extrinsicHeader = enhanceDecoder(u8.dec, (value) => ({
     signed: (value & 0x80) > 0,

@@ -1,32 +1,24 @@
 import { withSubscribe } from "@/components/withSuspense"
-import { blocksByHeight$ } from "./block.state"
-import { BlockTable } from "./BlockTable"
-import { Summary } from "./Summary"
-import { Events } from "./Events"
 import { Route, Routes } from "react-router-dom"
+import { BlockTable } from "./BlockTable"
 import { BlockDetail } from "./Detail"
+import { Events } from "./Events"
+import { Summary } from "./Summary"
 
-const explorer$ = blocksByHeight$
-
-export const Explorer = withSubscribe(
-  () => (
-    <Routes>
-      <Route path=":hash" element={<BlockDetail />} />
-      <Route
-        path="*"
-        element={
-          <div className="overflow-auto">
-            <Summary />
-            <div className="flex gap-2 items-start flex-wrap lg:flex-nowrap">
-              <BlockTable />
-              <Events />
-            </div>
+export const Explorer = withSubscribe(() => (
+  <Routes>
+    <Route path=":hash" element={<BlockDetail />} />
+    <Route
+      path="*"
+      element={
+        <div className="overflow-auto">
+          <Summary />
+          <div className="flex gap-2 items-start flex-wrap lg:flex-nowrap">
+            <BlockTable />
+            <Events />
           </div>
-        }
-      />
-    </Routes>
-  ),
-  {
-    source$: explorer$,
-  },
-)
+        </div>
+      }
+    />
+  </Routes>
+))

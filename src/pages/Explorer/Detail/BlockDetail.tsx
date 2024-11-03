@@ -1,9 +1,10 @@
-import { lookup$ } from "@/chain.state"
+import { dynamicBuilder$ } from "@/chain.state"
 import { AccountIdDisplay } from "@/components/AccountIdDisplay"
 import { ExpandBtn } from "@/components/Expand"
 import { JsonDisplay } from "@/components/JsonDisplay"
 import { groupBy } from "@/lib/groupBy"
 import { SystemEvent } from "@polkadot-api/observable-client"
+import * as Tabs from "@radix-ui/react-tabs"
 import { state, useStateObservable } from "@react-rxjs/core"
 import { combineKeys } from "@react-rxjs/utils"
 import { FC, useEffect, useRef, useState } from "react"
@@ -26,10 +27,11 @@ import {
 } from "../block.state"
 import { BlockStatusIcon, statusText } from "./BlockState"
 import { createExtrinsicCodec, DecodedExtrinsic } from "./extrinsicDecoder"
-import * as Tabs from "@radix-ui/react-tabs"
 
 const blockExtrinsics$ = state((hash: string) => {
-  const decoder$ = lookup$.pipe(map(createExtrinsicCodec))
+  const decoder$ = dynamicBuilder$.pipe(
+    map((builder) => createExtrinsicCodec(builder, builder.lookup)),
+  )
   const body$ = blockInfo$(hash).pipe(
     map((v) => v.body),
     filter((v) => !!v),

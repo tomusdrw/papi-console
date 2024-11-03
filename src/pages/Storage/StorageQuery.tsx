@@ -1,4 +1,4 @@
-import { lookup$, unsafeApi$ } from "@/chain.state"
+import { dynamicBuilder$, unsafeApi$ } from "@/chain.state"
 import { EditCodec } from "@/codec-components/EditCodec"
 import { ActionButton } from "@/components/ActionButton"
 import { BinaryEditButton } from "@/components/BinaryEditButton"
@@ -9,7 +9,6 @@ import {
   CodecComponentValue,
   NOTIN,
 } from "@codec-components"
-import { getDynamicBuilder } from "@polkadot-api/metadata-builders"
 import { state, useStateObservable, withDefault } from "@react-rxjs/core"
 import { createSignal } from "@react-rxjs/utils"
 import { Binary } from "polkadot-api"
@@ -149,7 +148,7 @@ const StorageKeysInput: FC = () => {
   )
 }
 
-const lookupState$ = state(lookup$, null)
+const builderState$ = state(dynamicBuilder$, null)
 const keyInputValue$ = state(
   (idx: number) =>
     keyValues$.pipe(
@@ -182,12 +181,12 @@ const StorageKeyInput: FC<{ idx: number; type: number; disabled: boolean }> = ({
   type,
   disabled,
 }) => {
-  const lookup = useStateObservable(lookupState$)
+  const builder = useStateObservable(builderState$)
   const value = useStateObservable(keyInputValue$(idx))
 
-  if (!lookup) return null
+  if (!builder) return null
 
-  const codec = getDynamicBuilder(lookup).buildDefinition(type)
+  const codec = builder.buildDefinition(type)
   const binaryValue =
     (value.type === CodecComponentType.Initial
       ? value.value
@@ -196,7 +195,7 @@ const StorageKeyInput: FC<{ idx: number; type: number; disabled: boolean }> = ({
         : (value.value.encoded ?? codec.enc(value.value.decoded))) ?? null
 
   const getTypeName = () => {
-    const lookupEntry = lookup(type)
+    const lookupEntry = builder.lookup(type)
     switch (lookupEntry.type) {
       case "primitive":
         return lookupEntry.value
@@ -241,7 +240,7 @@ const StorageKeyInput: FC<{ idx: number; type: number; disabled: boolean }> = ({
         />
       </div>
       <EditCodec
-        metadata={lookup.metadata}
+        metadata={builder.lookup.metadata}
         codecType={type}
         value={value}
         onUpdate={(value) =>
@@ -253,8 +252,13 @@ const StorageKeyInput: FC<{ idx: number; type: number; disabled: boolean }> = ({
 }
 
 const encodedKey$ = state(
-  combineLatest([lookup$, selectedEntry$, keyValues$, keysEnabled$]).pipe(
-    map(([lookup, selectedEntry, keyValues, keysEnabled]) => {
+  combineLatest([
+    dynamicBuilder$,
+    selectedEntry$,
+    keyValues$,
+    keysEnabled$,
+  ]).pipe(
+    map(([builder, selectedEntry, keyValues, keysEnabled]) => {
       const args = keyValues.slice(0, keysEnabled)
       if (
         keyValues.length < keysEnabled ||
@@ -264,7 +268,7 @@ const encodedKey$ = state(
         return null
       }
 
-      const codec = getDynamicBuilder(lookup).buildStorage(
+      const codec = builder.buildStorage(
         selectedEntry.pallet,
         selectedEntry.entry,
       )
@@ -279,17 +283,14 @@ const encodedKey$ = state(
 )
 const KeyDisplay: FC = () => {
   const key = useStateObservable(encodedKey$)
-  const lookup = useStateObservable(lookupState$)
+  const builder = useStateObservable(builderState$)
   const selectedEntry = useStateObservable(selectedEntry$)
   const keys = useStateObservable(keys$)
   const keysEnabled = useStateObservable(keysEnabled$)
 
-  if (!lookup || !selectedEntry) return null
+  if (!builder || !selectedEntry) return null
 
-  const codec = getDynamicBuilder(lookup).buildStorage(
-    selectedEntry.pallet,
-    selectedEntry.entry,
-  )
+  const codec = builder.buildStorage(selectedEntry.pallet, selectedEntry.entry)
 
   return (
     <div className="flex w-full overflow-hidden bg-polkadot-800 p-2 gap-2 rounded items-center">

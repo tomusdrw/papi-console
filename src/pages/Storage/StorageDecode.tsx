@@ -1,7 +1,6 @@
-import { lookup$ } from "@/chain.state"
+import { dynamicBuilder$ } from "@/chain.state"
 import { ActionButton } from "@/components/ActionButton"
 import { NOTIN } from "@codec-components"
-import { getDynamicBuilder } from "@polkadot-api/metadata-builders"
 import { state, useStateObservable } from "@react-rxjs/core"
 import { createSignal } from "@react-rxjs/utils"
 import { FC } from "react"
@@ -11,11 +10,9 @@ import { addStorageSubscription, selectedEntry$ } from "./storage.state"
 const [valueChange, setValue] = createSignal<string>()
 const value$ = state(valueChange, "")
 
-const valueDecoder$ = combineLatest([selectedEntry$, lookup$]).pipe(
-  map(([selectedEntry, lookup]) =>
-    selectedEntry
-      ? getDynamicBuilder(lookup).buildDefinition(selectedEntry.value).dec
-      : null,
+const valueDecoder$ = combineLatest([selectedEntry$, dynamicBuilder$]).pipe(
+  map(([selectedEntry, builder]) =>
+    selectedEntry ? builder.buildDefinition(selectedEntry.value).dec : null,
   ),
 )
 const decodedValue$ = state(

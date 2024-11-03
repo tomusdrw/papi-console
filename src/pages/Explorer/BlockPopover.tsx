@@ -1,7 +1,6 @@
-import { lookup$ } from "@/chain.state"
+import { dynamicBuilder$ } from "@/chain.state"
 import { CircularProgress } from "@/components/CircularProgress"
 import { groupBy } from "@/lib/groupBy"
-import { getDynamicBuilder } from "@polkadot-api/metadata-builders"
 import { state, useStateObservable } from "@react-rxjs/core"
 import { FC } from "react"
 import { Link } from "react-router-dom"
@@ -11,14 +10,13 @@ import { BlockStatusIcon, statusText } from "./Detail/BlockState"
 import { filterEvt } from "./Events"
 
 const maxBlockWeight$ = state(
-  lookup$.pipe(
-    map((lookup) => {
-      const ct = lookup.metadata.pallets
+  dynamicBuilder$.pipe(
+    map((builder) => {
+      const ct = builder.lookup.metadata.pallets
         .find((p) => p.name === "System")
         ?.constants.find((ct) => ct.name === "BlockWeights")
       if (!ct) return null
-      return getDynamicBuilder(lookup).buildDefinition(ct.type).dec(ct.value)
-        .max_block as Weight
+      return builder.buildDefinition(ct.type).dec(ct.value).max_block as Weight
     }),
   ),
   null,

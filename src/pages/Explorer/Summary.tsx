@@ -1,8 +1,8 @@
+import { chainHead$ } from "@/chain.state"
 import { FC, PropsWithChildren } from "react"
 import { map, switchMap } from "rxjs"
-import { chainHead$ } from "./block.state"
-import { BlockTime } from "./BlockTime"
 import { twMerge } from "tailwind-merge"
+import { BlockTime } from "./BlockTime"
 
 const finalized$ = chainHead$.pipeState(
   switchMap((chainHead) => chainHead.finalized$),
