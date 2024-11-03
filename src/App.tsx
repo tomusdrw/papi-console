@@ -3,6 +3,7 @@ import { Constants } from "./pages/Constants"
 import { Explorer } from "./pages/Explorer"
 import { Extrinsics } from "./pages/Extrinsics"
 import { Header } from "./pages/Header"
+import { Metadata } from "./pages/Metadata"
 import { RuntimeCalls } from "./pages/RuntimeCalls"
 import { Storage } from "./pages/Storage"
 
@@ -17,6 +18,7 @@ export default function App() {
         <Route path="storage/*" element={<Storage />} />
         <Route path="constants/*" element={<Constants />} />
         <Route path="runtimeCalls/*" element={<RuntimeCalls />} />
+        <Route path="metadata/*" element={<Metadata />} />
         <Route path="*" element={<Navigate to="/extrinsics" replace />} />
       </Routes>
     </div>
