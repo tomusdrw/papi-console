@@ -58,7 +58,7 @@ const MetadataExplorer = () => {
 
 const DecodedExplorer: FC<{ value: V14 | V15 }> = ({ value }) => {
   return (
-    <div className="w-full flex flex-col gap-2">
+    <div className="w-full flex flex-col gap-6">
       <LookupContext.Provider value={value.lookup}>
         <Lookup />
         <Pallets pallets={value.pallets} />
