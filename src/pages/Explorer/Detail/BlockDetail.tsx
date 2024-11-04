@@ -32,7 +32,8 @@ const blockExtrinsics$ = state((hash: string) => {
   const decoder$ = dynamicBuilder$.pipe(
     map((builder) => createExtrinsicCodec(builder, builder.lookup)),
   )
-  const body$ = blockInfo$(hash).pipe(
+  const body$ = blockInfoState$(hash).pipe(
+    filter((v) => !!v),
     map((v) => v.body),
     filter((v) => !!v),
     distinctUntilChanged(),
@@ -181,7 +182,8 @@ export const BlockDetail = () => {
 
 const childBlocks$ = state(
   (hash: string) =>
-    blockInfo$(hash).pipe(
+    blockInfoState$(hash).pipe(
+      filter((v) => !!v),
       take(1),
       switchMap(({ hash, number }) =>
         combineKeys(
@@ -195,7 +197,11 @@ const childBlocks$ = state(
                 : [],
             ),
           ),
-          (hash) => blockInfo$(hash).pipe(startWith({ hash })),
+          (hash) =>
+            blockInfoState$(hash).pipe(
+              filter((v) => !!v),
+              startWith({ hash }),
+            ),
         ),
       ),
       map((children) =>

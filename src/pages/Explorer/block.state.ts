@@ -1,32 +1,43 @@
-import { chainHead$ } from "@/chain.state"
+import { chainClient$, chainHead$ } from "@/chain.state"
 import {
   ChainHead$,
   PinnedBlocks,
   SystemEvent,
 } from "@polkadot-api/observable-client"
-import { FollowEventWithRuntime } from "@polkadot-api/substrate-client"
+import {
+  FollowEventWithRuntime,
+  StopError,
+} from "@polkadot-api/substrate-client"
 import { state, withDefault } from "@react-rxjs/core"
-import { partitionByKey } from "@react-rxjs/utils"
+import { partitionByKey, toKeySet } from "@react-rxjs/utils"
 import { HexString } from "polkadot-api"
 import {
   catchError,
   combineLatest,
   concat,
   concatMap,
+  defer,
+  distinctUntilChanged,
+  EMPTY,
   filter,
   forkJoin,
   map,
+  merge,
   mergeMap,
   NEVER,
   Observable,
   of,
+  repeat,
+  retry,
   scan,
   skip,
   startWith,
+  Subject,
   switchMap,
   take,
   takeUntil,
   takeWhile,
+  tap,
   withLatestFrom,
 } from "rxjs"
 
@@ -106,6 +117,7 @@ export const [blockInfo$, recordedBlocks$] = partitionByKey(
           },
         ),
         mergeMap(({ value }) => value),
+        retryOnStopError(),
       ),
     ),
   ),
@@ -152,22 +164,95 @@ export const [blockInfo$, recordedBlocks$] = partitionByKey(
     ),
 )
 
-export const blockInfoState$ = state((hash: string) => blockInfo$(hash), null)
+const getUnpinnedBlockInfo$ = (hash: string): Observable<BlockInfo> => {
+  const throughRpc$ = chainClient$.pipe(
+    switchMap((client) =>
+      defer(() =>
+        client.client._request<
+          {
+            block: {
+              extrinsics: HexString[]
+              header: {
+                digest: { logs: Array<unknown> }
+                extrinsicsRoot: string
+                number: HexString
+                parentHash: HexString
+                stateRoot: HexString
+              }
+            }
+          } | null,
+          [string]
+        >("chain_getBlock", [hash]),
+      ).pipe(
+        repeat({
+          delay: 1000,
+        }),
+      ),
+    ),
+    filter((v) => !!v),
+    take(1),
+    catchError(() => EMPTY),
+  )
 
+  return throughRpc$.pipe(
+    map(
+      ({ block: { extrinsics, header } }): BlockInfo => ({
+        hash,
+        parent: header.parentHash,
+        body: extrinsics,
+        events: null,
+        header: {
+          digests: header.digest.logs,
+          extrinsicRoot: header.extrinsicsRoot,
+          number: Number(header.number),
+          parentHash: header.parentHash,
+          stateRoot: header.stateRoot,
+        },
+        number: Number(header.number),
+        status: BlockState.Finalized,
+      }),
+    ),
+    tap((v) => disconnectedBlocks$.next(v)),
+  )
+}
+
+export const blockInfoState$ = state(
+  (hash: string) =>
+    recordedBlocks$.pipe(
+      toKeySet(),
+      map((blocks) => blocks.has(hash)),
+      distinctUntilChanged(),
+      switchMap((exists) =>
+        exists ? blockInfo$(hash) : getUnpinnedBlockInfo$(hash),
+      ),
+    ),
+  null,
+)
+
+const disconnectedBlocks$ = new Subject<BlockInfo>()
 export const blocksByHeight$ = state(
-  recordedBlocks$.pipe(
-    mergeMap((change) => {
-      const targets$ = forkJoin(
-        [...change.keys].map((hash) => blockInfo$(hash).pipe(take(1))),
-      )
+  merge(
+    recordedBlocks$.pipe(
+      mergeMap((change) => {
+        const targets$ = forkJoin(
+          [...change.keys].map((hash) => blockInfo$(hash).pipe(take(1))),
+        )
 
-      return targets$.pipe(
-        map((targets) => ({
-          type: change.type,
-          targets,
-        })),
-      )
-    }),
+        return targets$.pipe(
+          map((targets) => ({
+            type: change.type,
+            targets,
+          })),
+        )
+      }),
+    ),
+    disconnectedBlocks$.pipe(
+      map((block) => ({
+        type: "add" as const,
+        targets: [block],
+      })),
+    ),
+  ).pipe(
     scan(
       (acc, evt) => {
         if (evt.type === "remove") {
@@ -250,6 +335,7 @@ const getBlockStatus$ = (
           return of(null)
         }),
         filter((v) => v !== null),
+        retryOnStopError(),
         takeWhile(
           (v) => v !== BlockState.Finalized && v !== BlockState.Pruned,
           true,
@@ -258,3 +344,13 @@ const getBlockStatus$ = (
       )
     }),
   )
+
+const retryOnStopError = <T>() =>
+  retry<T>({
+    delay(error) {
+      if (error instanceof StopError) {
+        return of(null)
+      }
+      throw error
+    },
+  })
