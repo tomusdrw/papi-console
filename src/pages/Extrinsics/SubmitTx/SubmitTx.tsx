@@ -6,20 +6,22 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog"
 import { Binary, HexString } from "polkadot-api"
-import React, { createContext, useContext } from "react"
+import React, { createContext, useContext, useState } from "react"
 import { ExtensionProvider } from "./ExtensionProvider"
 import { AccountProvider } from "./AccountProvider"
 import { useSelectedAccount } from "./accountCtx"
 import { unsafeApi$ } from "@/chain.state"
 import { noop } from "rxjs"
 import { toHex } from "@polkadot-api/utils"
-import { onNexTx } from "@/components/Transactions"
+import { onNexTx } from "@/pages/Transactions"
 
 const CallDataCtx = createContext("")
+const OnCloseCtx = createContext(noop)
 
 const SignAndSubmit = () => {
   const account = useSelectedAccount()
   const callData = useContext(CallDataCtx)
+  const close = useContext(OnCloseCtx)
   return (
     <ActionButton
       onClick={() => {
@@ -27,12 +29,12 @@ const SignAndSubmit = () => {
         const subscription = unsafeApi$.subscribe((client) => {
           nClients++
           if (nClients > 1) return subscription.unsubscribe()
-
           client
             .txFromCallData(Binary.fromHex(callData))
             .then((x) => {
               if (nClients === 1)
                 return x.sign(account.polkadotSigner).then((s) => {
+                  close()
                   if (nClients === 1) onNexTx(s)
                 })
             }, noop)
@@ -60,8 +62,9 @@ const SelectAccountFromExtension = () => {
 export const ExtrinsicModal: React.FC<{
   callData: Uint8Array | HexString | undefined
 }> = ({ callData }) => {
+  const [open, setOpen] = useState(false)
   return (
-    <Dialog>
+    <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <ActionButton disabled={callData == null}>
           Submit extrinsic
@@ -72,7 +75,9 @@ export const ExtrinsicModal: React.FC<{
         <CallDataCtx.Provider
           value={callData instanceof Uint8Array ? toHex(callData) : callData!}
         >
-          <SelectAccountFromExtension />
+          <OnCloseCtx.Provider value={() => setOpen(false)}>
+            <SelectAccountFromExtension />
+          </OnCloseCtx.Provider>
         </CallDataCtx.Provider>
       </DialogContent>
     </Dialog>

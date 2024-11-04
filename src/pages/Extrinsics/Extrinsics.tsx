@@ -1,6 +1,5 @@
 import { dynamicBuilder$ } from "@/chain.state"
 import { BinaryDisplay } from "@/codec-components/LookupTypeEdit"
-import { ActionButton } from "@/components/ActionButton"
 import { ButtonGroup } from "@/components/ButtonGroup"
 import { LoadingMetadata } from "@/components/Loading"
 import { withSubscribe } from "@/components/withSuspense"
@@ -11,6 +10,7 @@ import { useState } from "react"
 import { map } from "rxjs"
 import { EditMode } from "./EditMode"
 import { JsonMode } from "./JsonMode"
+import { ExtrinsicModal } from "./SubmitTx/SubmitTx"
 
 const extrinsicProps$ = state(
   dynamicBuilder$.pipe(
@@ -46,46 +46,18 @@ export const Extrinsics = withSubscribe(
           ? null
           : componentValue.value.encoded) ?? null
 
-  const calllData =
-    componentValue.type === CodecComponentType.Initial
-      ? componentValue.value
-      : !componentValue.value.empty
-        ? componentValue.value.encoded
-        : undefined
+    const calllData =
+      componentValue.type === CodecComponentType.Initial
+        ? componentValue.value
+        : !componentValue.value.empty
+          ? componentValue.value.encoded
+          : undefined
 
-  return (
-    <div className="flex flex-col overflow-hidden gap-2">
-      <div>Extrinsics</div>
+    return (
+      <div className="flex flex-col overflow-hidden gap-2">
+        <div>Extrinsics</div>
 
-      <BinaryDisplay
-        {...extrinsicProps}
-        value={componentValue}
-        onUpdate={(value) =>
-          setComponentValue({ type: CodecComponentType.Updated, value })
-        }
-      />
-
-      <div className="flex flex-row justify-between px-2">
-        <ButtonGroup
-          value={viewMode}
-          onValueChange={setViewMode as any}
-          items={[
-            {
-              value: "edit",
-              content: "Edit",
-            },
-            {
-              value: "json",
-              content: "JSON",
-              disabled: !binaryValue,
-            },
-          ]}
-        />
-        <ExtrinsicModal callData={calllData} />
-      </div>
-
-      {viewMode === "edit" ? (
-        <EditMode
+        <BinaryDisplay
           {...extrinsicProps}
           value={componentValue}
           onUpdate={(value) =>
@@ -109,7 +81,7 @@ export const Extrinsics = withSubscribe(
               },
             ]}
           />
-          <ActionButton disabled>Submit extrinsic</ActionButton>
+          <ExtrinsicModal callData={calllData} />
         </div>
 
         {viewMode === "edit" ? (

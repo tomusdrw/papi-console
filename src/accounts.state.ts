@@ -96,22 +96,10 @@ const extensionAccounts$ = state((name: string) =>
 )
 
 export const extensions$ = combineKeys(availableExtensions$, extension$)
-extensions$.subscribe()
+// extensions$.subscribe()
 
 export const accountsByExntesion$ = combineKeys(
   availableExtensions$,
   extensionAccounts$,
 )
-accountsByExntesion$.subscribe()
-
-/*
-const getLedgerSigner = async () => {
-  const {Buffer} = await import('buffer')
-  globalThis.Buffer = Buffer
-  const [transport, LSigner] = await Promise.all([
-    import('@ledgerhq/hw-transport-webusb').then(x => x.default.create()),
-    import("@polkadot-api/ledger-signer").then(x => x.LedgerSigner)
-  ])
-  return new LSigner(transport)
-}
-*/
+// accountsByExntesion$.subscribe()

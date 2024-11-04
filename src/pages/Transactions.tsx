@@ -16,8 +16,9 @@ import {
   tap,
   withLatestFrom,
 } from "rxjs"
-import { CopyText } from "./Copy"
 import { shortStr } from "@/utils"
+import { CopyText } from "@/components/Copy"
+import { Link } from "react-router-dom"
 
 const [signedTx$, onNexTx] = createSignal<HexString>()
 export { onNexTx }
@@ -81,7 +82,54 @@ transactionList$.subscribe()
 
 const Transaction: React.FC<
   TxBroadcastEvent | { type: "invalid" | "error"; value: any; txHash: string }
-> = ({ txHash, type }) => {
+> = (event) => {
+  const getStatus = () => {
+    const { type } = event
+    switch (event.type) {
+      case "error":
+        return <span>There was an unexpected error.</span>
+      case "invalid":
+        return (
+          <span>
+            Invalid transaction. {JSON.stringify(event.value, null, 2)}
+          </span>
+        )
+      case "txBestBlocksState": {
+        return event.found ? (
+          <span>
+            Transaction in{" "}
+            <Link
+              className="underline font-bold"
+              to={`/explorer/${event.block.hash}#tx=${event.block.index}`}
+            >
+              best block
+            </Link>
+            .
+          </span>
+        ) : (
+          <span>Transaction no longer in a best block.</span>
+        )
+      }
+      case "signed":
+      case "broadcasted":
+        return <span>Transaction {type}.</span>
+      default:
+        return (
+          <span>
+            Transaction in{" "}
+            <Link
+              className="underline font-bold"
+              to={`/explorer/${event.block.hash}#tx=${event.block.index}`}
+            >
+              {" "}
+              finalized block
+            </Link>
+            .
+          </span>
+        )
+    }
+  }
+  const { txHash, type } = event
   return (
     <div className="mb-4 p-3 bg-polkadot-800 rounded-lg">
       <p className="font-medium">
@@ -96,7 +144,7 @@ const Transaction: React.FC<
               : "text-red-500"
         }`}
       >
-        Status: {type}
+        {getStatus()}
       </p>
     </div>
   )
