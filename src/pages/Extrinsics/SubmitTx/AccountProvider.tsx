@@ -1,14 +1,8 @@
 import {
-  InjectedExtension,
-  InjectedPolkadotAccount,
-} from "polkadot-api/pjs-signer"
-import React, {
-  PropsWithChildren,
-  useEffect,
-  useState,
-  useSyncExternalStore,
-} from "react"
-import { useSelectedExtensions } from "./extensionCtx"
+  accountsByExtension$,
+  extensionAccounts$,
+  selectedExtensions$,
+} from "@/accounts.state"
 import {
   Select,
   SelectContent,
@@ -18,15 +12,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { SelectedAccountCtx } from "./accountCtx"
+import { state, useStateObservable } from "@react-rxjs/core"
+import { createSignal } from "@react-rxjs/utils"
+import { InjectedExtension } from "polkadot-api/pjs-signer"
+import React from "react"
+import { combineLatest, distinctUntilChanged, map, merge, of, tap } from "rxjs"
 
-export const Accounts: React.FC<{ extension: InjectedExtension }> = ({
+const Accounts: React.FC<{ extension: InjectedExtension }> = ({
   extension,
 }) => {
-  const accounts = useSyncExternalStore(
-    extension.subscribe,
-    extension.getAccounts,
-  )
+  const accounts = useStateObservable(extensionAccounts$(extension.name))
 
   return (
     <SelectGroup>
@@ -43,58 +38,51 @@ export const Accounts: React.FC<{ extension: InjectedExtension }> = ({
   )
 }
 
-const SignerCtx: React.FC<PropsWithChildren<{ account: string | null }>> = ({
-  account,
-  children,
-}) => {
-  const extensions = useSelectedExtensions()
-  const [injectedPolkadotAccount, setInjectedPolkadotAccount] =
-    useState<InjectedPolkadotAccount | null>(null)
+const [valueSelected$, selectValue] = createSignal<string>()
 
-  useEffect(() => {
-    if (!account) {
-      setInjectedPolkadotAccount(null)
-      return
-    }
+const LS_KEY = "selected-signer"
+const selectedValue$ = state(
+  merge(
+    of(localStorage.getItem(LS_KEY)),
+    valueSelected$.pipe(tap((v) => localStorage.setItem(LS_KEY, v))),
+  ),
+  null,
+)
 
-    const separator = account.indexOf("-")
-    const address = account.slice(0, separator)
-    const extensionName = account.slice(separator + 1)
+export const selectedAccount$ = state(
+  combineLatest([selectedValue$, accountsByExtension$]).pipe(
+    map(([selectedAccount, accountsByExtension]) => {
+      if (!selectedAccount) return null
+      const [address, ...rest] = selectedAccount.split("-")
+      const signer = rest.join("-")
 
-    setInjectedPolkadotAccount(
-      extensions
-        .find((x) => x.name === extensionName)
-        ?.getAccounts()
-        .find((account) => account.address === address) ?? null,
-    )
-  }, [extensions, account])
+      const accounts = accountsByExtension.get(signer)
+      if (!accounts) return null
+      return accounts.find((account) => account.address === address) ?? null
+    }),
+    distinctUntilChanged(),
+  ),
+  null,
+)
 
-  return (
-    injectedPolkadotAccount && (
-      <SelectedAccountCtx.Provider value={injectedPolkadotAccount}>
-        {children}
-      </SelectedAccountCtx.Provider>
-    )
-  )
-}
+export const AccountProvider: React.FC = () => {
+  const value = useStateObservable(selectedValue$)
+  const extensions = useStateObservable(selectedExtensions$)
 
-export const AccountProvider: React.FC<PropsWithChildren> = ({ children }) => {
-  const [selectedAccount, setSelectedAcount] = useState<string | null>(null)
-  const extensions = useSelectedExtensions()
+  const activeExtensions = [...extensions.values()].filter((v) => !!v)
+
+  if (!activeExtensions.length) return null
 
   return (
-    <>
-      <Select onValueChange={setSelectedAcount}>
-        <SelectTrigger>
-          <SelectValue placeholder="Select an account" />
-        </SelectTrigger>
-        <SelectContent>
-          {extensions.map((extension) => (
-            <Accounts key={extension.name} {...{ extension }} />
-          ))}
-        </SelectContent>
-      </Select>
-      <SignerCtx account={selectedAccount}>{children}</SignerCtx>
-    </>
+    <Select value={value ?? ""} onValueChange={selectValue}>
+      <SelectTrigger>
+        <SelectValue placeholder="Select an account" />
+      </SelectTrigger>
+      <SelectContent>
+        {activeExtensions.map((extension) => (
+          <Accounts key={extension.name} extension={extension} />
+        ))}
+      </SelectContent>
+    </Select>
   )
 }

@@ -1,3 +1,4 @@
+import { unsafeApi$ } from "@/chain.state"
 import { ActionButton } from "@/components/ActionButton"
 import {
   Dialog,
@@ -5,23 +6,25 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
+import { onNexTx } from "@/pages/Transactions"
+import { toHex } from "@polkadot-api/utils"
+import { useStateObservable } from "@react-rxjs/core"
 import { Binary, HexString } from "polkadot-api"
 import React, { createContext, useContext, useState } from "react"
-import { ExtensionProvider } from "./ExtensionProvider"
-import { AccountProvider } from "./AccountProvider"
-import { useSelectedAccount } from "./accountCtx"
-import { unsafeApi$ } from "@/chain.state"
 import { noop } from "rxjs"
-import { toHex } from "@polkadot-api/utils"
-import { onNexTx } from "@/pages/Transactions"
+import { AccountProvider, selectedAccount$ } from "./AccountProvider"
+import { ExtensionProvider } from "./ExtensionProvider"
 
 const CallDataCtx = createContext("")
 const OnCloseCtx = createContext(noop)
 
 const SignAndSubmit = () => {
-  const account = useSelectedAccount()
+  const account = useStateObservable(selectedAccount$)
   const callData = useContext(CallDataCtx)
   const close = useContext(OnCloseCtx)
+
+  if (!account) return null
+
   return (
     <ActionButton
       onClick={() => {
@@ -51,11 +54,11 @@ const SignAndSubmit = () => {
 
 const SelectAccountFromExtension = () => {
   return (
-    <ExtensionProvider>
-      <AccountProvider>
-        <SignAndSubmit />
-      </AccountProvider>
-    </ExtensionProvider>
+    <>
+      <ExtensionProvider />
+      <AccountProvider />
+      <SignAndSubmit />
+    </>
   )
 }
 

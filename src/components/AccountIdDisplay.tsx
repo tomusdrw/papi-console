@@ -1,7 +1,4 @@
-import {
-  accountDetail$,
-  getPublicKey,
-} from "@/codec-components/common/accounts.state"
+import { accountDetail$, getPublicKey } from "@/accounts.state"
 import { PolkadotIdenticon } from "@/components/PolkadotIdenticon"
 import { useStateObservable } from "@react-rxjs/core"
 import { SS58String } from "polkadot-api"

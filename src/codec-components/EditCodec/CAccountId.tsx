@@ -1,3 +1,9 @@
+import {
+  accountDetail$,
+  accounts$,
+  getAccountMapKey,
+  getPublicKey,
+} from "@/accounts.state"
 import { PolkadotIdenticon } from "@/components/PolkadotIdenticon"
 import { useSynchronizeInput } from "@/components/useSynchroniseInput"
 import { EditAccountId, NOTIN } from "@codec-components"
@@ -15,12 +21,6 @@ import {
 import { useStateObservable } from "@react-rxjs/core"
 import { FC, useState } from "react"
 import { twMerge } from "tailwind-merge"
-import {
-  accountDetail$,
-  accounts$,
-  getAccountMapKey,
-  getPublicKey,
-} from "../common/accounts.state"
 
 export const CAccountId: EditAccountId = ({ value, onValueChanged }) => {
   const [localInput, setLocalInput] = useSynchronizeInput(

@@ -1,5 +1,6 @@
-import { state } from "@react-rxjs/core"
+import { state, withDefault } from "@react-rxjs/core"
 import { combineKeys, createKeyedSignal } from "@react-rxjs/utils"
+import { Binary, getSs58AddressInfo } from "polkadot-api"
 import {
   connectInjectedExtension,
   getInjectedExtensions,
@@ -7,31 +8,37 @@ import {
   InjectedPolkadotAccount,
 } from "polkadot-api/pjs-signer"
 import {
+  catchError,
+  concat,
   defer,
-  EMPTY,
-  exhaustMap,
+  filter,
+  interval,
   map,
-  merge,
-  mergeMap,
+  NEVER,
   Observable,
   of,
+  scan,
   startWith,
+  switchMap,
+  take,
   tap,
   timer,
 } from "rxjs"
 
-const availableExtensions$ = state(
-  defer(() =>
-    timer(100, 500).pipe(
+export const availableExtensions$ = state(
+  concat(
+    timer(0, 100).pipe(
       map(getInjectedExtensions),
-      startWith(getInjectedExtensions()),
+      filter((v) => v.length > 0),
+      take(1),
     ),
+    interval(2000).pipe(map(getInjectedExtensions)),
   ),
   [],
 )
 
-const [toggleExtension$, onTogleExtension] = createKeyedSignal<string>()
-export { onTogleExtension }
+const [toggleExtension$, onToggleExtension] = createKeyedSignal<string>()
+export { onToggleExtension }
 
 export const enum ConnectStatus {
   Connecting,
@@ -45,61 +52,150 @@ export type ExtensionState =
   | { type: ConnectStatus.Connecting }
   | { type: ConnectStatus.Connected; value: InjectedExtension }
 
-const extension$ = state(
-  (name: string): Observable<ExtensionState> => {
-    const storageKey = `extension-${name}`
-    const isInStorage = localStorage.hasOwnProperty(storageKey)
+const SELECTED_EXTENSIONS_KEY = "selected-extensions"
+const getPreselectedExtensions = () => {
+  try {
+    const res = JSON.parse(localStorage.getItem(SELECTED_EXTENSIONS_KEY)!)
+    if (Array.isArray(res)) return res
+    // eslint-disable-next-line no-empty
+  } catch (_) {}
+  return null
+}
+const extensionIsPreselected = (extension: string) =>
+  getPreselectedExtensions()?.includes(extension) ?? false
+const setPreselectedExtension = (extension: string, selected: boolean) => {
+  const preselectedExtensions = getPreselectedExtensions() ?? []
+  const result = selected
+    ? [...new Set([...preselectedExtensions, extension])]
+    : preselectedExtensions.filter((v) => v !== extension)
+  localStorage.setItem(SELECTED_EXTENSIONS_KEY, JSON.stringify(result))
+}
 
-    const connect$ = defer(() =>
-      connectInjectedExtension(name)
-        .then((value) => ({
-          type: ConnectStatus.Connected as const,
-          value,
-        }))
-        .catch(() => ({ type: ConnectStatus.Disconnected as const })),
-    ).pipe(startWith({ type: ConnectStatus.Connecting as const }))
+const extension$ = (name: string) => {
+  const connect$ = defer(() => connectInjectedExtension(name)).pipe(
+    map((extension) => ({
+      type: ConnectStatus.Connected as const,
+      extension,
+    })),
+    catchError(() => of({ type: ConnectStatus.Disconnected as const })),
+    startWith({ type: ConnectStatus.Connecting as const }),
+  )
 
-    const init$ = isInStorage ? of() : EMPTY
-
-    let state: ExtensionState = { type: ConnectStatus.Disconnected }
-    return merge(
-      init$,
-      toggleExtension$(name).pipe(
-        exhaustMap(() =>
-          state.type === ConnectStatus.Disconnected
-            ? connect$
-            : of({ type: ConnectStatus.Disconnected as const }),
-        ),
-        tap(({ type }) => {
-          if (type === ConnectStatus.Disconnected)
-            localStorage.removeItem(storageKey)
-          else if (type === ConnectStatus.Connected)
-            localStorage.setItem(storageKey, "")
-        }),
-      ),
+  const connectWithCleanup$ = defer(() => {
+    let disconnected = false
+    let extension: InjectedExtension | null = null
+    return concat(connect$, NEVER).pipe(
+      tap({
+        next(value) {
+          if (value.type === ConnectStatus.Connected) {
+            if (disconnected) {
+              value.extension.disconnect()
+            } else {
+              extension = value.extension
+            }
+          }
+        },
+        unsubscribe() {
+          if (extension) {
+            extension.disconnect()
+          } else {
+            disconnected = true
+          }
+        },
+      }),
     )
-  },
-  { type: ConnectStatus.Disconnected as const },
-)
+  })
 
-const extensionAccounts$ = state((name: string) =>
-  extension$(name).pipe(
-    mergeMap((x) => {
-      if (x.type !== ConnectStatus.Connected) return EMPTY
-      return new Observable<InjectedPolkadotAccount[]>((observer) =>
-        x.value.subscribe((accounts) => {
-          observer.next(accounts)
-        }),
-      )
+  const initialSelected = extensionIsPreselected(name)
+  return toggleExtension$(name).pipe(
+    scan((acc) => !acc, initialSelected),
+    startWith(initialSelected),
+    switchMap((selected) =>
+      selected
+        ? connectWithCleanup$
+        : of({
+            type: ConnectStatus.Disconnected as const,
+          }),
+    ),
+    tap((v) => {
+      if (v.type === ConnectStatus.Connected) {
+        setPreselectedExtension(name, true)
+      } else if (v.type === ConnectStatus.Disconnected) {
+        setPreselectedExtension(name, false)
+      }
     }),
+  )
+}
+
+export const extensions$ = state(combineKeys(availableExtensions$, extension$))
+
+export const selectedExtensions$ = extensions$.pipeState(
+  map(
+    (extensions) =>
+      new Map(
+        [...extensions.entries()]
+          .filter(([, v]) => v.type !== ConnectStatus.Disconnected)
+          .map(([k, v]) => [
+            k,
+            v.type === ConnectStatus.Connected ? v.extension : null,
+          ]),
+      ),
   ),
+  withDefault(new Map<string, InjectedExtension | null>()),
 )
 
-export const extensions$ = combineKeys(availableExtensions$, extension$)
-// extensions$.subscribe()
-
-export const accountsByExntesion$ = combineKeys(
-  availableExtensions$,
-  extensionAccounts$,
+export const extensionAccounts$ = state(
+  (name: string) =>
+    extension$(name).pipe(
+      switchMap((x) => {
+        if (x.type !== ConnectStatus.Connected) return of([])
+        return new Observable<InjectedPolkadotAccount[]>((observer) =>
+          x.extension.subscribe((accounts) => {
+            observer.next(accounts)
+          }),
+        )
+      }),
+    ),
+  [],
 )
-// accountsByExntesion$.subscribe()
+
+export const accountsByExtension$ = state(
+  combineKeys(availableExtensions$, extensionAccounts$),
+  new Map<string, InjectedPolkadotAccount[]>(),
+)
+
+export const getPublicKey = (address: string) => {
+  const info = getSs58AddressInfo(address)
+  return info.isValid ? info.publicKey : null
+}
+export const getAccountMapKey = (address: string) => {
+  const pk = getPublicKey(address)
+  return pk ? Binary.fromBytes(pk).asHex() : address
+}
+
+export const accounts$ = state(
+  accountsByExtension$.pipe(
+    map(
+      (extensionAccounts) =>
+        new Map(
+          Array.from(extensionAccounts.entries()).flatMap(
+            ([extension, accounts]) =>
+              accounts.map((account) => [
+                getAccountMapKey(account.address),
+                {
+                  ...account,
+                  extension,
+                },
+              ]),
+          ),
+        ),
+    ),
+  ),
+  new Map<string, InjectedPolkadotAccount & { extension: string }>(),
+)
+
+export const accountDetail$ = state(
+  (account: string) =>
+    accounts$.pipe(map((v) => v.get(getAccountMapKey(account)) ?? null)),
+  null,
+)
