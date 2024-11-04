@@ -19,14 +19,10 @@ import {
   take,
 } from "rxjs"
 import { twMerge } from "tailwind-merge"
-import {
-  blockInfo$,
-  blockInfoState$,
-  blocksByHeight$,
-  BlockState,
-} from "../block.state"
+import { blockInfoState$, blocksByHeight$, BlockState } from "../block.state"
 import { BlockStatusIcon, statusText } from "./BlockState"
 import { createExtrinsicCodec, DecodedExtrinsic } from "./extrinsicDecoder"
+import { Loading } from "@/components/Loading"
 
 const blockExtrinsics$ = state((hash: string) => {
   const decoder$ = dynamicBuilder$.pipe(
@@ -71,7 +67,7 @@ export const BlockDetail = () => {
       )
     : null
 
-  if (!block) return null
+  if (!block) return <Loading>Loading block…</Loading>
 
   const groupedExtrinsics = groupBy(
     extrinsics.map((e, index) => ({ ...e, index })),
