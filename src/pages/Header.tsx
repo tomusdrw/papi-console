@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom"
 
 export const Header = () => (
-  <div className="flex p-4 pb-0 items-center flex-shrink-0">
+  <div className="flex p-4 pb-2 items-center flex-shrink-0">
     <div className="flex flex-1 items-center flex-row gap-2">
       <img className="w-14 min-w-14" src="/papi_logo-dark.svg" alt="papi-logo" />
       <h1 className="hidden lg:block poppins-regular text-xl">papi <span className="poppins-extralight">console</span></h1>

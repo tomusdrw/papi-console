@@ -12,7 +12,6 @@ export default function App() {
   return (
     <div className="w-full max-w-screen-lg h-screen bg-polkadot-950 flex flex-col">
       <Header />
-      <div className="p-4">
         <Routes>
           <Route path="explorer/*" element={<Explorer />} />
           <Route path="extrinsics/*" element={<Extrinsics />} />
@@ -22,7 +21,6 @@ export default function App() {
           <Route path="metadata/*" element={<Metadata />} />
           <Route path="*" element={<Navigate to="/extrinsics" replace />} />
         </Routes>
-      </div>
       <Transactions />
     </div>
   )

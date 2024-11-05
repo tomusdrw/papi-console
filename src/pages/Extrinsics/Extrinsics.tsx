@@ -54,7 +54,7 @@ export const Extrinsics = withSubscribe(
           : undefined
 
     return (
-      <div className="flex flex-col overflow-hidden gap-2">
+      <div className="flex flex-col overflow-hidden gap-2 p-4 pb-0">
         {/* <div>Extrinsics</div> */}
         <BinaryDisplay
           {...extrinsicProps}

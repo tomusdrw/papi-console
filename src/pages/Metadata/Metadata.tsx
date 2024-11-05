@@ -32,7 +32,7 @@ const MetadataExplorer = () => {
   const metadata = useStateObservable(metadata$)
 
   return (
-    <div className="flex flex-col overflow-auto items-start gap-2 p-2">
+    <div className="p-4 pb-0 flex flex-col overflow-auto items-start gap-2">
       <ButtonGroup
         value={mode}
         onValueChange={setMode as any}
