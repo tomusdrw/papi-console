@@ -83,7 +83,7 @@ export const LookupTypeEdit: FC<{
               </div>
             )}
             <div className="flex-1">
-              <div className="p-2 rounded bg-polkadot-900">
+              <div className="p-2 rounded">
                 <Marker id={[]} />
                 <EditCodec {...codecProps} />
               </div>

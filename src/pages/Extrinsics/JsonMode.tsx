@@ -8,7 +8,7 @@ export const JsonMode: FC<{
   const src = useMemo(() => (value ? decode(value) : null), [value, decode])
 
   return (
-    <div className="overflow-auto p-2 bg-polkadot-900 text-sm">
+    <div className="overflow-auto p-2 text-sm">
       <JsonDisplay src={src} />
     </div>
   )

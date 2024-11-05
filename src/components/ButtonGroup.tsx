@@ -17,18 +17,16 @@ export const ButtonGroup: FC<{
       type="single"
       value={value}
       onValueChange={(v) => v && onValueChange(v)}
-      className="inline-flex bg-polkadot-800 rounded"
+      className="inline-flex border border-polkadot-700"
     >
       {items.map(({ value, content, disabled }) => (
         <ToggleGroup.Item
           value={value}
           key={value}
           className={twMerge(
-            "bg-white text-polkadot-500 ml-[1px] px-2",
-            "first:ml-0 first:rounded-l",
-            "last:rounded-r",
-            "hover:bg-polkadot-100",
-            "data-[state=on]:bg-polkadot-500 data-[state=on]:text-white",
+            "text-polkadot-600 px-3 py-1",
+            "hover:text-polkadot-500",
+            "data-[state=on]:bg-polkadot-700 data-[state=on]:text-white",
             disabled && "opacity-50 pointer-events-none",
           )}
           disabled={disabled}

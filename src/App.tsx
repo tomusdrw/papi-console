@@ -12,16 +12,17 @@ export default function App() {
   return (
     <div className="w-full max-w-screen-lg h-screen bg-polkadot-950 flex flex-col">
       <Header />
-
-      <Routes>
-        <Route path="explorer/*" element={<Explorer />} />
-        <Route path="extrinsics/*" element={<Extrinsics />} />
-        <Route path="storage/*" element={<Storage />} />
-        <Route path="constants/*" element={<Constants />} />
-        <Route path="runtimeCalls/*" element={<RuntimeCalls />} />
-        <Route path="metadata/*" element={<Metadata />} />
-        <Route path="*" element={<Navigate to="/extrinsics" replace />} />
-      </Routes>
+      <div className="p-4">
+        <Routes>
+          <Route path="explorer/*" element={<Explorer />} />
+          <Route path="extrinsics/*" element={<Extrinsics />} />
+          <Route path="storage/*" element={<Storage />} />
+          <Route path="constants/*" element={<Constants />} />
+          <Route path="runtimeCalls/*" element={<RuntimeCalls />} />
+          <Route path="metadata/*" element={<Metadata />} />
+          <Route path="*" element={<Navigate to="/extrinsics" replace />} />
+        </Routes>
+      </div>
       <Transactions />
     </div>
   )

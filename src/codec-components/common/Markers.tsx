@@ -21,7 +21,7 @@ export const Marker: FC<{ id: string[] }> = ({ id }) => {
   const ctx = useContext(MarkersContext)
   const ref = useRefEffect<HTMLElement>(
     (element) => {
-      if (!ctx) return () => {}
+      if (!ctx) return () => { }
       ctx.observer.observe(element)
       return () => {
         ctx.onMarkerRemoved(id)
@@ -108,8 +108,8 @@ export const VisibleWindow = () => {
   const transitionEnabled = useWindowTransition(isAllVisible)
   if (!ctx) return null
 
-  const fade = twMerge(
-    "absolute left-0 right-0 ease-linear bg-gray-100 bg-opacity-10 backdrop-blur-[0.4px]",
+  const window = twMerge(
+    "absolute left-0 right-0 ease-linear bg-polkadot-900 z-[-1]",
     transitionEnabled && "transition-all",
   )
 
@@ -117,24 +117,18 @@ export const VisibleWindow = () => {
     <div
       ref={ref}
       className={twMerge(
-        "absolute top-0 right-0 left-0 bottom-0 pointer-events-none border-x-8 border-y-4 border-gray-100 border-opacity-10 transition-all",
+        "absolute top-0 right-0 left-0 bottom-0 pointer-events-none transition-all",
         isAllVisible && "border-x-0 border-y-0",
       )}
     >
       <div
-        className={fade}
+        className={window}
         style={{
-          top: 0,
-          height: ctx.range[0],
+          top: ctx.range[0],
+          height: ctx.range[1],
         }}
-      ></div>
-      <div
-        className={fade}
-        style={{
-          top: ctx.range[1] || "100%",
-          bottom: 0,
-        }}
-      ></div>
+      >
+      </div>
     </div>
   )
 }

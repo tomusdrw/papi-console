@@ -76,7 +76,7 @@ export const ListItem: React.FC<{
       {inline ? null : (
         <div
           className={clsx(
-            "flex-row p-2 items-center border border-polkadot-700 rounded ",
+            "flex-row p-2 items-center border border-polkadot-700",
             isCollapsed ? "hidden" : "",
           )}
         >
