@@ -3,21 +3,23 @@ import {
   IdentityJudgement,
   polkadot_people,
 } from "@polkadot-api/descriptors"
+import { state } from "@react-rxjs/core"
+import { Binary, createClient, SS58String } from "polkadot-api"
 import { chainSpec as relayChain } from "polkadot-api/chains/polkadot"
 import { chainSpec } from "polkadot-api/chains/polkadot_people"
-import { localStorageSubject } from "./utils/localStorageSubject"
-import { Binary, createClient, SS58String } from "polkadot-api"
+import { catchError, map, of, tap } from "rxjs"
 import { getProvider } from "./chain.state"
-import { state } from "@react-rxjs/core"
-import { filter, map, merge, take, tap } from "rxjs"
+import { localStorageSubject } from "./utils/localStorageSubject"
 
-interface Identity {
+export interface Identity {
   displayName: string
   judgments: Array<{
     registrar: number
     judgement: IdentityJudgement["type"]
   }>
 }
+export const isVerified = (identity: Identity | null) =>
+  identity?.judgments.some((j) => j.judgement === "Reasonable")
 
 const cache = localStorageSubject<Record<string, Identity>>(
   "identity-cache",
@@ -37,41 +39,38 @@ const client = createClient(
 )
 const typedApi = client.getTypedApi(polkadot_people)
 
-export const identity$ = state((address: SS58String) => {
-  const cached$ = cache.stream$.pipe(
-    take(1),
-    map((v) => v[address]),
-    filter((v) => !!v),
-  )
-  const chain$ = typedApi.query.Identity.IdentityOf.watchValue(address).pipe(
-    map((res): Identity | null =>
-      res
-        ? {
-            displayName: readIdentityData(res[0].info.display).asText(),
-            judgments: res[0].judgements.map(([registrar, judgement]) => ({
-              registrar,
-              judgement: judgement.type,
-            })),
-          }
-        : null,
-    ),
-    tap((v) =>
-      cache.setValue((c) => {
-        if (v) {
-          return { ...c, [address]: v }
-        } else {
-          delete c[address]
-          return c
-        }
+export const identity$ = state(
+  (address: SS58String) =>
+    typedApi.query.Identity.IdentityOf.watchValue(address).pipe(
+      map((res): Identity | null => {
+        const displayName = res && readIdentityData(res[0].info.display)
+        return displayName
+          ? {
+              displayName: displayName.asText(),
+              judgments: res[0].judgements.map(([registrar, judgement]) => ({
+                registrar,
+                judgement: judgement.type,
+              })),
+            }
+          : null
       }),
+      tap((v) =>
+        cache.setValue((c) => {
+          if (v) {
+            return { ...c, [address]: v }
+          } else {
+            delete c[address]
+            return c
+          }
+        }),
+      ),
+      catchError(() => of(null)),
     ),
-  )
-  return merge(cached$, chain$)
-}, null)
+  (address) => cache.getValue()[address] ?? null,
+)
 
-const readIdentityData = (identityData: IdentityData): Binary => {
-  if (identityData.type === "None" || identityData.type === "Raw0")
-    return Binary.fromHex("")
+const readIdentityData = (identityData: IdentityData): Binary | null => {
+  if (identityData.type === "None" || identityData.type === "Raw0") return null
   if (identityData.type === "Raw1")
     return Binary.fromBytes(new Uint8Array(identityData.value))
   return identityData.value

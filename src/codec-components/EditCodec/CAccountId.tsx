@@ -1,11 +1,12 @@
+import { PolkadotIdenticon } from "@/components/PolkadotIdenticon"
+import { useSynchronizeInput } from "@/components/useSynchroniseInput"
 import {
   accountDetail$,
   accounts$,
   getAccountMapKey,
   getPublicKey,
 } from "@/extension-accounts.state"
-import { PolkadotIdenticon } from "@/components/PolkadotIdenticon"
-import { useSynchronizeInput } from "@/components/useSynchroniseInput"
+import { identity$, isVerified } from "@/identity.state"
 import { EditAccountId, NOTIN } from "@codec-components"
 import {
   Combobox,
@@ -18,9 +19,40 @@ import {
   getSs58AddressInfo,
   SS58String,
 } from "@polkadot-api/substrate-bindings"
-import { useStateObservable } from "@react-rxjs/core"
+import { state, useStateObservable } from "@react-rxjs/core"
+import { combineKeys } from "@react-rxjs/utils"
+import { CheckCircle } from "lucide-react"
 import { FC, useState } from "react"
+import { map, switchMap, take } from "rxjs"
 import { twMerge } from "tailwind-merge"
+
+const hintedAccounts$ = state(
+  combineKeys(
+    accounts$.pipe(map((accounts) => [...accounts.keys()])),
+    (account) =>
+      accounts$.pipe(
+        map((v) => v.get(account)!),
+        take(1),
+        switchMap((details) =>
+          identity$(details.address).pipe(
+            map((identity) => ({
+              address: details.address,
+              name: identity?.displayName ?? details.name,
+              isVerified: isVerified(identity),
+            })),
+          ),
+        ),
+      ),
+  ).pipe(map((v) => new Map(v))),
+  new Map<
+    string,
+    {
+      address: string
+      name: string | undefined
+      isVerified: boolean | undefined
+    }
+  >(),
+)
 
 export const CAccountId: EditAccountId = ({ value, onValueChanged }) => {
   const [localInput, setLocalInput] = useSynchronizeInput(
@@ -28,7 +60,10 @@ export const CAccountId: EditAccountId = ({ value, onValueChanged }) => {
     onValueChanged,
     parseValue,
   )
-  const accounts = useStateObservable(accounts$)
+  const accounts = useStateObservable(hintedAccounts$)
+  const valueIdentity = useStateObservable(
+    identity$(value === NOTIN ? "" : value),
+  )
 
   const [query, setQuery] = useState("")
   const queryInfo = getSs58AddressInfo(query)
@@ -64,10 +99,12 @@ export const CAccountId: EditAccountId = ({ value, onValueChanged }) => {
           />
         )}
         <ComboboxInput
-          className="bg-transparent outline-none w-full"
+          className="bg-transparent outline-none w-full select-all"
           aria-label="AccountId"
           displayValue={(address: string) =>
-            accounts.get(getAccountMapKey(address))?.name ?? address
+            valueIdentity?.displayName ??
+            accounts.get(getAccountMapKey(address))?.name ??
+            address
           }
           onChange={(event) => setQuery(event.target.value)}
         />
@@ -103,6 +140,9 @@ const AccountOption: FC<{ account: string; publicKey: Uint8Array | null }> = ({
   publicKey,
 }) => {
   const details = useStateObservable(accountDetail$(account))
+  const identity = useStateObservable(identity$(account))
+
+  const name = identity?.displayName ?? details?.name
 
   return (
     <ComboboxOption
@@ -115,7 +155,14 @@ const AccountOption: FC<{ account: string; publicKey: Uint8Array | null }> = ({
         size={32}
       />
       <div className="flex flex-col justify-center text-white leading-tight overflow-hidden">
-        {details?.name && <span>{details.name}</span>}
+        {name && (
+          <span className="inline-flex items-center gap-1">
+            {name}
+            {isVerified(identity) && (
+              <CheckCircle size={16} className="text-green-400" />
+            )}
+          </span>
+        )}
         <span className="text-slate-400 text-ellipsis overflow-hidden">
           {account}
         </span>

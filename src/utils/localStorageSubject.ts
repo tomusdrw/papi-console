@@ -11,6 +11,7 @@ interface LocalStorageSubject {
   ): {
     stream$: Observable<R | null>
     setValue: (v: R | ((old: R) => R)) => void
+    getValue: () => R | null
     clear: () => void
   }
   <R>(
@@ -20,6 +21,7 @@ interface LocalStorageSubject {
   ): {
     stream$: Observable<R>
     setValue: (v: R | ((old: R) => R)) => void
+    getValue: () => R
     clear: () => void
   }
 }
@@ -44,6 +46,7 @@ export const localStorageSubject: LocalStorageSubject = (
       localStorage.setItem(key, formatter.stringify(newValue))
       subject.next(newValue)
     },
+    getValue: () => subject.getValue(),
     clear: () => {
       localStorage.removeItem(key)
       subject.next(defaultValue)
