@@ -1,5 +1,5 @@
 diff --git a/dist/esm/chainHead/chainHead.mjs b/dist/esm/chainHead/chainHead.mjs
-index f1962b05e17ac7c3c66c0ab453a61cbece1525e0..f9ab1b168f3b72410055cc315ba1864576254f9d 100644
+index 694f29035186d89e0db3d4171d05a939f026570e..bff0a740c625f3bfb56938d2b8859d00d4a53b52 100644
 --- a/dist/esm/chainHead/chainHead.mjs
 +++ b/dist/esm/chainHead/chainHead.mjs
 @@ -157,7 +157,7 @@ const getChainHead$ = (chainHead) => {
@@ -11,63 +11,19 @@ index f1962b05e17ac7c3c66c0ab453a61cbece1525e0..f9ab1b168f3b72410055cc315ba18645
    const _storage$ = commonEnhancer(lazyFollower("storage"));
    const storage$ = withOptionalHash$(
      (hash, withCanonicalChain2, type, keyMapper, childTrie = null, mapper) => pinnedBlocks$.pipe(
-@@ -237,11 +237,11 @@ const getChainHead$ = (chainHead) => {
-     runtime$,
-     metadata$,
-     header$,
--    body$,
--    call$: withCanonicalChain(call$),
--    storage$: withCanonicalChain(storage$),
-+    body$: withCanonicalChain(body$, false),
-+    call$: withCanonicalChain(call$, false),
-+    storage$: withCanonicalChain(storage$, false),
-     storageQueries$,
--    eventsAt$: withCanonicalChain(eventsAt$),
-+    eventsAt$: withCanonicalChain(eventsAt$, false),
-     trackTx$,
-     trackTxWithoutEvents$,
-     validateTx$,
-diff --git a/dist/esm/getObservableClient.mjs b/dist/esm/getObservableClient.mjs
-index 511be34f2b04e0125858e03ff1dfce2759d3041b..b86e02a655903e3f5277269c5f46ca03b00b7ada 100644
---- a/dist/esm/getObservableClient.mjs
-+++ b/dist/esm/getObservableClient.mjs
-@@ -2,15 +2,30 @@ import { getChainHead$ } from './chainHead/chainHead.mjs';
- import 'rxjs';
- import getBroadcastTx$ from './tx.mjs';
- 
--const getObservableClient = ({
--  chainHead,
--  transaction,
--  destroy
--}) => ({
--  chainHead$: () => getChainHead$(chainHead),
--  broadcastTx$: getBroadcastTx$(transaction),
--  destroy
--});
-+const clientCache = /* @__PURE__ */ new Map();
-+const getObservableClient = (substrateClient) => {
-+  const cached = clientCache.get(substrateClient);
-+  if (cached) {
-+    cached.refCount++;
-+    return cached.client;
-+  }
-+  const destroy = () => {
-+    const cached2 = clientCache.get(substrateClient);
-+    if (!cached2 || cached2.refCount <= 1) {
-+      clientCache.delete(substrateClient);
-+      substrateClient.destroy();
-+    } else {
-+      cached2.refCount--;
-+    }
-+  };
-+  const client = {
-+    chainHead$: () => getChainHead$(substrateClient.chainHead),
-+    broadcastTx$: getBroadcastTx$(substrateClient.transaction),
-+    destroy
-+  };
-+  clientCache.set(substrateClient, { client, refCount: 1 });
-+  return client;
-+};
- 
- export { getObservableClient };
- //# sourceMappingURL=getObservableClient.mjs.map
+@@ -244,11 +244,11 @@ const getChainHead$ = (chainHead) => {
+       runtime$,
+       metadata$,
+       header$,
+-      body$,
+-      call$: withCanonicalChain(call$),
+-      storage$: withCanonicalChain(storage$),
++      body$: withCanonicalChain(body$, false),
++      call$: withCanonicalChain(call$, false),
++      storage$: withCanonicalChain(storage$, false),
+       storageQueries$,
+-      eventsAt$: withCanonicalChain(eventsAt$),
++      eventsAt$: withCanonicalChain(eventsAt$, false),
+       trackTx$,
+       trackTxWithoutEvents$,
+       validateTx$,

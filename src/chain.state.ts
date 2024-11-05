@@ -58,14 +58,16 @@ export const chainClient$ = state(
   selectedSource$.pipe(
     map((src) => [src.id, getProvider(src)] as const),
     switchMap(([id, provider]) => {
-      const client = createClient(provider)
       const substrateClient = createSubstrateClient(provider)
       const observableClient = getObservableClient(substrateClient)
+      const chainHead = observableClient.chainHead$(2)
+      const client = createClient(provider)
       return concat(
-        of({ id, client, substrateClient, observableClient }),
+        of({ id, client, substrateClient, observableClient, chainHead }),
         NEVER,
       ).pipe(
         finalize(() => {
+          chainHead.unfollow()
           client.destroy()
           observableClient.destroy()
         }),
@@ -74,12 +76,7 @@ export const chainClient$ = state(
   ),
 )
 export const chainHead$ = state(
-  chainClient$.pipe(
-    switchMap(({ observableClient }) => {
-      const chainHead = observableClient.chainHead$()
-      return concat(of(chainHead), NEVER).pipe(finalize(chainHead.unfollow))
-    }),
-  ),
+  chainClient$.pipe(map(({ chainHead }) => chainHead)),
 )
 
 export const unsafeApi$ = chainClient$.pipeState(
