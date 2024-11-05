@@ -1,8 +1,5 @@
-import {
-  accountsByExtension$,
-  extensionAccounts$,
-  selectedExtensions$,
-} from "@/extension-accounts.state"
+import { AccountIdDisplay } from "@/components/AccountIdDisplay"
+import { WalletConnect } from "@/components/Icons"
 import {
   Select,
   SelectContent,
@@ -12,6 +9,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+import {
+  accountsByExtension$,
+  extensionAccounts$,
+  selectedExtensions$,
+} from "@/extension-accounts.state"
+import {
+  walletConnectAccounts$,
+  walletConnectStatus$,
+} from "@/walletconnect.state"
 import { state, useStateObservable } from "@react-rxjs/core"
 import { createSignal } from "@react-rxjs/utils"
 import { InjectedExtension } from "polkadot-api/pjs-signer"
@@ -31,7 +37,26 @@ const Accounts: React.FC<{ extension: InjectedExtension }> = ({
           key={account.address}
           value={account.address + "-" + extension.name}
         >
-          {account.name ?? account.address}
+          <AccountIdDisplay value={account.address} />
+        </SelectItem>
+      ))}
+    </SelectGroup>
+  )
+}
+
+const WalletConnectAccounts = () => {
+  const accounts = useStateObservable(walletConnectAccounts$)
+
+  if (!Object.keys(accounts).length) return null
+
+  return (
+    <SelectGroup>
+      <SelectLabel className="flex gap-1">
+        <WalletConnect /> Wallet Connect
+      </SelectLabel>
+      {Object.keys(accounts).map((address) => (
+        <SelectItem key={address} value={address + "-" + "wallet_connect"}>
+          <AccountIdDisplay value={address} />
         </SelectItem>
       ))}
     </SelectGroup>
@@ -50,11 +75,23 @@ const selectedValue$ = state(
 )
 
 export const selectedAccount$ = state(
-  combineLatest([selectedValue$, accountsByExtension$]).pipe(
-    map(([selectedAccount, accountsByExtension]) => {
+  combineLatest([
+    selectedValue$,
+    accountsByExtension$,
+    walletConnectAccounts$,
+  ]).pipe(
+    map(([selectedAccount, accountsByExtension, walletConnectAccounts]) => {
       if (!selectedAccount) return null
       const [address, ...rest] = selectedAccount.split("-")
       const signer = rest.join("-")
+
+      if (signer === "wallet_connect") {
+        return address in walletConnectAccounts
+          ? {
+              polkadotSigner: walletConnectAccounts[address],
+            }
+          : null
+      }
 
       const accounts = accountsByExtension.get(signer)
       if (!accounts) return null
@@ -68,20 +105,23 @@ export const selectedAccount$ = state(
 export const AccountProvider: React.FC = () => {
   const value = useStateObservable(selectedValue$)
   const extensions = useStateObservable(selectedExtensions$)
+  const walletConnect = useStateObservable(walletConnectStatus$)
 
   const activeExtensions = [...extensions.values()].filter((v) => !!v)
 
-  if (!activeExtensions.length) return null
+  if (!activeExtensions.length && walletConnect.type !== "connected")
+    return null
 
   return (
     <Select value={value ?? ""} onValueChange={selectValue}>
-      <SelectTrigger>
+      <SelectTrigger className="h-auto">
         <SelectValue placeholder="Select an account" />
       </SelectTrigger>
       <SelectContent>
         {activeExtensions.map((extension) => (
           <Accounts key={extension.name} extension={extension} />
         ))}
+        <WalletConnectAccounts />
       </SelectContent>
     </Select>
   )

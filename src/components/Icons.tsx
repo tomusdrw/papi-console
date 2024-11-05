@@ -2,6 +2,7 @@ import { ReactSVG, Props } from "react-svg"
 import focusSvg from "./icons/focus.svg"
 import enumSvg from "./icons/enum.svg"
 import binarySvg from "./icons/binary.svg"
+import walletConnectSvg from "./icons/walletConnect.svg"
 import { useEffect, useRef } from "react"
 import {
   Ban,
@@ -11,9 +12,12 @@ import {
   Copy,
   Hash,
   List,
+  LoaderCircle,
+  LucideProps,
   User,
 } from "lucide-react"
 import { LookupEntry } from "@polkadot-api/metadata-builders"
+import { twMerge } from "tailwind-merge"
 
 type CustomIconProps = Omit<Props, "ref" | "src"> & { size?: number }
 const customIcon =
@@ -43,6 +47,14 @@ const customIcon =
 export const Focus = customIcon(focusSvg)
 export const Enum = customIcon(enumSvg)
 export const BinaryEdit = customIcon(binarySvg)
+export const WalletConnect = customIcon(walletConnectSvg)
+
+export const Spinner = (props: LucideProps) => (
+  <LoaderCircle
+    {...props}
+    className={twMerge("animate-spin", props.className)}
+  />
+)
 
 export const TypeIcons = {
   list: List,

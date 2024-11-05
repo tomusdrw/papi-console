@@ -73,7 +73,16 @@ export const ExtrinsicModal: React.FC<{
           Submit extrinsic
         </ActionButton>
       </DialogTrigger>
-      <DialogContent>
+      <DialogContent
+        onInteractOutside={(evt) => {
+          if (
+            evt.target instanceof HTMLElement &&
+            evt.target.tagName === "WCM-MODAL"
+          )
+            evt.preventDefault()
+        }}
+        className="flex flex-col overflow-hidden"
+      >
         <DialogTitle>Create TX</DialogTitle>
         <CallDataCtx.Provider
           value={callData instanceof Uint8Array ? toHex(callData) : callData!}
