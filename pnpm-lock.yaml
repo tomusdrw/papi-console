@@ -25,6 +25,9 @@ importers:
       '@ledgerhq/hw-transport-webusb':
         specifier: ^6.29.4
         version: 6.29.4
+      '@noble/hashes':
+        specifier: ^1.5.0
+        version: 1.5.0
       '@polkadot-api/ledger-signer':
         specifier: ^0.1.6
         version: 0.1.6(@ledgerhq/hw-transport@6.31.4)

@@ -1,6 +1,6 @@
 // Based from https://github.com/paritytech/oo7/blob/251ba2b7c45503b68eab4320c270b5afa9bccb60/packages/polkadot-identicon/src/index.jsx
 
-import { Blake2256 } from "@polkadot-api/substrate-bindings"
+import { blake2b } from "@noble/hashes/blake2b"
 import { FC, SVGAttributes } from "react"
 
 export const PolkadotIdenticon: FC<
@@ -86,7 +86,8 @@ const findScheme = (d: number) => {
   }
   throw "Unreachable"
 }
-const zero = Blake2256(
+const blake2512 = (input: Uint8Array) => blake2b(input, { dkLen: 64 })
+const zero = blake2512(
   new Uint8Array([
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0,
@@ -94,7 +95,7 @@ const zero = Blake2256(
 )
 
 const getColors = (publicKey: Uint8Array) => {
-  const id = Array.from(Blake2256(publicKey)).map(
+  const id = Array.from(blake2512(publicKey)).map(
     (x, i) => (x + 256 - zero[i]) % 256,
   )
 
