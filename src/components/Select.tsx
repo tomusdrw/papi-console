@@ -37,7 +37,7 @@ export const SearchableSelect = <T,>({
       >
         <div className="flex flex-row px-4 py-2 border border-polkadot-200 text-white bg-black">
           <ComboboxInput
-            className="text-ellipsis overflow-hidden whitespace-nowrap focus:outline-none"
+            className="text-ellipsis overflow-hidden whitespace-nowrap focus:outline-none select-all"
             displayValue={(option: T) =>
               options.find((_option) => _option.value === option)?.text ?? ""
             }
