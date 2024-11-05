@@ -3,7 +3,7 @@ import {
   accounts$,
   getAccountMapKey,
   getPublicKey,
-} from "@/accounts.state"
+} from "@/extension-accounts.state"
 import { PolkadotIdenticon } from "@/components/PolkadotIdenticon"
 import { useSynchronizeInput } from "@/components/useSynchroniseInput"
 import { EditAccountId, NOTIN } from "@codec-components"

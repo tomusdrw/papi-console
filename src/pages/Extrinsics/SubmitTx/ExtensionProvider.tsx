@@ -2,7 +2,7 @@ import {
   availableExtensions$,
   onToggleExtension,
   selectedExtensions$,
-} from "@/accounts.state"
+} from "@/extension-accounts.state"
 import { Label } from "@/components/ui/label"
 import { TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { useStateObservable } from "@react-rxjs/core"

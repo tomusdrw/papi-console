@@ -2,7 +2,7 @@ import {
   accountsByExtension$,
   extensionAccounts$,
   selectedExtensions$,
-} from "@/accounts.state"
+} from "@/extension-accounts.state"
 import {
   Select,
   SelectContent,
