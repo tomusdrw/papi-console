@@ -5,8 +5,7 @@ import {
 } from "@polkadot-api/descriptors"
 import { state } from "@react-rxjs/core"
 import { Binary, createClient, SS58String } from "polkadot-api"
-import { chainSpec as relayChain } from "polkadot-api/chains/polkadot"
-import { chainSpec } from "polkadot-api/chains/polkadot_people"
+import { chainSpec } from "./chainspecs/polkadot_people"
 import { catchError, map, of, tap } from "rxjs"
 import { getProvider } from "./chain.state"
 import { localStorageSubject } from "./utils/localStorageSubject"
@@ -33,7 +32,7 @@ const client = createClient(
     type: "chainSpec",
     value: {
       chainSpec,
-      relayChain,
+      relayChain: "polkadot",
     },
   }),
 )

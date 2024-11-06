@@ -193,7 +193,7 @@ let smoldot: {
   client: Client
   relayChains: Record<string, Promise<Chain>>
 } | null = null
-function getProvider(source: ChainSource) {
+export function getProvider(source: ChainSource) {
   if (source.type === "websocket") {
     return withPolkadotSdkCompat(getWsProvider(source.value))
   }

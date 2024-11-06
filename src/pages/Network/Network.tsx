@@ -46,11 +46,7 @@ export function NetworkSwitcher() {
 
   const handleNetworkSelect = (network: Network) => {
     setSelectedNetwork(network)
-    setSelecteRpc(
-      network.lightclient
-        ? "light-client"
-        : Object.values(network.endpoints)[0],
-    )
+    setSelecteRpc(Object.values(network.endpoints)[0] || "light-client")
   }
 
   const handleConfirm = () => {
@@ -107,19 +103,6 @@ export function NetworkSwitcher() {
               <AccordionContent>
                 <ScrollArea className="h-[155px] rounded-lg border p-2">
                   <RadioGroup>
-                    {selectedNetwork.lightclient ? (
-                      <div className="flex items-center space-x-2">
-                        <RadioGroupItem
-                          value="light-client"
-                          id="light-client"
-                          checked={selectedRpc === "light-client"}
-                          onClick={() => setSelecteRpc("light-client")}
-                        />
-                        <Label htmlFor="light-client">
-                          Light Client (smoldot)
-                        </Label>
-                      </div>
-                    ) : null}
                     {Object.entries(selectedNetwork.endpoints).map(
                       ([rpcName, url]) => (
                         <div key={url} className="flex items-center space-x-2">
@@ -133,6 +116,19 @@ export function NetworkSwitcher() {
                         </div>
                       ),
                     )}
+                    {selectedNetwork.lightclient ? (
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem
+                          value="light-client"
+                          id="light-client"
+                          checked={selectedRpc === "light-client"}
+                          onClick={() => setSelecteRpc("light-client")}
+                        />
+                        <Label htmlFor="light-client">
+                          Light Client (smoldot)
+                        </Label>
+                      </div>
+                    ) : null}
                   </RadioGroup>
                 </ScrollArea>
               </AccordionContent>
