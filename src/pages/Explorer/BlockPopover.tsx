@@ -1,4 +1,4 @@
-import { dynamicBuilder$ } from "@/chain.state"
+import { runtimeCtx$ } from "@/chain.state"
 import { CircularProgress } from "@/components/CircularProgress"
 import { groupBy } from "@/lib/groupBy"
 import { state, useStateObservable } from "@react-rxjs/core"
@@ -10,13 +10,14 @@ import { BlockStatusIcon, statusText } from "./Detail/BlockState"
 import { filterEvt } from "./Events"
 
 const maxBlockWeight$ = state(
-  dynamicBuilder$.pipe(
-    map((builder) => {
-      const ct = builder.lookup.metadata.pallets
+  runtimeCtx$.pipe(
+    map(({ dynamicBuilder, lookup }) => {
+      const ct = lookup.metadata.pallets
         .find((p) => p.name === "System")
         ?.constants.find((ct) => ct.name === "BlockWeights")
       if (!ct) return null
-      return builder.buildDefinition(ct.type).dec(ct.value).max_block as Weight
+      return dynamicBuilder.buildDefinition(ct.type).dec(ct.value)
+        .max_block as Weight
     }),
   ),
   null,

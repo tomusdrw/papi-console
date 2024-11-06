@@ -1,4 +1,4 @@
-import { dynamicBuilder$, unsafeApi$ } from "@/chain.state"
+import { dynamicBuilder$, runtimeCtx$, unsafeApi$ } from "@/chain.state"
 import { EditCodec } from "@/codec-components/EditCodec"
 import { ActionButton } from "@/components/ActionButton"
 import { BinaryEditButton } from "@/components/BinaryEditButton"
@@ -148,7 +148,15 @@ const StorageKeysInput: FC = () => {
   )
 }
 
-const builderState$ = state(dynamicBuilder$, null)
+const builderState$ = state(
+  runtimeCtx$.pipe(
+    map((ctx) => ({
+      ...ctx.dynamicBuilder,
+      lookup: ctx.lookup,
+    })),
+  ),
+  null,
+)
 const keyInputValue$ = state(
   (idx: number) =>
     keyValues$.pipe(

@@ -1,4 +1,4 @@
-import { dynamicBuilder$, lookup$ } from "@/chain.state"
+import { lookup$, runtimeCtx$ } from "@/chain.state"
 import { ViewCodec } from "@/codec-components/ViewCodec"
 import { ButtonGroup } from "@/components/ButtonGroup"
 import { DocsRenderer } from "@/components/DocsRenderer"
@@ -81,10 +81,10 @@ const PalletConstants: FC<{
 }
 
 const constantValueProps$ = state(
-  dynamicBuilder$.pipe(
-    map((builder) => ({
-      builder,
-      lookup: builder.lookup,
+  runtimeCtx$.pipe(
+    map(({ dynamicBuilder, lookup }) => ({
+      builder: dynamicBuilder,
+      lookup,
     })),
   ),
   null,

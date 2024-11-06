@@ -1,17 +1,18 @@
 import { getDynamicBuilder, getLookupFn } from "@polkadot-api/metadata-builders"
 import { getObservableClient } from "@polkadot-api/observable-client"
+import { decAnyMetadata } from "@polkadot-api/substrate-bindings"
 import {
-  Binary,
-  CodecType,
-  decAnyMetadata,
-  metadata as metadataCodec,
-  V14,
-  V15,
-} from "@polkadot-api/substrate-bindings"
-import { createClient as createSubstrateClient } from "@polkadot-api/substrate-client"
+  createClient as createSubstrateClient,
+  JsonRpcProvider,
+} from "@polkadot-api/substrate-client"
 import { toHex } from "@polkadot-api/utils"
-import { state } from "@react-rxjs/core"
-import { createClient, PolkadotClient } from "polkadot-api"
+import { sinkSuspense, state, SUSPENSE } from "@react-rxjs/core"
+import { createSignal } from "@react-rxjs/utils"
+import { createClient } from "polkadot-api"
+import { chainSpec as ksmChainSpec } from "polkadot-api/chains/ksmcc3"
+import { chainSpec as paseoChainSpec } from "polkadot-api/chains/paseo"
+import { chainSpec } from "polkadot-api/chains/polkadot"
+import { chainSpec as westendChainSpec } from "polkadot-api/chains/westend2"
 import { withLogsRecorder } from "polkadot-api/logs-provider"
 import { withPolkadotSdkCompat } from "polkadot-api/polkadot-sdk-compat"
 import { getSmProvider } from "polkadot-api/sm-provider"
@@ -21,8 +22,9 @@ import SmWorker from "polkadot-api/smoldot/worker?worker"
 import { getWsProvider } from "polkadot-api/ws-provider/web"
 import {
   concat,
+  EMPTY,
+  filter,
   finalize,
-  from,
   map,
   NEVER,
   Observable,
@@ -31,13 +33,8 @@ import {
   switchMap,
   tap,
 } from "rxjs"
-import polkadotRawNetworks from "./networks/polkadot.json"
 import ksmRawNetworks from "./networks/kusama.json"
-import { createSignal } from "@react-rxjs/utils"
-import { chainSpec } from "polkadot-api/chains/polkadot"
-import { chainSpec as ksmChainSpec } from "polkadot-api/chains/ksmcc3"
-import { chainSpec as westendChainSpec } from "polkadot-api/chains/westend2"
-import { chainSpec as paseoChainSpec } from "polkadot-api/chains/paseo"
+import polkadotRawNetworks from "./networks/polkadot.json"
 
 export type ChainSource = { id: string } & (
   | {
@@ -113,44 +110,46 @@ const relayChains = new Set(["polkadot", "kusama", "westend", "paseo"])
 const selectedSource$ = selectedChain$.pipe(
   switchMap(
     ({ endpoint, network }): Observable<ChainSource> | Promise<ChainSource> => {
+      const { id } = network
       if (endpoint !== "light-client")
         return of({
+          id,
           type: "websocket",
           value: endpoint,
-        } as ChainSource)
-      const { id } = network
+        })
       if (relayChains.has(id)) {
         return of({
+          id,
           type: "chainSpec",
           value: { chainSpec: id },
-        } as ChainSource)
+        })
       }
       return import(`./chainspecs/${id}.ts`).then(({ chainSpec }) => {
         const parsed = JSON.parse(chainSpec)
         return {
+          id,
           type: "chainSpec",
           value: {
             chainSpec,
             relayChain:
               network.relayChain || parsed.relayChain || parsed.relay_chain,
           },
-        } as ChainSource
+        }
       })
     },
   ),
 )
 
-type AnyMetadata = CodecType<typeof metadataCodec>
-
 export const chainClient$ = state(
   selectedSource$.pipe(
     map((src) => [src.id, getProvider(src)] as const),
-    switchMap(([id, provider]) => {
+    switchMap(([id, provider], i) => {
       const substrateClient = createSubstrateClient(provider)
       const observableClient = getObservableClient(substrateClient)
       const chainHead = observableClient.chainHead$(2)
       const client = createClient(provider)
       return concat(
+        i === 0 ? EMPTY : of(SUSPENSE),
         of({ id, client, substrateClient, observableClient, chainHead }),
         NEVER,
       ).pipe(
@@ -161,6 +160,7 @@ export const chainClient$ = state(
         }),
       )
     }),
+    sinkSuspense(),
   ),
 )
 export const chainHead$ = state(
@@ -171,47 +171,47 @@ export const unsafeApi$ = chainClient$.pipeState(
   map(({ client }) => client.getUnsafeApi()),
 )
 
-export const metadata$ = chainClient$.pipeState(
-  switchMap(({ id, client }) => {
-    const metadata = from(getMetadata(client)).pipe(
+const uncachedRuntimeCtx$ = chainClient$.pipeState(
+  switchMap(({ chainHead }) => chainHead.runtime$),
+  filter((v) => !!v),
+)
+export const runtimeCtx$ = chainClient$.pipeState(
+  switchMap(({ id }) => {
+    const cached = localStorage.getItem(`metadata-${id}`)
+
+    const realCtx$ = uncachedRuntimeCtx$.pipe(
       tap((v) => {
-        localStorage.setItem(`metadata-${id}`, toHex(metadataCodec.enc(v)))
+        localStorage.setItem(`metadata-${id}`, toHex(v.metadataRaw))
       }),
     )
-    const cached = localStorage.getItem(`metadata-${id}`)
+
     if (cached) {
-      return from(metadata).pipe(startWith(decAnyMetadata(cached)))
+      const metadata = decAnyMetadata(cached)
+      const lookup = getLookupFn(metadata.metadata.value as any)
+      const dynamicBuilder = getDynamicBuilder(lookup)
+
+      return realCtx$.pipe(
+        startWith({
+          lookup,
+          dynamicBuilder,
+        }),
+      )
     }
-    return from(metadata)
-  }),
-  map((v): V14 | V15 => {
-    const metadata = v.metadata
-    if (metadata.tag === "v14" || metadata.tag === "v15") {
-      return metadata.value
-    }
-    throw new Error("Incompatible metadata")
+    return realCtx$
   }),
 )
-export const lookup$ = metadata$.pipeState(map(getLookupFn))
 
-export const dynamicBuilder$ = lookup$.pipeState(
-  map((lookup) => ({ lookup, ...getDynamicBuilder(lookup) })),
+export const lookup$ = runtimeCtx$.pipeState(map((ctx) => ctx.lookup))
+export const metadata$ = lookup$.pipe(map((lookup) => lookup.metadata))
+export const dynamicBuilder$ = runtimeCtx$.pipeState(
+  map((ctx) => ctx.dynamicBuilder),
 )
-
-async function getMetadata(client: PolkadotClient): Promise<AnyMetadata> {
-  const unsafeApi = client.getUnsafeApi()
-  const versions: number[] = await unsafeApi.apis.Metadata.metadata_versions()
-  const metadataResponse: Binary = await (versions.includes(15)
-    ? unsafeApi.apis.Metadata.metadata_at_version(15)
-    : unsafeApi.apis.Metadata.metadata())
-  return decAnyMetadata(metadataResponse.asBytes())
-}
 
 let smoldot: {
   client: Client
   relayChains: Record<string, Promise<Chain>>
 } | null = null
-export function getProvider(source: ChainSource) {
+export function getProvider(source: ChainSource): JsonRpcProvider {
   if (source.type === "websocket") {
     return withPolkadotSdkCompat(getWsProvider(source.value))
   }

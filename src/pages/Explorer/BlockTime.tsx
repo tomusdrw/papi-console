@@ -1,4 +1,4 @@
-import { chainHead$, dynamicBuilder$ } from "@/chain.state"
+import { chainHead$, runtimeCtx$ } from "@/chain.state"
 import { CircularProgress } from "@/components/CircularProgress"
 import { state, useStateObservable } from "@react-rxjs/core"
 import {
@@ -20,14 +20,14 @@ const bestBlockTime$ = best$.pipeState(
   }),
 )
 const targetTime$ = state(
-  dynamicBuilder$.pipe(
-    map((builder) => {
-      const ct = builder.lookup.metadata.pallets
+  runtimeCtx$.pipe(
+    map(({ dynamicBuilder, lookup }) => {
+      const ct = lookup.metadata.pallets
         .find((p) => p.name === "Babe")
         ?.constants.find((ct) => ct.name === "ExpectedBlockTime")
       if (!ct) return null
       try {
-        const res = builder.buildDefinition(ct.type).dec(ct.value)
+        const res = dynamicBuilder.buildDefinition(ct.type).dec(ct.value)
         return Number(res)
       } catch (_) {
         return null

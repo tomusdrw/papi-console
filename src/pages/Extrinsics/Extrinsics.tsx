@@ -1,4 +1,4 @@
-import { dynamicBuilder$ } from "@/chain.state"
+import { runtimeCtx$ } from "@/chain.state"
 import { BinaryDisplay } from "@/codec-components/LookupTypeEdit"
 import { ButtonGroup } from "@/components/ButtonGroup"
 import { LoadingMetadata } from "@/components/Loading"
@@ -13,17 +13,17 @@ import { JsonMode } from "./JsonMode"
 import { ExtrinsicModal } from "./SubmitTx/SubmitTx"
 
 const extrinsicProps$ = state(
-  dynamicBuilder$.pipe(
-    map((builder) => {
+  runtimeCtx$.pipe(
+    map(({ dynamicBuilder, lookup }) => {
       const codecType =
-        "call" in builder.lookup.metadata.extrinsic
-          ? builder.lookup.metadata.extrinsic.call
+        "call" in lookup.metadata.extrinsic
+          ? lookup.metadata.extrinsic.call
           : // TODO v14 is this one?
-            builder.lookup.metadata.extrinsic.type
+            lookup.metadata.extrinsic.type
       return {
-        metadata: builder.lookup.metadata,
+        metadata: lookup.metadata,
         codecType,
-        codec: builder.buildDefinition(codecType),
+        codec: dynamicBuilder.buildDefinition(codecType),
       }
     }),
   ),

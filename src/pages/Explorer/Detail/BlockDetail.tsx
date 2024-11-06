@@ -1,7 +1,8 @@
-import { dynamicBuilder$ } from "@/chain.state"
+import { runtimeCtx$ } from "@/chain.state"
 import { AccountIdDisplay } from "@/components/AccountIdDisplay"
 import { ExpandBtn } from "@/components/Expand"
 import { JsonDisplay } from "@/components/JsonDisplay"
+import { Loading } from "@/components/Loading"
 import { groupBy } from "@/lib/groupBy"
 import { SystemEvent } from "@polkadot-api/observable-client"
 import * as Tabs from "@radix-ui/react-tabs"
@@ -22,11 +23,12 @@ import { twMerge } from "tailwind-merge"
 import { blockInfoState$, blocksByHeight$, BlockState } from "../block.state"
 import { BlockStatusIcon, statusText } from "./BlockState"
 import { createExtrinsicCodec, DecodedExtrinsic } from "./extrinsicDecoder"
-import { Loading } from "@/components/Loading"
 
 const blockExtrinsics$ = state((hash: string) => {
-  const decoder$ = dynamicBuilder$.pipe(
-    map((builder) => createExtrinsicCodec(builder, builder.lookup)),
+  const decoder$ = runtimeCtx$.pipe(
+    map(({ dynamicBuilder, lookup }) =>
+      createExtrinsicCodec(dynamicBuilder, lookup),
+    ),
   )
   const body$ = blockInfoState$(hash).pipe(
     filter((v) => !!v),

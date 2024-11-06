@@ -1,4 +1,4 @@
-import { dynamicBuilder$ } from "@/chain.state"
+import { runtimeCtx$ } from "@/chain.state"
 import { byteArraysAreEqual } from "@/utils/byteArray"
 import { CodecComponentType, CodecComponentValue } from "@codec-components"
 import { state, useStateObservable } from "@react-rxjs/core"
@@ -18,10 +18,10 @@ import { BinaryDisplay } from "./BinaryDisplay"
 import { FocusPath } from "./FocusPath"
 
 const editTypeMetadataProps$ = state(
-  dynamicBuilder$.pipe(
-    map((builder) => ({
-      builder,
-      metadata: builder.lookup.metadata,
+  runtimeCtx$.pipe(
+    map(({ dynamicBuilder, lookup }) => ({
+      builder: dynamicBuilder,
+      metadata: lookup.metadata,
     })),
   ),
   null,
