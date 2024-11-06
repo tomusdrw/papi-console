@@ -109,7 +109,7 @@ export const VisibleWindow = () => {
   if (!ctx) return null
 
   const window = twMerge(
-    "absolute left-0 right-0 ease-linear bg-polkadot-900 z-[-1]",
+    "absolute left-0 right-0 ease-linear bg-polkadot-800 opacity-35 z-[-1]",
     transitionEnabled && "transition-all",
   )
 
@@ -125,7 +125,7 @@ export const VisibleWindow = () => {
         className={window}
         style={{
           top: ctx.range[0],
-          height: ctx.range[1],
+          height: ctx.range[1] - ctx.range[0],
         }}
       >
       </div>

@@ -87,7 +87,7 @@ function getBreadcrumbs(
       ) : (
         <a
           href="#"
-          className={clsx("hover:text-polkadot-400", i === 0 && "font-bold")}
+          className={clsx("hover:text-polkadot-500", i === 0 && "font-bold")}
           onClick={(evt) => {
             evt.preventDefault()
             onFocus(i === 0 ? null : path.slice(0, i))
@@ -110,7 +110,7 @@ function getBreadcrumbs(
     } else {
       const Icon = node.type && TypeIcons[node.type]
       breadcrumbs.push({
-        icon: Icon ? <Icon size={16} className="text-polkadot-600" /> : null,
+        icon: Icon ? <Icon size={15} className="text-polkadot-600 mr-1" /> : null,
         label,
       })
     }

@@ -83,9 +83,9 @@ export const CResult: EditResult = ({ value, inner, path }) => {
 }
 
 export const MissingData = () => (
-  <span className="mx-0.5 text-slate-400 text-sm">
+  <span className="mx-0.5 text-slate-500 text-sm">
     (
-    <Circle size={8} strokeWidth={4} className="text-orange-600 inline-block" />
+    <Circle size={8} strokeWidth={3} className="text-yellow-400 inline-block" />
     )
   </span>
 )

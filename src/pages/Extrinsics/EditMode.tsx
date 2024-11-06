@@ -40,10 +40,10 @@ export const EditMode: React.FC<{
         value={focusingSubtree}
         onFocus={setFocusingSubtree}
       />
-      <div className="px-2">
-        {/* This element is presentational only: Adds a connecting border between the FocusPath and the tree below */}
+      {/* <div className="px-2">
+        // This element is presentational only: Adds a connecting border between the FocusPath and the tree below
         <div className="border-l border-polkadot-700 h-2 max-sm:border-none" />
-      </div>
+      </div> */}
       <SubtreeFocus
         value={{ callback: setFocusingSubtree, path: focusingSubtree }}
       >
@@ -54,11 +54,11 @@ export const EditMode: React.FC<{
           >
             <div
               ref={treeRef}
-              className="w-96 sticky top-0 pl-2 pb-16 leading-loose overflow-hidden max-sm:hidden"
+              className="w-96 sticky top-0 pl-2 pb-16 leading-loose overflow-hidden max-sm:hidden text-sm"
             >
               <div className="relative">
                 {!value.value ? (
-                  <div className="text-sm text-slate-400">(Empty)</div>
+                  <div className="text-sm text-polkadot-500">(Empty)</div>
                 ) : (
                   <TreeCodec {...props} />
                 )}

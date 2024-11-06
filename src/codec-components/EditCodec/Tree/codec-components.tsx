@@ -72,7 +72,7 @@ export const CResult: EditResult = ({ value, inner }) => (
 )
 
 export const ItemMarker = () => (
-  <span className="text-polkadot-700 translate-y-[-1.5px]">-</span>
+  <span className="w-[0.77rem] border-t border-polkadot-700"></span>
 )
 
 export const TitleContext = createContext<HTMLElement | null>(null)
@@ -142,7 +142,7 @@ export const ItemTitle: FC<
     <>
       <div
         className={twMerge(
-          "flex items-center",
+          "flex items-center h-8",
           isActive && "bg-polkadot-600 bg-opacity-20",
           className,
         )}
@@ -152,7 +152,7 @@ export const ItemTitle: FC<
       >
         <span
           className={twMerge(
-            "hover:text-polkadot-400 flex-shrink-0 flex items-center",
+            "hover:text-polkadot-500 flex-shrink-0 flex items-center",
             onNavigate && "cursor-pointer",
           )}
           onClick={onNavigate}
@@ -160,33 +160,34 @@ export const ItemTitle: FC<
           <ItemMarker />
           <Circle
             size={8}
-            strokeWidth={4}
+            strokeWidth={3}
             className={twMerge(
-              "mr-1",
-              binaryStatus?.type === "blank" && "text-red-600",
-              binaryStatus?.type === "partial" && "text-orange-600",
-              binaryStatus?.type === "complete" && "text-green-600",
+              "mx-2",
+              binaryStatus?.type === "blank" && "text-red-500",
+              binaryStatus?.type === "partial" && "text-yellow-400",
+              binaryStatus?.type === "complete" && "text-polkadot-600",
               binaryStatus === undefined && "text-slate-600",
             )}
           />
-          <Icon size={16} className="text-polkadot-600 mr-1" />
+          <Icon size={15} className="text-polkadot-600 mr-2" />
           {children}
         </span>
         <div
           ref={titleRef}
           className="flex flex-1 ml-1 flex-wrap leading-none"
         />
-        <div className="visible_when_parent_hover px-1 flex gap-1 items-center">
+        <div className="visible_when_parent_hover px-1 flex gap-1.5 items-center">
           {onZoom && binaryStatus && (
             <BinaryEdit
-              size={18}
-              className={twMerge("cursor-pointer hover:text-polkadot-300")}
+              size={24}
+              className={twMerge("cursor-pointer hover:text-polkadot-500")}
               onClick={() => setBinaryOpen(true)}
             />
           )}
           {onZoom && (
             <Focus
-              className="cursor-pointer hover:text-polkadot-300"
+              size={15}
+              className="cursor-pointer hover:text-polkadot-500"
               onClick={onZoom}
             />
           )}
