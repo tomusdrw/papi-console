@@ -34,16 +34,8 @@ import {
   tap,
 } from "rxjs"
 import ksmRawNetworks from "./networks/kusama.json"
-<<<<<<< Updated upstream
 import polkadotRawNetworks from "./networks/polkadot.json"
-=======
 import paseoRawNetworks from "./networks/paseo.json"
-import { createSignal } from "@react-rxjs/utils"
-import { chainSpec } from "polkadot-api/chains/polkadot"
-import { chainSpec as ksmChainSpec } from "polkadot-api/chains/ksmcc3"
-import { chainSpec as westendChainSpec } from "polkadot-api/chains/westend2"
-import { chainSpec as paseoChainSpec } from "polkadot-api/chains/paseo"
->>>>>>> Stashed changes
 
 export type ChainSource = { id: string } & (
   | {
