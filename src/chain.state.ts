@@ -31,7 +31,8 @@ import {
   switchMap,
   tap,
 } from "rxjs"
-import polkadotRawNetworks from "./pages/Network/polkadot.json"
+import polkadotRawNetworks from "./networks/polkadot.json"
+import ksmRawNetworks from "./networks/kusama.json"
 import { createSignal } from "@react-rxjs/utils"
 import { chainSpec } from "polkadot-api/chains/polkadot"
 import { chainSpec as ksmChainSpec } from "polkadot-api/chains/ksmcc3"
@@ -57,6 +58,7 @@ export type Network = {
   display: string
   endpoints: Record<string, string>
   lightclient: boolean
+  relayChain?: string
 }
 
 export type NetworkCategory = {
@@ -74,6 +76,17 @@ const polkadot = polkadotRawNetworks.map(
     lightclient: x.hasChainSpecs,
     id: x.id,
     display: x.display,
+    relayChain: "polkadot",
+  }),
+)
+
+const kusama = ksmRawNetworks.map(
+  (x): Network => ({
+    endpoints: x.rpcs as any,
+    lightclient: x.hasChainSpecs,
+    id: x.id,
+    display: x.display,
+    relayChain: "kusama",
   }),
 )
 
@@ -81,6 +94,10 @@ export const networkCategories: NetworkCategory[] = [
   {
     name: "Polkadot",
     networks: polkadot,
+  },
+  {
+    name: "Kusama",
+    networks: kusama,
   },
 ]
 
@@ -114,7 +131,8 @@ const selectedSource$ = selectedChain$.pipe(
           type: "chainSpec",
           value: {
             chainSpec,
-            relayChain: parsed.relayChain || parsed.relay_chain,
+            relayChain:
+              network.relayChain || parsed.relayChain || parsed.relay_chain,
           },
         } as ChainSource
       })

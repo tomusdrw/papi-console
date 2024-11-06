@@ -70,7 +70,7 @@
       "symbol": "DOT",
       "decimals": 10
     },
-    "hasChainSpecs": true
+    "hasChainSpecs": false
   },
   {
     "id": "polkadot_collectives",
