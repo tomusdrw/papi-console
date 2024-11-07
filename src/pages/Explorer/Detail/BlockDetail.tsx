@@ -1,13 +1,16 @@
 import { runtimeCtx$ } from "@/chain.state"
+import { CopyBinary } from "@/codec-components/ViewCodec/CopyBinary"
 import { AccountIdDisplay } from "@/components/AccountIdDisplay"
 import { ExpandBtn } from "@/components/Expand"
 import { JsonDisplay } from "@/components/JsonDisplay"
 import { Loading } from "@/components/Loading"
 import { groupBy } from "@/lib/groupBy"
 import { SystemEvent } from "@polkadot-api/observable-client"
+import { toHex } from "@polkadot-api/utils"
 import * as Tabs from "@radix-ui/react-tabs"
 import { state, useStateObservable } from "@react-rxjs/core"
 import { combineKeys } from "@react-rxjs/utils"
+import { Edit } from "lucide-react"
 import { FC, useEffect, useRef, useState } from "react"
 import { Link, useLocation, useParams } from "react-router-dom"
 import {
@@ -264,13 +267,27 @@ const Extrinsic: FC<{
 
   return (
     <li className="p-2 border rounded border-polkadot-700 mb-2">
-      <button
-        onClick={() => setExpanded((e) => !e)}
-        className="flex gap-1 items-center"
-      >
-        <ExpandBtn expanded={expanded} />
-        {extrinsic.call.type}.{extrinsic.call.value.type}
-      </button>
+      <div className="flex justify-between items-center">
+        <button
+          onClick={() => setExpanded((e) => !e)}
+          className="flex gap-1 items-center"
+        >
+          <ExpandBtn expanded={expanded} />
+          {extrinsic.call.type}.{extrinsic.call.value.type}
+        </button>
+        <div className="flex gap-2 items-center">
+          <CopyBinary value={extrinsic.callData} />
+          {extrinsic.callData.length > 1024 ? (
+            <span className="opacity-50">
+              <Edit size={14} />
+            </span>
+          ) : (
+            <Link to={"/extrinsics#" + toHex(extrinsic.callData)}>
+              <Edit size={14} />
+            </Link>
+          )}
+        </div>
+      </div>
       {expanded ? (
         <div className="overflow-hidden">
           {extrinsic.signed && (

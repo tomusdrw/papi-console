@@ -78,17 +78,22 @@ export const createExtrinsicCodec = (
   return enhanceDecoder(Bytes().dec, (bytes: Uint8Array) => {
     const header = extrinsicHeader(bytes)
 
-    return header.signed
-      ? {
-          version: header.version,
-          signed: true as const,
-          ...signedExtrinsicV4.dec(bytes.slice(1)),
-        }
-      : {
-          version: header.version,
-          signed: false as const,
-          call: call.dec(bytes.slice(1)),
-        }
+    if (header.signed) {
+      const v4Payload = signedExtrinsicV4.dec(bytes.slice(1))
+      return {
+        version: header.version,
+        signed: true as const,
+        ...v4Payload,
+        callData: call.enc(v4Payload.call),
+      }
+    }
+
+    return {
+      version: header.version,
+      signed: false as const,
+      call: call.dec(bytes.slice(1)),
+      callData: bytes.slice(1),
+    }
   })
 }
 export type DecodedExtrinsic = ReturnType<

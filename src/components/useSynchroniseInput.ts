@@ -18,11 +18,13 @@ export const useGenericSynchronizeInput = <T extends unknown, R>(
   useLayoutEffect(() => {
     values.current.editor = value
     if (!eqFn(values.current.input, value)) {
-      setInputValue(value === NOTIN ? defaultValue : serializeValue(value))
+      const r = value === NOTIN ? defaultValue : serializeValue(value)
+      setInputValue(r)
     }
   }, [value])
 
   useEffect(() => {
+    if (inputValue === values.current.input) return
     values.current.input = inputValue
     const parsed = parseValue(inputValue)
     if (parsed !== values.current.editor) {

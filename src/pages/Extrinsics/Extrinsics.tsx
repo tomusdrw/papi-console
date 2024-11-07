@@ -11,6 +11,7 @@ import { map } from "rxjs"
 import { EditMode } from "./EditMode"
 import { JsonMode } from "./JsonMode"
 import { ExtrinsicModal } from "./SubmitTx/SubmitTx"
+import { useLocation } from "react-router-dom"
 
 const extrinsicProps$ = state(
   runtimeCtx$.pipe(
@@ -33,11 +34,11 @@ export const Extrinsics = withSubscribe(
   () => {
     const [viewMode, setViewMode] = useState<"edit" | "json">("edit")
     const extrinsicProps = useStateObservable(extrinsicProps$)
+    const location = useLocation()
 
     const [componentValue, setComponentValue] = useState<CodecComponentValue>({
       type: CodecComponentType.Initial,
-      value:
-        "0x630b040101010031323334353637383934353631363531363531363531363531363531353631350100000108000100002c00000000080000000000",
+      value: location.hash.slice(1),
     })
     const binaryValue =
       (componentValue.type === CodecComponentType.Initial
