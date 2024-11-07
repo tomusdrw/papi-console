@@ -36,6 +36,7 @@ import {
 import ksmRawNetworks from "./networks/kusama.json"
 import polkadotRawNetworks from "./networks/polkadot.json"
 import paseoRawNetworks from "./networks/paseo.json"
+import westendRawNetworks from "./networks/westend.json"
 
 export type ChainSource = { id: string } & (
   | {
@@ -68,55 +69,32 @@ export type SelectedChain = {
   endpoint: string
 }
 
-const polkadot = polkadotRawNetworks.map(
-  (x): Network => ({
+const [Polkadot, Kusama, Paseo, Westend] = (
+  [
+    polkadotRawNetworks,
+    ksmRawNetworks,
+    paseoRawNetworks,
+    westendRawNetworks,
+  ] as const
+).map((n): Network[] =>
+  n.map((x) => ({
     endpoints: x.rpcs as any,
     lightclient: x.hasChainSpecs,
     id: x.id,
     display: x.display,
-    relayChain: "polkadot",
-  }),
+    relayChain: x.relayChainInfo?.id,
+  })),
 )
+const networks = { Polkadot, Kusama, Paseo, Westend }
 
-const kusama = ksmRawNetworks.map(
-  (x): Network => ({
-    endpoints: x.rpcs as any,
-    lightclient: x.hasChainSpecs,
-    id: x.id,
-    display: x.display,
-    relayChain: "kusama",
-  }),
-)
-
-const paseo = paseoRawNetworks.map(
-  (x): Network => ({
-    endpoints: x.rpcs as any,
-    lightclient: x.hasChainSpecs,
-    id: x.id,
-    display: x.display,
-    relayChain: "paseo",
-  }),
-)
-
-export const networkCategories: NetworkCategory[] = [
-  {
-    name: "Polkadot",
-    networks: polkadot,
-  },
-  {
-    name: "Kusama",
-    networks: kusama,
-  },
-  {
-    name: "Paseo",
-    networks: paseo,
-  },
-]
+export const networkCategories: NetworkCategory[] = Object.entries(
+  networks,
+).map(([name, networks]) => ({ name, networks }))
 
 export const [selectedChainChanged$, onChangeChain] =
   createSignal<SelectedChain>()
 export const selectedChain$ = state<SelectedChain>(selectedChainChanged$, {
-  network: polkadot[0],
+  network: Polkadot[0],
   endpoint: "light-client",
 })
 selectedChain$.subscribe()
@@ -254,7 +232,7 @@ export function getProvider(source: ChainSource): JsonRpcProvider {
   if (!smoldot) {
     const client = startFromWorker(new SmWorker(), {
       logCallback: (level, target, message) => {
-        console.debug("[%s(%s)] %s", target, level, message)
+        console.debug("smoldot[%s(%s)] %s", target, level, message)
       },
     })
     smoldot = {

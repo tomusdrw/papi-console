@@ -12,7 +12,7 @@
     },
     "nativeToken": {
       "symbol": "PAS",
-      "decimals": 10
+      "decimals": 12
     }
   },
   {
@@ -32,7 +32,7 @@
     },
     "nativeToken": {
       "symbol": "PAS",
-      "decimals": 10
+      "decimals": 12
     },
     "hasChainSpecs": true
   },
@@ -49,7 +49,7 @@
     },
     "nativeToken": {
       "symbol": "PAS",
-      "decimals": 10
+      "decimals": 12
     },
     "hasChainSpecs": false
   },
@@ -67,7 +67,7 @@
     },
     "nativeToken": {
       "symbol": "PAS",
-      "decimals": 10
+      "decimals": 12
     },
     "hasChainSpecs": false
   },
@@ -85,7 +85,7 @@
     },
     "nativeToken": {
       "symbol": "PAS",
-      "decimals": 10
+      "decimals": 12
     },
     "hasChainSpecs": false
   },
@@ -309,7 +309,7 @@
     },
     "nativeToken": {
       "symbol": "PAS",
-      "decimals": 10
+      "decimals": 12
     },
     "hasChainSpecs": false
   },
