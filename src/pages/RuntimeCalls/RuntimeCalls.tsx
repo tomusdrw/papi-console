@@ -85,7 +85,7 @@ export const RuntimeCalls = withSubscribe(
             </label>
           )}
         </div>
-        {entry?.docs.length && (
+        {!!entry?.docs.length && (
           <div className="w-full">
             Docs
             <DocsRenderer docs={entry.docs} />
