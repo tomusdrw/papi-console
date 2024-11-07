@@ -59,7 +59,7 @@ export const StorageQuery: FC = () => {
   }
 
   return (
-    <div className="p-2 flex flex-col gap-4 items-start w-full">
+    <div className="flex flex-col gap-4 items-start w-full">
       <KeyDisplay />
       <StorageKeysInput />
       <ActionButton disabled={!isReady} onClick={submit}>
@@ -301,8 +301,8 @@ const KeyDisplay: FC = () => {
   const codec = builder.buildStorage(selectedEntry.pallet, selectedEntry.entry)
 
   return (
-    <div className="flex w-full overflow-hidden bg-polkadot-800 p-2 gap-2 rounded items-center">
-      <div className="flex-shrink-0 text-polkadot-200">Encoded key:</div>
+    <div className="flex w-full overflow-hidden border border-polkadot-700 px-3 p-2 gap-2 items-center">
+      <div className="flex-shrink-0 text-polkadot-0 text-sm font-bold">Encoded key:</div>
       <div
         className={twMerge(
           "flex-1 overflow-hidden whitespace-nowrap text-ellipsis text-sm tabular-nums",

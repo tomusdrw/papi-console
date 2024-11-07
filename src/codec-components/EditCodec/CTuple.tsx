@@ -11,7 +11,7 @@ export const CTuple: EditTuple = ({ innerComponents, path }) => {
   return (
     <>
       <span>Tuple</span>
-      <ul className="flex flex-col ml-5">
+      <ul className="flex flex-col gap-2">
         {innerComponents.map((jsx, idx) => (
           <li key={idx}>{jsx}</li>
         ))}

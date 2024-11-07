@@ -86,9 +86,9 @@ export const CAccountId: EditAccountId = ({ value, onValueChanged }) => {
     >
       <ComboboxButton
         className={twMerge(
-          "text-sm border rounded p-2 border-polkadot-200 leading-tight text-white focus-within:outline",
-          "flex items-center gap-2 bg-polkadot-900",
-          value === NOTIN ? "border-orange-400" : null,
+          "border px-3 py-2 border-slate-500 leading-tight text-white focus-within:outline",
+          "flex items-center gap-2",
+          value === NOTIN ? "border-yellow-400" : null,
         )}
       >
         {localInput && (

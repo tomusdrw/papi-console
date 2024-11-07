@@ -30,10 +30,10 @@ export const BinaryEditButton: FC<
   return (
     <>
       <BinaryEdit
-        size={20}
+        size={24}
         {...iconProps}
         className={twMerge(
-          "cursor-pointer hover:text-polkadot-300",
+          "cursor-pointer hover:text-polkadot-500",
           iconProps?.className,
         )}
         onClick={() => setOpen(true)}
