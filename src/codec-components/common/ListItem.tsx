@@ -33,7 +33,7 @@ export const ListItem: React.FC<{
       <div className="flex-1">{children}</div>
       {onDelete ? (
         <button
-          className="cursor-pointer text-gray-200 ml-2 hover:text-polkadot-400"
+          className="cursor-pointer text-gray-200 ml-2 hover:text-polkadot-500"
           onClick={() => onDelete()}
         >
           <Trash2 size={16} />

@@ -72,14 +72,14 @@ export const COption: EditOption = ({ value, inner, onValueChanged }) => {
   const selected = value !== undefined
   return (
     <div>
-      <label className="flex items-center gap-2 text-slate-300 py-1 mb-1">
+      <label className="flex items-center gap-2 py-1 mb-1">
         <SliderToggle
           isToggled={selected}
           toggle={() =>
             !selected ? onValueChanged(NOTIN) : onValueChanged(undefined)
           }
         />
-        <span className="text-sm">
+        <span className="text-base">
           {selected ? "selected" : "not selected"}
         </span>
       </label>

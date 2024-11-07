@@ -8,13 +8,13 @@ const SliderToggle: React.FC<{
     <Toggle.Root
       pressed={isToggled}
       onPressedChange={() => toggle()}
-      className={`relative w-8 h-5 rounded-full p-1 transition-colors
-        ${isToggled ? "bg-polkadot-400" : "bg-gray-400"}`}
+      className={`relative w-8 h-5 rounded-full p-0.5 transition-colors border
+        ${isToggled ? "border-slate-500" : "border-slate-500"}`}
       aria-label="Toggle"
     >
       <span
-        className={`block w-3 h-3 bg-white rounded-full shadow-md transform transition-transform
-          ${isToggled ? "translate-x-3" : "translate-x-0"}`}
+        className={`block w-3 h-3 border rounded-full shadow-md transform transition-transform
+          ${isToggled ? "translate-x-3 bg-white border-white" : "translate-x-0 border-slate-500"}`}
       />
     </Toggle.Root>
   )
