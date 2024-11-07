@@ -237,7 +237,7 @@ export const runtimeCtx$ = chainClient$.pipeState(
 )
 
 export const lookup$ = runtimeCtx$.pipeState(map((ctx) => ctx.lookup))
-export const metadata$ = lookup$.pipe(map((lookup) => lookup.metadata))
+export const metadata$ = lookup$.pipeState(map((lookup) => lookup.metadata))
 export const dynamicBuilder$ = runtimeCtx$.pipeState(
   map((ctx) => ctx.dynamicBuilder),
 )
