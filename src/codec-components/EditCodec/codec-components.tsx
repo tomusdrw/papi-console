@@ -123,9 +123,9 @@ export const TextInputField: FC<{
       {children(
         <input
           className={twMerge(
-            "text-sm border rounded p-2 border-polkadot-200 leading-tight text-white",
-            warn ? "border-orange-400" : null,
-            error ? "border-red-600" : null,
+            "px-4 py-2 border border-slate-500 leading-tight text-white",
+            warn ? "border-yellow-400" : null,
+            error ? "border-red-500" : null,
             className,
           )}
           value={value}

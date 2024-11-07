@@ -67,7 +67,7 @@ export const ListItem: React.FC<{
     <li
       className={twMerge(
         "flex flex-col mb-1",
-        isActive && "backdrop-brightness-150",
+        isActive && "bg-slate-900 bg-opacity-50",
       )}
       onMouseEnter={() => setHovered({ id: pathStr, hover: true })}
       onMouseLeave={() => setHovered({ id: pathStr, hover: false })}
@@ -76,7 +76,7 @@ export const ListItem: React.FC<{
       {inline ? null : (
         <div
           className={clsx(
-            "flex-row p-2 items-center border border-polkadot-700",
+            "flex-row p-2 items-center border border-slate-500",
             isCollapsed ? "hidden" : "",
           )}
         >

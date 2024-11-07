@@ -4,7 +4,7 @@
 
 input,
 dialog {
-  @apply bg-black;
+  @apply bg-transparent;
 }
 
 :root {

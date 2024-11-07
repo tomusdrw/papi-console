@@ -71,7 +71,7 @@ export const BinaryInput: React.FC<{
       {(input) => (
         <div
           className={twMerge(
-            "border rounded p-2 border-polkadot-200 leading-tight text-white focus-within:outline focus-within:outline-1 flex items-center gap-2",
+            "px-4 py-2 border border-slate-500 leading-tight text-white focus-within:outline focus-within:outline-1 flex items-center gap-2",
             warn ? "border-orange-400" : null,
             uploadError ? "border-red-600" : null,
           )}

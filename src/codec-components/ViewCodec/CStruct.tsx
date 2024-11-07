@@ -66,7 +66,7 @@ const StructItem: React.FC<{
     <li
       className={twMerge(
         "flex flex-col transition-all duration-300",
-        isActive && "backdrop-brightness-150",
+        isActive && "bg-slate-900 bg-opacity-50",
       )}
       onMouseEnter={() => setHovered({ id: pathStr, hover: true })}
       onMouseLeave={() => setHovered({ id: pathStr, hover: false })}
