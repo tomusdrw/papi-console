@@ -101,7 +101,7 @@ export const BlockTable = () => {
   if (!finalized) return null
 
   return (
-    <div className="w-full p-2 border border-polkadot-800 rounded">
+    <div className="w-full px-3 py-2 border border-polkadot-700">
       <h2 className="font-bold p-2 border-b border-slate-400 mb-2">
         Recent Blocks
       </h2>

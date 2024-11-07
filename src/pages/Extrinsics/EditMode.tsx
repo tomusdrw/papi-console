@@ -54,7 +54,7 @@ export const EditMode: React.FC<{
           >
             <div
               ref={treeRef}
-              className="w-96 sticky top-0 pl-2 pb-16 leading-loose overflow-hidden max-sm:hidden text-sm"
+              className="min-w-fit w-96 sticky top-0 pl-2 pb-16 leading-loose overflow-hidden max-sm:hidden text-sm"
             >
               <div className="relative">
                 {!value.value ? (
