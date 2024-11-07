@@ -1,5 +1,6 @@
 import { chainHead$, runtimeCtx$ } from "@/chain.state"
 import { CircularProgress } from "@/components/CircularProgress"
+import { groupBy } from "@/lib/groupBy"
 import { state, useStateObservable } from "@react-rxjs/core"
 import {
   animationFrames,
@@ -22,9 +23,12 @@ const bestBlockTime$ = best$.pipeState(
 const targetTime$ = state(
   runtimeCtx$.pipe(
     map(({ dynamicBuilder, lookup }) => {
-      const ct = lookup.metadata.pallets
-        .find((p) => p.name === "Babe")
-        ?.constants.find((ct) => ct.name === "ExpectedBlockTime")
+      const palletsByName = groupBy(lookup.metadata.pallets, (p) => p.name)
+      const getConstant = (pallet: string, constant: string) =>
+        palletsByName[pallet]?.[0]?.constants.find((ct) => ct.name === constant)
+      const ct =
+        getConstant("Babe", "ExpectedBlockTime") ??
+        getConstant("Aura", "SlotDuration")
       if (!ct) return null
       try {
         const res = dynamicBuilder.buildDefinition(ct.type).dec(ct.value)

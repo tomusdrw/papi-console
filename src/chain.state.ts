@@ -1,6 +1,6 @@
 import { getDynamicBuilder, getLookupFn } from "@polkadot-api/metadata-builders"
 import { getObservableClient } from "@polkadot-api/observable-client"
-import { decAnyMetadata } from "@polkadot-api/substrate-bindings"
+import { decAnyMetadata, HexString } from "@polkadot-api/substrate-bindings"
 import {
   createClient as createSubstrateClient,
   JsonRpcProvider,
@@ -190,13 +190,33 @@ const uncachedRuntimeCtx$ = chainClient$.pipeState(
   switchMap(({ chainHead }) => chainHead.runtime$),
   filter((v) => !!v),
 )
+
+const getMetadataCache = () => {
+  const cached = localStorage.getItem(`metadata-cache`)
+  return new Map<string, { time: number; data: HexString }>(
+    cached ? JSON.parse(cached) : [],
+  )
+}
+const getCachedMetadata = (id: string) =>
+  getMetadataCache().get(id)?.data ?? null
+const setCachedMetadata = (id: string, data: HexString) => {
+  const cached = getMetadataCache()
+  cached.set(id, { time: Date.now(), data })
+  if (cached.size > 3) {
+    const oldest = [...cached.entries()].reduce((a, b) =>
+      a[1].time < b[1].time ? a : b,
+    )[0]
+    cached.delete(oldest)
+  }
+  localStorage.setItem("metadata-cache", JSON.stringify([...cached.entries()]))
+}
 export const runtimeCtx$ = chainClient$.pipeState(
   switchMap(({ id }) => {
-    const cached = localStorage.getItem(`metadata-${id}`)
+    const cached = getCachedMetadata(id)
 
     const realCtx$ = uncachedRuntimeCtx$.pipe(
       tap((v) => {
-        localStorage.setItem(`metadata-${id}`, toHex(v.metadataRaw))
+        setCachedMetadata(id, toHex(v.metadataRaw))
       }),
     )
 
