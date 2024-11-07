@@ -373,6 +373,23 @@
     "hasChainSpecs": false
   },
   {
+    "id": "invarch",
+    "display": "Invarch Network",
+    "relayChainInfo": {
+      "id": "polkadot",
+      "isSystem": false,
+      "parachain": 3340
+    },
+    "rpcs": {
+      "Dwellir": "wss://invarch-rpc.dwellir.com"
+    },
+    "nativeToken": {
+      "symbol": "VARCH",
+      "decimals": 12
+    },
+    "hasChainSpecs": true
+  },
+  {
     "id": "kilt",
     "display": "KILT Spiritnet",
     "relayChainInfo": {

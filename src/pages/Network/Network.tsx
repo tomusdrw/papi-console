@@ -46,7 +46,11 @@ export function NetworkSwitcher() {
 
   const handleNetworkSelect = (network: Network) => {
     setSelectedNetwork(network)
-    setSelecteRpc(Object.values(network.endpoints)[0] || "light-client")
+    setSelecteRpc(
+      network.lightclient
+        ? "light-client"
+        : Object.values(network.endpoints)[0],
+    )
   }
 
   const handleConfirm = () => {
@@ -60,7 +64,10 @@ export function NetworkSwitcher() {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline" className="w-[200px] gap-0 justify-between text-base px-3">
+        <Button
+          variant="outline"
+          className="w-[200px] gap-0 justify-between text-base px-3"
+        >
           {selectedNetwork.display}
           <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
@@ -103,19 +110,6 @@ export function NetworkSwitcher() {
               <AccordionContent>
                 <ScrollArea className="h-[155px] rounded-lg border p-2">
                   <RadioGroup>
-                    {Object.entries(selectedNetwork.endpoints).map(
-                      ([rpcName, url]) => (
-                        <div key={url} className="flex items-center space-x-2">
-                          <RadioGroupItem
-                            value={url}
-                            id={url}
-                            checked={selectedRpc === url}
-                            onClick={() => setSelecteRpc(url)}
-                          />
-                          <Label htmlFor={url}>{rpcName}</Label>
-                        </div>
-                      ),
-                    )}
                     {selectedNetwork.lightclient ? (
                       <div className="flex items-center space-x-2">
                         <RadioGroupItem
@@ -129,6 +123,19 @@ export function NetworkSwitcher() {
                         </Label>
                       </div>
                     ) : null}
+                    {Object.entries(selectedNetwork.endpoints).map(
+                      ([rpcName, url]) => (
+                        <div key={url} className="flex items-center space-x-2">
+                          <RadioGroupItem
+                            value={url}
+                            id={url}
+                            checked={selectedRpc === url}
+                            onClick={() => setSelecteRpc(url)}
+                          />
+                          <Label htmlFor={url}>{rpcName}</Label>
+                        </div>
+                      ),
+                    )}
                   </RadioGroup>
                 </ScrollArea>
               </AccordionContent>
