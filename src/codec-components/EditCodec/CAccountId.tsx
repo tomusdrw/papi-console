@@ -73,6 +73,13 @@ export const CAccountId: EditAccountId = ({ value, onValueChanged }) => {
     value !== NOTIN &&
     !accounts.has(toHex(getPublicKey(value) ?? new Uint8Array()))
 
+  const accountList = Array.from(accounts.entries())
+  if (value !== NOTIN) {
+    accountList.sort(([, a], [, b]) =>
+      a.address === value ? -1 : b.address === value ? 1 : 0,
+    )
+  }
+
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
@@ -105,7 +112,14 @@ export const CAccountId: EditAccountId = ({ value, onValueChanged }) => {
               </div>
             </CommandEmpty>
             <CommandGroup>
-              {Array.from(accounts.entries()).map(([key, account]) => (
+              {valueIsNew && (
+                <AccountOption
+                  account={value}
+                  selected={true}
+                  onSelect={() => setOpen(false)}
+                />
+              )}
+              {accountList.map(([key, account]) => (
                 <AccountOption
                   key={key}
                   account={account.address}
@@ -116,13 +130,6 @@ export const CAccountId: EditAccountId = ({ value, onValueChanged }) => {
                   }}
                 />
               ))}
-              {valueIsNew && (
-                <AccountOption
-                  account={value}
-                  selected={true}
-                  onSelect={() => setOpen(false)}
-                />
-              )}
               {queryInfo.isValid && (
                 <AccountOption
                   account={query}
