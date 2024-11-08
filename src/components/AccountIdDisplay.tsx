@@ -21,7 +21,7 @@ export const AccountIdDisplay: FC<{
       <PolkadotIdenticon
         className="flex-shrink-0"
         publicKey={getPublicKey(value)}
-        size={32}
+        size={28}
       />
       <div className="flex flex-col justify-center text-white leading-tight overflow-hidden">
         {name && (
