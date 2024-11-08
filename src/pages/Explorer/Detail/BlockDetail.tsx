@@ -26,6 +26,7 @@ import { twMerge } from "tailwind-merge"
 import { blockInfoState$, blocksByHeight$, BlockState } from "../block.state"
 import { BlockStatusIcon, statusText } from "./BlockState"
 import { createExtrinsicCodec, DecodedExtrinsic } from "./extrinsicDecoder"
+import { CopyText } from "@/components/Copy"
 
 const blockExtrinsics$ = state((hash: string) => {
   const decoder$ = runtimeCtx$.pipe(
@@ -118,10 +119,26 @@ export const BlockDetail = () => {
             <BlockChildren hash={block.hash} />
           </div>
         </div>
-        <div className="text-slate-200 py-2">
-          <p>State root: {block.header?.stateRoot}</p>
-          <p>Extrinsic root: {block.header?.extrinsicRoot}</p>
-        </div>
+        {block.header && (
+          <div className="text-foreground/80 py-2">
+            <p>
+              State root: {block.header.stateRoot.slice(0, 18)}{" "}
+              <CopyText
+                className="align-middle"
+                text={block.header.stateRoot}
+                binary
+              />
+            </p>
+            <p>
+              Extrinsic root: {block.header.extrinsicRoot.slice(0, 18)}{" "}
+              <CopyText
+                className="align-middle"
+                text={block.header.extrinsicRoot}
+                binary
+              />
+            </p>
+          </div>
+        )}
       </div>
       <div className="p-2">
         <Tabs.Root
@@ -132,8 +149,9 @@ export const BlockDetail = () => {
           <Tabs.List className="flex-shrink-0 flex border-b border-polkadot-200">
             <Tabs.Trigger
               className={twMerge(
-                "bg-polkadot-950 px-4 py-2 text-polkadot-400 hover:text-polkadot-500 border-t border-x rounded-tl border-polkadot-200",
-                "disabled:text-opacity-50 disabled:pointer-events-none data-[state=active]:font-bold",
+                "bg-secondary text-secondary-foreground/80 px-4 py-2 hover:text-polkadot-500 border-t border-x rounded-tl border-polkadot-200",
+                "disabled:text-secondary-foreground/50 disabled:bg-secondary/50 disabled:pointer-events-none",
+                "data-[state=active]:font-bold data-[state=active]:text-secondary-foreground",
               )}
               value="signed"
               disabled={!groupedExtrinsics.signed?.length}
@@ -142,8 +160,9 @@ export const BlockDetail = () => {
             </Tabs.Trigger>
             <Tabs.Trigger
               className={twMerge(
-                "bg-polkadot-950 px-4 py-2 text-polkadot-400 hover:text-polkadot-500 border-t border-r rounded-tr border-polkadot-200",
-                "disabled:text-opacity-50 disabled:pointer-events-none data-[state=active]:font-bold",
+                "bg-secondary text-secondary-foreground/80 px-4 py-2 hover:text-polkadot-500 border-t border-r rounded-tr border-polkadot-200",
+                "disabled:text-secondary-foreground/50 disabled:pointer-events-none",
+                "data-[state=active]:font-bold data-[state=active]:text-secondary-foreground",
               )}
               value="unsigned"
               disabled={!groupedExtrinsics.unsigned?.length}
@@ -151,7 +170,7 @@ export const BlockDetail = () => {
               Unsigned
             </Tabs.Trigger>
           </Tabs.List>
-          <Tabs.Content value="signed" className="p-2">
+          <Tabs.Content value="signed" className="py-2">
             <ol>
               {groupedExtrinsics.signed?.map((extrinsic) => (
                 <Extrinsic
@@ -163,7 +182,7 @@ export const BlockDetail = () => {
               ))}
             </ol>
           </Tabs.Content>
-          <Tabs.Content value="unsigned" className="p-2">
+          <Tabs.Content value="unsigned" className="py-2">
             <ol>
               {groupedExtrinsics.unsigned?.map((extrinsic) => (
                 <Extrinsic
@@ -247,7 +266,7 @@ const BlockLink: FC<{ hash: string }> = ({ hash }) => {
 
   return (
     <Link
-      className="text-polkadot-200 hover:text-polkadot-300 align-middle inline-flex items-center gap-1"
+      className="text-primary/70 hover:text-primary align-middle inline-flex items-center gap-1"
       to={`../${hash}`}
     >
       {<BlockStatusIcon state={block.status} size={20} />}
@@ -266,7 +285,7 @@ const Extrinsic: FC<{
   )
 
   return (
-    <li className="p-2 border rounded border-polkadot-700 mb-2">
+    <li className="p-2 border rounded mb-2 bg-card text-card-foreground">
       <div className="flex justify-between items-center">
         <button
           onClick={() => setExpanded((e) => !e)}

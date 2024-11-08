@@ -9,7 +9,6 @@ export const Extrinsic: FC<{ extrinsic: ExtrinsicDescriptor }> = ({
 }) => {
   return (
     <div className="border rounded p-2 flex flex-col gap-2">
-      <h3 className="font-bold text-xl">Extrinsic</h3>
       <p>Version: {extrinsic.version}</p>
       {"type" in extrinsic && (
         <div>

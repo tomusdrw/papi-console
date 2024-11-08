@@ -23,8 +23,8 @@ export const StorageSubscriptions: FC = () => {
   if (!keys.length) return null
 
   return (
-    <div className="p-2 w-full border-t border-slate-400">
-      <h2 className="text-lg text-polkadot-200 mb-2">Results</h2>
+    <div className="p-2 w-full border-t border-border">
+      <h2 className="text-lg text-foreground mb-2">Results</h2>
       <ul className="flex flex-col gap-2">
         {keys.map((key) => (
           <StorageSubscriptionBox key={key} subscription={key} />
@@ -49,9 +49,9 @@ const StorageSubscriptionBox: FC<{ subscription: string }> = ({
   }
 
   return (
-    <li className="border rounded border-polkadot-200 p-2">
+    <li className="border rounded bg-card text-card-foreground p-2">
       <div className="flex justify-between items-center pb-1 overflow-hidden">
-        <h3 className="text-polkadot-200 overflow-hidden text-ellipsis whitespace-nowrap">
+        <h3 className="overflow-hidden text-ellipsis whitespace-nowrap">
           {storageSubscription.name}
         </h3>
         <div className="flex items-center flex-shrink-0 gap-2">
@@ -91,7 +91,7 @@ const ResultDisplay: FC<{
   mode: "json" | "decoded"
 }> = ({ storageSubscription, mode }) => {
   if (!("result" in storageSubscription)) {
-    return <div className="text-sm text-slate-400">Loading…</div>
+    return <div className="text-sm text-foreground/50">Loading…</div>
   }
 
   if (storageSubscription.single) {
@@ -177,7 +177,7 @@ export const ValueDisplay: FC<{
 
   if (!metadata || !builder) return null
   if (!encodedValue) {
-    return <div className="text-slate-400">Empty</div>
+    return <div className="text-foreground/60">Empty</div>
   }
 
   return (

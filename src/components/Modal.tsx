@@ -73,7 +73,7 @@ export const Modal: FC<ModalProps> = ({
   if (isDialogCompatible) {
     return (
       <dialog
-        className="modal rounded backdrop:backdrop-blur-[2px] backdrop:backdrop-contrast-75 flex flex-col overflow-hidden text-polkadot-100 border-polkadot-100"
+        className="modal rounded backdrop:backdrop-blur-[2px] backdrop:backdrop-contrast-75 flex flex-col overflow-hidden border-popover-foreground bg-popover text-popover-foreground"
         ref={setRef}
         onClose={onClose}
       >
@@ -106,13 +106,13 @@ const ModalPolyfill: FC<ModalProps> = ({ open, children, onClose }) => {
 
   return (
     <div
-      className="z-50 fixed left-0 top-0 w-full h-full backdrop-blur-[1px] bg-opacity-10 bg-slate-950 flex items-center justify-center overflow-hidden"
+      className="z-50 fixed left-0 top-0 w-full h-full backdrop-blur-[1px] bg-background/10 flex items-center justify-center overflow-hidden"
       onScroll={(evt) => {
         evt.stopPropagation()
         evt.preventDefault()
       }}
     >
-      <div className="modal rounded bg-polkadot-900 flex flex-col overflow-hidden">
+      <div className="modal rounded bg-popover text-popover-foreground flex flex-col overflow-hidden">
         {children}
       </div>
     </div>
@@ -131,7 +131,7 @@ const ModalContent: FC<
       <div className="flex-1 flex font-bold">{title}</div>
       <button
         type="button"
-        className="flex-shrink-0 text-white hover:text-polkadot-300"
+        className="flex-shrink-0 text-card-foreground/70 "
         onClick={onClose}
       >
         <XSquare />

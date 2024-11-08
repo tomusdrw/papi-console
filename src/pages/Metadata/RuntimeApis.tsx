@@ -16,7 +16,6 @@ export const RuntimeApis: FC<{ apis: Array<Api> }> = ({ apis }) => {
 
   return (
     <div className="border rounded p-2 flex flex-col gap-2">
-      <h3 className="font-bold text-xl">Runtime APIs</h3>
       <label className="self-start">
         API:{" "}
         <SearchableSelect

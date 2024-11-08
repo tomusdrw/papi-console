@@ -7,8 +7,13 @@ export const Header = () => (
   <div className="flex p-4 pb-2 items-center flex-shrink-0 gap-2">
     <div className="flex flex-1 items-center flex-row gap-2">
       <img
-        className="w-14 min-w-14"
+        className="w-14 min-w-14 hidden dark:inline-block"
         src="/papi_logo-dark.svg"
+        alt="papi-logo"
+      />
+      <img
+        className="w-14 min-w-14 dark:hidden"
+        src="/papi_logo-light.svg"
         alt="papi-logo"
       />
       <h1 className="hidden lg:block poppins-regular text-lg">

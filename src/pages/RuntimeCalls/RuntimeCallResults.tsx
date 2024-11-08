@@ -16,8 +16,8 @@ export const RuntimeCallResults: FC = () => {
   if (!keys.length) return null
 
   return (
-    <div className="p-2 w-full border-t border-slate-400">
-      <h2 className="text-lg text-polkadot-200 mb-2">Results</h2>
+    <div className="p-2 w-full border-t border-border">
+      <h2 className="text-lg text-foreground mb-2">Results</h2>
       <ul className="flex flex-col gap-2">
         {keys.map((key) => (
           <RuntimeCallResultBox key={key} subscription={key} />
@@ -35,9 +35,9 @@ const RuntimeCallResultBox: FC<{ subscription: string }> = ({
   if (!runtimeCallResult) return null
 
   return (
-    <li className="border rounded border-polkadot-200 p-2">
+    <li className="border rounded bg-card text-card-foreground p-2">
       <div className="flex justify-between items-center pb-1 overflow-hidden">
-        <h3 className="text-polkadot-200 overflow-hidden text-ellipsis whitespace-nowrap">
+        <h3 className="overflow-hidden text-ellipsis whitespace-nowrap">
           {runtimeCallResult.name}
         </h3>
         <div className="flex items-center flex-shrink-0 gap-2">
@@ -58,7 +58,7 @@ const RuntimeCallResultBox: FC<{ subscription: string }> = ({
           <button onClick={() => removeRuntimeCallResult(subscription)}>
             <Trash2
               size={20}
-              className="text-polkadot-400 cursor-pointer hover:text-polkadot-500"
+              className="text-destructive cursor-pointer hover:text-polkadot-500"
             />
           </button>
         </div>
@@ -73,7 +73,7 @@ const ResultDisplay: FC<{
   mode: "json" | "decoded"
 }> = ({ runtimeCallResult, mode }) => {
   if (!("result" in runtimeCallResult)) {
-    return <div className="text-sm text-slate-400">Loading…</div>
+    return <div className="text-sm text-foreground/50">Loading…</div>
   }
 
   return (

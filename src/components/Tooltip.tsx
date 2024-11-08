@@ -21,9 +21,9 @@ export const Tooltip: FC<
     <Root {...props}>
       <Trigger asChild>{children}</Trigger>
       <Portal>
-        <Content className="bg-white rounded py-1 px-2 shadow">
+        <Content className="bg-white border rounded py-1 px-2 shadow">
           {content}
-          <Arrow className="fill-white stroke-white" />
+          <Arrow className="fill-border" />
         </Content>
       </Portal>
     </Root>

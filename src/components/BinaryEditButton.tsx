@@ -136,12 +136,12 @@ const BinaryEditModalContent: FC<
 
   return (
     <>
-      <div className="flex gap-4 text-white">
+      <div className="flex gap-4">
         <div className="flex-1 flex gap-2">
           <button
             disabled={downloadDisabled}
             className={twMerge(
-              "flex items-center gap-1 hover:text-polkadot-300",
+              "flex items-center gap-1 hover:text-primary/80 border rounded py-1 px-2",
               downloadDisabled && "opacity-50 pointer-events-none",
             )}
             onClick={download}
@@ -151,7 +151,7 @@ const BinaryEditModalContent: FC<
           </button>
         </div>
         <div>
-          <label className="flex items-center gap-1 hover:text-polkadot-300 cursor-pointer">
+          <label className="flex items-center gap-1 hover:text-primary/80 cursor-pointer border rounded py-1 px-2">
             Load file
             <FileUp size={16} />
             <BinaryFileInput
@@ -166,7 +166,7 @@ const BinaryEditModalContent: FC<
         <div className="text-slate-400">Hex data</div>
         <textarea
           className={twMerge(
-            "bg-white rounded w-full min-h-20 text-slate-950 p-1 tabular-nums border-2 border-transparent",
+            "bg-white rounded w-full min-h-20 text-slate-950 p-1 tabular-nums border-2",
             !isValid && "border-red-600 outline-none",
           )}
           value={textareaValue}
@@ -175,10 +175,7 @@ const BinaryEditModalContent: FC<
         />
       </div>
       <button
-        className={twMerge(
-          "border rounded p-1 text-white",
-          !isValid && "opacity-50",
-        )}
+        className={twMerge("border rounded p-1", !isValid && "opacity-50")}
         onClick={submit}
         disabled={!isValid}
       >

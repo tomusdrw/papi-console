@@ -107,7 +107,7 @@ export const CAccountId: EditAccountId = ({ value, onValueChanged }) => {
           />
           <CommandList>
             <CommandEmpty>
-              <div className="text-slate-400">
+              <div className="text-foreground/50">
                 The value is not a valid Account ID
               </div>
             </CommandEmpty>

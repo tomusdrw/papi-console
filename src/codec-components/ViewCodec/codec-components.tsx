@@ -20,7 +20,9 @@ export const CEthAccount: ViewEthAccount = ({ value }) => <span>{value}</span>
 export const COption: ViewOption = ({ value, inner }) => {
   const selected = value !== undefined
   return (
-    <div>{selected ? inner : <span className="text-slate-400">None</span>}</div>
+    <div>
+      {selected ? inner : <span className="text-foreground/60">None</span>}
+    </div>
   )
 }
 

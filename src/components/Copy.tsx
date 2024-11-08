@@ -31,7 +31,7 @@ export const CopyText: React.FC<{
       onClick={copy}
     >
       {copied ? (
-        <CheckCircle size={16} className="text-green-300" />
+        <CheckCircle size={16} className="text-green-500 dark:text-green-300" />
       ) : binary ? (
         <CopyBinaryIcon size={16} />
       ) : (

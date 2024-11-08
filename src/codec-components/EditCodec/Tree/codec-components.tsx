@@ -143,7 +143,7 @@ export const ItemTitle: FC<
       <div
         className={twMerge(
           "flex items-center h-8",
-          isActive && "bg-polkadot-600 bg-opacity-20",
+          isActive && "bg-secondary/80",
           className,
         )}
         data-marker={`marker-${path}`}

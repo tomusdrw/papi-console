@@ -115,12 +115,12 @@ const ConstantEntry: FC<{
       <Tooltip
         content={
           docs.length ? (
-            <DocsRenderer docs={docs} className="text-slate-700 max-h-none" />
+            <DocsRenderer docs={docs} className="max-h-none" />
           ) : null
         }
         disableHoverableContent
       >
-        <div className={isInline ? "text-slate-400" : ""}>
+        <div className={isInline ? "text-foreground/60" : ""}>
           {name + (isInline ? ":" : "")}
         </div>
       </Tooltip>

@@ -152,7 +152,7 @@ const RuntimeValueInput: FC<{ idx: number; name: string; type: number }> = ({
                 : "text-green-600",
           )}
         />
-        <div className="text-polkadot-200">{name}</div>
+        <div className="text-foreground/80">{name}</div>
         {complexity === "inline" ? (
           <div className="px-2">
             <InlineLookupTypeEdit

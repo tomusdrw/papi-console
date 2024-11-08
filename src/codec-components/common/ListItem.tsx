@@ -33,7 +33,7 @@ export const ListItem: React.FC<{
       <div className="flex-1">{children}</div>
       {onDelete ? (
         <button
-          className="cursor-pointer text-gray-200 ml-2 hover:text-polkadot-500"
+          className="cursor-pointer text-foreground/80 ml-2 hover:text-primary"
           onClick={() => onDelete()}
         >
           <Trash2 size={16} />
@@ -53,7 +53,7 @@ export const ListItem: React.FC<{
       </span>
       {onDelete ? (
         <button
-          className="cursor-pointer text-gray-200 ml-2 hover:text-polkadot-400"
+          className="cursor-pointer text-foreground/80 ml-2 hover:text-primary"
           onClick={() => onDelete()}
         >
           <Trash2 size={16} />
@@ -65,10 +65,7 @@ export const ListItem: React.FC<{
 
   return (
     <li
-      className={twMerge(
-        "flex flex-col mb-1",
-        isActive && "bg-slate-900 bg-opacity-50",
-      )}
+      className={twMerge("flex flex-col mb-1", isActive && "bg-secondary/80")}
       onMouseEnter={() => setHovered({ id: pathStr, hover: true })}
       onMouseLeave={() => setHovered({ id: pathStr, hover: false })}
     >
@@ -76,7 +73,7 @@ export const ListItem: React.FC<{
       {inline ? null : (
         <div
           className={clsx(
-            "flex-row p-2 items-center border border-slate-500",
+            "flex-row p-2 items-center border border-border",
             isCollapsed ? "hidden" : "",
           )}
         >

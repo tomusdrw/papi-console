@@ -16,7 +16,6 @@ export const Lookup: FC = () => {
 
   return (
     <div className="border rounded p-2 flex flex-col gap-2">
-      <h3 className="font-bold text-xl">Lookup</h3>
       <label>
         Id:{" "}
         <input
@@ -75,7 +74,7 @@ export const LookupLink: FC<{ id: number }> = ({ id }) => {
     <div
       className={twMerge(
         "border rounded p-2",
-        expanded && "bg-slate-500 bg-opacity-10",
+        expanded && "bg-slate-400 bg-opacity-10",
       )}
     >
       <button

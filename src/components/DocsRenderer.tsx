@@ -8,7 +8,7 @@ export const DocsRenderer: FC<{ docs: string[]; className?: string }> = ({
   if (!docs.length) return null
   if (docs.length === 1) {
     return (
-      <div className={twMerge("text-sm text-slate-400", className)}>
+      <div className={twMerge("text-sm text-foreground/60", className)}>
         <p>{docs[0]}</p>
       </div>
     )
@@ -19,7 +19,7 @@ export const DocsRenderer: FC<{ docs: string[]; className?: string }> = ({
   return (
     <div
       className={twMerge(
-        "text-slate-400 max-h-20 overflow-auto",
+        "text-foreground/60 max-h-20 overflow-auto",
         normalizedDocs.length > 1 && "text-xs font-mono whitespace-pre",
         className,
       )}

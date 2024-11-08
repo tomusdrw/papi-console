@@ -9,8 +9,8 @@ export const ActionButton = forwardRef<
     {...props}
     ref={ref}
     className={twMerge(
-      "text-polkadot-0 bg-polkadot-700 px-3 py-1",
-      "cursor-pointer select-none hover:bg-polkadot-500",
+      "text-primary-foreground bg-primary/90 px-3 py-1",
+      "cursor-pointer select-none hover:bg-primary/100",
       props.disabled && "opacity-50 pointer-events-none",
       props.className,
     )}

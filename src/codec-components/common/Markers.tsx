@@ -21,7 +21,7 @@ export const Marker: FC<{ id: string[] }> = ({ id }) => {
   const ctx = useContext(MarkersContext)
   const ref = useRefEffect<HTMLElement>(
     (element) => {
-      if (!ctx) return () => { }
+      if (!ctx) return () => {}
       ctx.observer.observe(element)
       return () => {
         ctx.onMarkerRemoved(id)
@@ -109,7 +109,7 @@ export const VisibleWindow = () => {
   if (!ctx) return null
 
   const window = twMerge(
-    "absolute left-0 right-0 ease-linear bg-polkadot-800 opacity-35 z-[-1]",
+    "absolute left-0 right-0 ease-linear bg-foreground/5",
     transitionEnabled && "transition-all",
   )
 
@@ -127,8 +127,7 @@ export const VisibleWindow = () => {
           top: ctx.range[0],
           height: ctx.range[1] - ctx.range[0],
         }}
-      >
-      </div>
+      ></div>
     </div>
   )
 }

@@ -123,7 +123,7 @@ export const TextInputField: FC<{
       {children(
         <input
           className={twMerge(
-            "px-4 py-2 border border-slate-500 leading-tight text-white",
+            "px-4 py-2 border border-border leading-tight text-foreground bg-background",
             warn ? "border-yellow-400" : null,
             error ? "border-red-500" : null,
             className,

@@ -71,7 +71,7 @@ const ListComponent: FC<{
           </ListItemComponent>
         ))
       ) : (
-        <span className="text-sm text-slate-400">(Empty)</span>
+        <span className="text-sm text-foreground/60">(Empty)</span>
       )}
     </ul>
   )

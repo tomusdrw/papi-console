@@ -23,16 +23,19 @@ export const AccountIdDisplay: FC<{
         publicKey={getPublicKey(value)}
         size={28}
       />
-      <div className="flex flex-col justify-center text-white leading-tight overflow-hidden">
+      <div className="flex flex-col justify-center text-foreground leading-tight overflow-hidden">
         {name && (
           <span className="inline-flex items-center gap-1">
             {name}
             {isVerified(identity) && (
-              <CheckCircle size={16} className="text-green-400" />
+              <CheckCircle
+                size={16}
+                className="text-green-500 dark:text-green-400"
+              />
             )}
           </span>
         )}
-        <span className="text-slate-300 text-ellipsis overflow-hidden">
+        <span className="text-foreground/50 text-ellipsis overflow-hidden">
           {value}
         </span>
       </div>
