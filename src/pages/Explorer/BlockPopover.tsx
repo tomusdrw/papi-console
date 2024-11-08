@@ -8,6 +8,7 @@ import { map } from "rxjs"
 import { blockInfoState$ } from "./block.state"
 import { BlockStatusIcon, statusText } from "./Detail/BlockState"
 import { filterEvt } from "./Events"
+import { CopyText } from "@/components/Copy"
 
 const maxBlockWeight$ = state(
   runtimeCtx$.pipe(
@@ -51,21 +52,23 @@ export const BlockPopover: FC<{ hash: string }> = ({ hash }) => {
 
   return (
     <div>
-      <h3 className="font-bold text-lg hover:text-polkadot-200">
-        <Link to={hash}>
-          Block{" "}
-          <span className="font-mono text-sm font-normal text-slate-300 hover:text-polkadot-200">
-            {hash}
-          </span>
-        </Link>
-      </h3>
-      <p>
-        Status:{" "}
-        <span className="inline-flex gap-1 items-center align-middle">
+      <div className="flex justify-between items-center gap-4 mb-2">
+        <h3 className="font-bold flex gap-1 items-center">
+          Block
+          <Link
+            to={hash}
+            className="font-mono font-normal text-primary/70 hover:text-primary"
+          >
+            {hash.slice(0, 18)}…
+          </Link>
+          <CopyText className="ml-1" text={hash} binary />
+        </h3>
+        <p className="flex gap-1">
+          Status:
           <BlockStatusIcon state={block.status} />
           {statusText[block.status]}
-        </span>
-      </p>
+        </p>
+      </div>
       <div className="flex justify-between items-start">
         {eventGroups && (
           <div>
@@ -83,7 +86,10 @@ export const BlockPopover: FC<{ hash: string }> = ({ hash }) => {
                   <td className="px-2">
                     {filteredEvents}/
                     {eventGroups["ApplyExtrinsic"]?.length ?? 0}
-                    <span className="text-slate-300"> (filtered/total)</span>
+                    <span className="text-popover-foreground/60">
+                      {" "}
+                      (filtered/total)
+                    </span>
                   </td>
                 </tr>
                 <tr>

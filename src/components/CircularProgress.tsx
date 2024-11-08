@@ -19,7 +19,7 @@ export const CircularProgress: FC<{
         `}
         strokeWidth={STROKE_W}
         fill="transparent"
-        className="transition-all ease-linear stroke-polkadot-500"
+        className="transition-all ease-linear stroke-primary"
         opacity="0.3"
       />
       {progress ? (
@@ -33,7 +33,7 @@ export const CircularProgress: FC<{
           strokeWidth={STROKE_W}
           strokeLinecap="round"
           fill="transparent"
-          className="transition-all ease-linear stroke-polkadot-500"
+          className="transition-all ease-linear stroke-primary"
           opacity="0.7"
         />
       ) : null}
@@ -48,7 +48,7 @@ export const CircularProgress: FC<{
           strokeWidth={STROKE_W}
           strokeLinecap="round"
           fill="transparent"
-          className="transition-all ease-linear stroke-polkadot-500"
+          className="transition-all ease-linear stroke-primary"
         />
       ) : null}
       <text
@@ -56,7 +56,7 @@ export const CircularProgress: FC<{
         y={CENTER}
         textAnchor="middle"
         dy=".3em"
-        className="tabular-nums fill-polkadot-200"
+        className="tabular-nums fill-foreground/80"
       >
         {text}
       </text>

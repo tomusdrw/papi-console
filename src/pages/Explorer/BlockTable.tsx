@@ -7,6 +7,7 @@ import { combineLatest, debounceTime, map, switchMap } from "rxjs"
 import { twMerge } from "tailwind-merge"
 import { BlockInfo, blocksByHeight$, finalized$ } from "./block.state"
 import { BlockPopover } from "./BlockPopover"
+import * as Finalizing from "./FinalizingTable"
 
 const best$ = chainHead$.pipeState(switchMap((chainHead) => chainHead.best$))
 
@@ -101,69 +102,63 @@ export const BlockTable = () => {
   if (!finalized) return null
 
   return (
-    <div className="w-full px-3 py-2 border border-polkadot-700">
-      <h2 className="font-bold p-2 border-b border-slate-400 mb-2">
-        Recent Blocks
-      </h2>
-      <table className="border-collapse m-auto">
-        <tbody>
-          {rows.map((row, i) => (
-            <tr
-              key={row.block.hash}
-              className={twMerge(
-                row.block.number <= finalized.number ? "bg-polkadot-900" : "",
-                row.block.number === finalized.number &&
-                  row.position === 0 &&
-                  "border-t",
-              )}
-            >
-              {rows[i - 1]?.block.number !== row.block.number ? (
-                <td
-                  rowSpan={numberSpan(i)}
-                  className={twMerge(
-                    "px-2",
-                    numberSpan(i) > 1
-                      ? twMerge(
-                          i > 0 ? "border-y" : "border-b",
-                          "border-slate-500",
-                        )
-                      : null,
-                    row.block.number === finalized.number && "border-t-white",
-                    row.block.number === finalized.number + 1 &&
-                      "border-b-white",
-                  )}
-                >
-                  {row.block.number.toLocaleString()}
-                </td>
-              ) : null}
-              <td className="p-0">
-                <ForkRenderer row={row} />
+    <Finalizing.Root>
+      <Finalizing.Title>Recent Blocks</Finalizing.Title>
+      <Finalizing.Table>
+        {rows.map((row, i) => (
+          <Finalizing.Row
+            key={row.block.hash}
+            number={row.block.number}
+            finalized={finalized.number}
+            firstInGroup={row.position === 0}
+          >
+            {rows[i - 1]?.block.number !== row.block.number ? (
+              <td
+                rowSpan={numberSpan(i)}
+                className={twMerge(
+                  "px-2",
+                  numberSpan(i) > 1
+                    ? twMerge(
+                        i > 0 ? "border-y" : "border-b",
+                        "border-card-foreground/25",
+                      )
+                    : null,
+                  row.block.number === finalized.number &&
+                    "border-t-card-foreground/50",
+                  row.block.number === finalized.number + 1 &&
+                    "border-b-card-foreground/50",
+                )}
+              >
+                {row.block.number.toLocaleString()}
               </td>
-              <td className="max-w-xs w-full">
-                <div className="flex gap-1">
-                  <Popover content={<BlockPopover hash={row.block.hash} />}>
-                    <button
-                      className={twMerge(
-                        "overflow-hidden text-ellipsis whitespace-nowrap font-mono text-sm",
-                        "hover:text-polkadot-200",
-                        row.position === 0
-                          ? ""
-                          : row.block.number > finalized.number
-                            ? "opacity-80"
-                            : "opacity-50",
-                      )}
-                    >
-                      {row.block.hash}
-                    </button>
-                  </Popover>
-                  <CopyText text={row.block.hash} binary />
-                </div>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
+            ) : null}
+            <td className="p-0">
+              <ForkRenderer row={row} />
+            </td>
+            <td className="max-w-xs w-full">
+              <div className="flex gap-1">
+                <Popover content={<BlockPopover hash={row.block.hash} />}>
+                  <button
+                    className={twMerge(
+                      "overflow-hidden text-ellipsis whitespace-nowrap font-mono text-sm",
+                      "text-card-foreground/80 hover:text-card-foreground/100",
+                      row.position === 0
+                        ? ""
+                        : row.block.number > finalized.number
+                          ? "opacity-80"
+                          : "opacity-50",
+                    )}
+                  >
+                    {row.block.hash}
+                  </button>
+                </Popover>
+                <CopyText text={row.block.hash} binary />
+              </div>
+            </td>
+          </Finalizing.Row>
+        ))}
+      </Finalizing.Table>
+    </Finalizing.Root>
   )
 }
 
@@ -179,7 +174,7 @@ const ForkRenderer: FC<{ row: PositionedBlock }> = ({ row }) => {
     <svg
       height={CELL_HEIGHT}
       width={CELL_WIDTH * totalCells}
-      className="stroke-polkadot-200"
+      className="stroke-card-foreground/60"
     >
       {row.branches.map((branch, i) => (
         <line

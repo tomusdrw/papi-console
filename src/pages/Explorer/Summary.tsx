@@ -16,21 +16,12 @@ const best$ = chainHead$.pipeState(
 export const Summary: FC = () => {
   return (
     <div className="flex gap-4 items-center py-2">
-      <SummaryItem 
-        title="Block Time"
-        className="bg-opacity-0"
-      >
+      <SummaryItem title="Block Time" className="bg-card/0 border-none">
         <BlockTime />
       </SummaryItem>
       <div className="flex-1" />
-      <SummaryItem
-        title="Finalized"
-      >
-        {finalized$}
-      </SummaryItem>
-      <SummaryItem title="Best">
-        {best$}
-      </SummaryItem>
+      <SummaryItem title="Finalized">{finalized$}</SummaryItem>
+      <SummaryItem title="Best">{best$}</SummaryItem>
     </div>
   )
 }
@@ -39,9 +30,16 @@ const SummaryItem: FC<
   PropsWithChildren<{ title: string; className?: string }>
 > = ({ title, className, children }) => {
   return (
-    <div className={twMerge("flex flex-col items-center bg-polkadot-800 px-3 py-2", className)}>
+    <div
+      className={twMerge(
+        "flex flex-col items-center border rounded bg-card text-card-foreground px-3 py-2",
+        className,
+      )}
+    >
       <h3>{title}</h3>
-      <div className="tabular-nums text-slate-300 text-sm">{children}</div>
+      <div className="tabular-nums text-sm text-card-foreground/80">
+        {children}
+      </div>
     </div>
   )
 }

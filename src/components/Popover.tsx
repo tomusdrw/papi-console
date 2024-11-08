@@ -7,9 +7,9 @@ export const Popover: FC<
   <Root open={open}>
     <Trigger asChild>{children}</Trigger>
     <Portal>
-      <Content className="bg-polkadot-950 border border-polkadot-700 p-2 rounded max-w-[100vw]">
+      <Content className="bg-popover text-popover-foreground border p-2 rounded max-w-[100vw]">
         {content}
-        <Arrow className="fill-polkadot-700" />
+        <Arrow className="fill-border" />
       </Content>
     </Portal>
   </Root>

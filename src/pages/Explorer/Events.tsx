@@ -16,6 +16,8 @@ import { JsonDisplay } from "@/components/JsonDisplay"
 import { groupBy } from "@/lib/groupBy"
 import { Link } from "react-router-dom"
 import { BlockStatusIcon, statusText } from "./Detail/BlockState"
+import * as Finalizing from "./FinalizingTable"
+import { CopyText } from "@/components/Copy"
 
 export const Events = () => {
   const events = useStateObservable(recentEvents$)
@@ -35,71 +37,70 @@ export const Events = () => {
   }
 
   return (
-    <div className="w-full px-3 py-2 border border-polkadot-700">
-      <h2 className="font-bold p-2 border-b border-slate-400 mb-2">
-        Recent Events
-      </h2>
-      <table className="w-full">
-        <tbody>
-          {events.map((evt, idx) => {
-            const key = eventKey(evt)
-            const span = numberSpan(idx)
+    <Finalizing.Root>
+      <Finalizing.Title>Recent Events</Finalizing.Title>
+      <Finalizing.Table>
+        {events.map((evt, idx) => {
+          const key = eventKey(evt)
+          const span = numberSpan(idx)
 
-            return (
-              <tr
-                key={`${evt.hash}-${evt.extrinsicNumber}-${evt.index}`}
-                className={twMerge(
-                  idx === finalizedIdx ? "border-t border-white" : "",
-                  finalized && evt.number <= finalized.number
-                    ? "bg-polkadot-900"
-                    : "",
-                )}
-              >
-                {eventKey(events[idx - 1]) !== key && (
-                  <td
-                    className={twMerge(
-                      "p-2 whitespace-nowrap",
-                      span > 1 &&
-                        twMerge(
-                          idx > 0 ? "border-y" : "border-b",
-                          "border-slate-500",
-                        ),
-                      idx === finalizedIdx && "border-t-white",
-                      idx === finalizedIdx - span && "border-b-white",
-                    )}
-                    rowSpan={span}
-                  >
-                    {key}
-                  </td>
-                )}
-                <td className="p-1 w-full">
-                  {"event" in evt ? (
-                    <Popover content={<EventPopover event={evt} />}>
-                      <button className="w-full p-1 text-left hover:text-polkadot-200">{`${evt.event.type}.${evt.event.value.type}`}</button>
-                    </Popover>
-                  ) : (
-                    `… ${evt.length} more`
+          return (
+            <Finalizing.Row
+              key={`${evt.hash}-${evt.extrinsicNumber}-${evt.index}`}
+              number={events.length - idx}
+              finalized={events.length - finalizedIdx}
+              firstInGroup
+            >
+              {eventKey(events[idx - 1]) !== key && (
+                <td
+                  className={twMerge(
+                    "p-2 whitespace-nowrap",
+                    span > 1 &&
+                      twMerge(
+                        idx > 0 ? "border-y" : "border-b",
+                        "border-card-foreground/25",
+                      ),
+                    idx === finalizedIdx &&
+                      "border-t-border-card-foreground/50",
+                    idx === finalizedIdx - span &&
+                      "border-b-border-card-foreground/50",
                   )}
+                  rowSpan={span}
+                >
+                  {key}
                 </td>
-              </tr>
-            )
-          })}
-        </tbody>
-      </table>
+              )}
+              <td className="p-1 w-full">
+                {"event" in evt ? (
+                  <Popover content={<EventPopover event={evt} />}>
+                    <button className="w-full p-1 text-left hover:text-polkadot-200">{`${evt.event.type}.${evt.event.value.type}`}</button>
+                  </Popover>
+                ) : (
+                  `… ${evt.length} more`
+                )}
+              </td>
+            </Finalizing.Row>
+          )
+        })}
+      </Finalizing.Table>
       {events.length === 0 ? (
         <div className="text-slate-400">(No events yet)</div>
       ) : null}
-    </div>
+    </Finalizing.Root>
   )
 }
 
 const EventPopover: FC<{ event: EventInfo }> = ({ event }) => {
   return (
     <div>
-      <div className="flex justify-between">
+      <div className="flex justify-between items-center gap-4 mb-2">
         <h3 className="font-bold text-lg">
-          <Link to={`${event.hash}#event=${event.index}`}>
-            Event {eventKey(event)}
+          Event{" "}
+          <Link
+            to={`${event.hash}#event=${event.index}`}
+            className="text-primary/70 hover:text-primary"
+          >
+            {eventKey(event)}
           </Link>
         </h3>
         <p className="flex gap-1">
@@ -108,8 +109,9 @@ const EventPopover: FC<{ event: EventInfo }> = ({ event }) => {
           {statusText[event.status]}
         </p>
       </div>
-      <p className="overflow-hidden text-ellipsis whitespace-nowrap text-slate-400">
-        Block: {event.hash}
+      <p className="overflow-hidden text-ellipsis whitespace-nowrap flex items-center gap-2">
+        Block: {event.hash.slice(0, 18)}…
+        <CopyText text={event.hash} binary />
       </p>
       <p className="font-bold">{`${event.event.type}.${event.event.value.type}`}</p>
       <JsonDisplay src={event.event.value.value} />
