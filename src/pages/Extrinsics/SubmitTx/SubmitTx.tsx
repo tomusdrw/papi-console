@@ -1,4 +1,3 @@
-import { unsafeApi$ } from "@/chain.state"
 import { ActionButton } from "@/components/ActionButton"
 import {
   Dialog,
@@ -6,61 +5,13 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
-import { onNexTx } from "@/pages/Transactions"
 import { toHex } from "@polkadot-api/utils"
-import { useStateObservable } from "@react-rxjs/core"
-import { Binary, HexString } from "polkadot-api"
-import React, { createContext, useContext, useState } from "react"
-import { noop } from "rxjs"
-import { AccountProvider, selectedAccount$ } from "./AccountProvider"
-import { ExtensionProvider } from "./ExtensionProvider"
+import { HexString } from "polkadot-api"
+import React, { lazy, Suspense, useState } from "react"
 
-const CallDataCtx = createContext("")
-const OnCloseCtx = createContext(noop)
-
-const SignAndSubmit = () => {
-  const account = useStateObservable(selectedAccount$)
-  const callData = useContext(CallDataCtx)
-  const close = useContext(OnCloseCtx)
-
-  if (!account) return null
-
-  return (
-    <ActionButton
-      onClick={() => {
-        let nClients = 0
-        const subscription = unsafeApi$.subscribe((client) => {
-          nClients++
-          if (nClients > 1) return subscription.unsubscribe()
-          client
-            .txFromCallData(Binary.fromHex(callData))
-            .then((x) => {
-              if (nClients === 1)
-                return x.sign(account.polkadotSigner).then((s) => {
-                  close()
-                  if (nClients === 1) onNexTx(s)
-                })
-            }, noop)
-            .finally(() => {
-              subscription.unsubscribe()
-            })
-        })
-      }}
-    >
-      Sign and Submit
-    </ActionButton>
-  )
-}
-
-const SelectAccountFromExtension = () => {
-  return (
-    <>
-      <ExtensionProvider />
-      <AccountProvider />
-      <SignAndSubmit />
-    </>
-  )
-}
+const SelectAccountFromExtension = lazy(
+  () => import("./SelectAccountFromExtension"),
+)
 
 export const ExtrinsicModal: React.FC<{
   callData: Uint8Array | HexString | undefined
@@ -84,13 +35,14 @@ export const ExtrinsicModal: React.FC<{
         className="flex flex-col overflow-hidden"
       >
         <DialogTitle>Create TX</DialogTitle>
-        <CallDataCtx.Provider
-          value={callData instanceof Uint8Array ? toHex(callData) : callData!}
-        >
-          <OnCloseCtx.Provider value={() => setOpen(false)}>
-            <SelectAccountFromExtension />
-          </OnCloseCtx.Provider>
-        </CallDataCtx.Provider>
+        <Suspense fallback="Loading…">
+          <SelectAccountFromExtension
+            callData={
+              callData instanceof Uint8Array ? toHex(callData) : callData!
+            }
+            onClose={() => setOpen(false)}
+          />
+        </Suspense>
       </DialogContent>
     </Dialog>
   )
