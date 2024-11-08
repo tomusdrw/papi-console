@@ -9,6 +9,7 @@ import {
   useState,
 } from "react"
 import { Link } from "react-router-dom"
+import { twMerge } from "tailwind-merge"
 
 export const Lookup: FC = () => {
   const [id, setId] = useState(0)
@@ -25,7 +26,7 @@ export const Lookup: FC = () => {
           type="number"
         />
       </label>
-      <div className="border-t max-h-[75vh] overflow-auto">
+      <div className="border-t">
         <LookupNode id={id} />
       </div>
     </div>
@@ -71,7 +72,12 @@ export const LookupLink: FC<{ id: number }> = ({ id }) => {
   const [expanded, setExpanded] = useState(false)
 
   return (
-    <div className="border rounded p-2">
+    <div
+      className={twMerge(
+        "border rounded p-2",
+        expanded && "bg-slate-500 bg-opacity-10",
+      )}
+    >
       <button
         onClick={() => setExpanded((e) => !e)}
         className="flex items-center gap-1"

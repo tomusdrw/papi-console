@@ -311,7 +311,7 @@ const KeyDisplay: FC = () => {
       >
         {key ?? "Fill in all the storage keys to calculate the encoded key"}
       </div>
-      <CopyText text={key ?? ""} disabled={key === null} />
+      <CopyText text={key ?? ""} disabled={key === null} binary />
       {keys.length === keysEnabled && (
         <BinaryEditButton
           initialValue={key ? Binary.fromHex(key).asBytes() : undefined}

@@ -5,15 +5,14 @@ import { JsonDisplay } from "@/components/JsonDisplay"
 import { LoadingMetadata } from "@/components/Loading"
 import { withSubscribe } from "@/components/withSuspense"
 import { getTypeComplexity } from "@/utils/shape"
-import { V14, V15 } from "@polkadot-api/substrate-bindings"
 import { useStateObservable } from "@react-rxjs/core"
-import { FC, useState } from "react"
+import { useState } from "react"
 import { Route, Routes, useParams } from "react-router-dom"
 import { Extrinsic } from "./Extrinsic"
 import { Lookup, LookupContext } from "./Lookup"
 import { Pallets } from "./Pallets"
 import { RuntimeApis } from "./RuntimeApis"
-import { V15Fields } from "./V15Fields"
+import { Custom, OuterEnums } from "./V15Fields"
 
 export const Metadata = withSubscribe(
   () => (
@@ -28,43 +27,66 @@ export const Metadata = withSubscribe(
 )
 
 const MetadataExplorer = () => {
-  const [mode, setMode] = useState<"json" | "explorer">("explorer")
+  const [mode, setMode] = useState<string>("pallets")
   const metadata = useStateObservable(metadata$)
+
+  const tabs = [
+    {
+      id: "pallets",
+      label: "Pallets",
+      element: <Pallets pallets={metadata.pallets} />,
+    },
+    {
+      id: "apis",
+      label: "Runtime APIs",
+      element: <RuntimeApis apis={metadata.apis} />,
+    },
+    {
+      id: "extrinsic",
+      label: "Extrinsic",
+      element: <Extrinsic extrinsic={metadata.extrinsic} />,
+    },
+    {
+      id: "lookup",
+      label: "Lookup",
+      element: <Lookup />,
+    },
+    ...("outerEnums" in metadata
+      ? [
+          {
+            id: "outerEnums",
+            label: "Outer Enums",
+            element: <OuterEnums metadata={metadata} />,
+          },
+          {
+            id: "custom",
+            label: "Custom",
+            element: <Custom metadata={metadata} />,
+            disabled: metadata.custom.length === 0,
+          },
+        ]
+      : []),
+    {
+      id: "json",
+      label: "JSON",
+      element: <JsonDisplay src={metadata} />,
+    },
+  ].filter((v) => !v.disabled)
 
   return (
     <div className="p-4 pb-0 flex flex-col overflow-auto items-start gap-2">
       <ButtonGroup
         value={mode}
         onValueChange={setMode as any}
-        items={[
-          {
-            value: "explorer",
-            content: "Explorer",
-          },
-          {
-            value: "json",
-            content: "JSON",
-          },
-        ]}
+        items={tabs.map((tab) => ({
+          value: tab.id,
+          content: tab.label,
+        }))}
       />
-      {mode === "json" ? (
-        <JsonDisplay src={metadata} />
-      ) : (
-        <DecodedExplorer value={metadata} />
-      )}
-    </div>
-  )
-}
-
-const DecodedExplorer: FC<{ value: V14 | V15 }> = ({ value }) => {
-  return (
-    <div className="w-full flex flex-col gap-6">
-      <LookupContext.Provider value={value.lookup}>
-        <Lookup />
-        <Pallets pallets={value.pallets} />
-        <RuntimeApis apis={value.apis} />
-        <Extrinsic extrinsic={value.extrinsic} />
-        {"outerEnums" in value && <V15Fields metadata={value} />}
+      <LookupContext.Provider value={metadata.lookup}>
+        <div className="w-full flex flex-col">
+          {tabs.find((t) => t.id === mode)?.element}
+        </div>
       </LookupContext.Provider>
     </div>
   )

@@ -25,6 +25,7 @@ export const CopyText: React.FC<{
 
   return (
     <button
+      aria-label={binary ? "copy binary" : "copy"}
       disabled={disabled || copied}
       className={twMerge(className, disabled ? "opacity-50" : "")}
       onClick={copy}
