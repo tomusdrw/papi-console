@@ -1,13 +1,15 @@
+import { cn } from "@/utils/cn"
+import { Check, ChevronsUpDown } from "lucide-react"
 import { useState } from "react"
-import { twMerge as clsx } from "tailwind-merge"
-import { ChevronDown, CheckIcon } from "lucide-react"
+import { Button } from "./ui/button"
 import {
-  Combobox,
-  ComboboxInput,
-  ComboboxOption,
-  ComboboxOptions,
-  ComboboxButton,
-} from "@headlessui/react"
+  Command,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "./ui/command"
+import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover"
 
 export const SearchableSelect = <T,>({
   value,
@@ -18,60 +20,54 @@ export const SearchableSelect = <T,>({
   setValue: (val: T | null) => void
   options: { value: T; text: string }[]
 }) => {
-  const [query, setQuery] = useState("")
-
-  const filteredOptions =
-    query === ""
-      ? options
-      : options.filter((option) => {
-          return option.text.toLowerCase().includes(query.toLowerCase())
-        })
+  const [open, setOpen] = useState(false)
 
   return (
-    <>
-      <Combobox
-        value={value}
-        onChange={(value) => setValue(value)}
-        onClose={() => setQuery("")}
-        immediate
-      >
-        <div className="flex flex-row px-4 py-2 border border-slate-500 text-white bg-transparent">
-          <ComboboxInput
-            className="text-ellipsis overflow-hidden whitespace-nowrap focus:outline-none select-all"
-            displayValue={(option: T) =>
-              options.find((_option) => _option.value === option)?.text ?? ""
-            }
-            onChange={(event) => setQuery(event.target.value)}
-            placeholder="Select"
-            autoComplete="off"
-          />
-          <ComboboxButton className="group">
-            <ChevronDown className="size-4 " />
-          </ComboboxButton>
-        </div>
-
-        <ComboboxOptions
-          anchor="bottom start"
-          transition
-          className={clsx(
-            "max-h-96 rounded bg-black p-1 empty:invisible mt-2 -ml-4",
-            "transition duration-100 ease-in data-[leave]:data-[closed]:opacity-0",
-          )}
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <Button
+          variant="outline"
+          role="combobox"
+          aria-expanded={open}
+          className="flex w-52 justify-between overflow-hidden"
         >
-          {filteredOptions
-            .sort((a, b) => a.text.localeCompare(b.text))
-            .map((option, idx) => (
-              <ComboboxOption
-                key={idx}
-                value={option.value}
-                className="group flex cursor-default items-center gap-2 rounded py-1.5 px-3 select-none data-[focus]:bg-white/10"
-              >
-                <CheckIcon className="invisible size-4 group-data-[selected]:visible" />
-                <div className="text-sm text-white">{option.text}</div>
-              </ComboboxOption>
-            ))}
-        </ComboboxOptions>
-      </Combobox>
-    </>
+          {value ? (
+            <span className="text-ellipsis overflow-hidden">
+              {options.find((option) => option.value === value)?.text}
+            </span>
+          ) : (
+            <span className="opacity-80">Select…</span>
+          )}
+          <ChevronsUpDown className="opacity-50" />
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="w-[200px] p-0">
+        <Command>
+          <CommandInput placeholder="Filter…" />
+          <CommandList>
+            <CommandGroup>
+              {options.map((option, i) => (
+                <CommandItem
+                  key={i}
+                  value={option.text}
+                  onSelect={() => {
+                    setValue(option.value)
+                    setOpen(false)
+                  }}
+                >
+                  {option.text}
+                  <Check
+                    className={cn(
+                      "ml-auto",
+                      value === option.value ? "opacity-100" : "opacity-0",
+                    )}
+                  />
+                </CommandItem>
+              ))}
+            </CommandGroup>
+          </CommandList>
+        </Command>
+      </PopoverContent>
+    </Popover>
   )
 }
