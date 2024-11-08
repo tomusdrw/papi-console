@@ -103,7 +103,7 @@ export const ListDisplay: React.FC<
   )
 }
 
-const noop = () => { }
+const noop = () => {}
 const ListItem: FC<
   PropsWithChildren<{
     idx: number
@@ -124,105 +124,106 @@ const ListItem: FC<
   onZoom,
   onNavigate,
 }) => {
-    const [titleElement, setTitleElement] = useState<HTMLElement | null>(null)
-    const [binaryStatus, setBinaryStatus] = useState<BinaryStatus>()
-    const ref = useHeightObserver(drag?.onMeasure ?? noop)
-    const [isDragging, setIsDragging] = useState(false)
-    const isCollapsed = useStateObservable(isCollapsedRoot$(path))
+  const [titleElement, setTitleElement] = useState<HTMLElement | null>(null)
+  const [binaryStatus, setBinaryStatus] = useState<BinaryStatus>()
+  const ref = useHeightObserver(drag?.onMeasure ?? noop)
+  const [isDragging, setIsDragging] = useState(false)
+  const isCollapsed = useStateObservable(isCollapsedRoot$(path))
 
-    const startDrag = (evt: React.MouseEvent) => {
-      if (!drag || isDragging) return
+  const startDrag = (evt: React.MouseEvent) => {
+    if (!drag || isDragging) return
 
-      setIsDragging(true)
-      drag.onDragStart()
+    setIsDragging(true)
+    drag.onDragStart()
 
-      const start = evt.pageY
-      const mouseMoveHandler = (evt: MouseEvent) => {
-        drag.onDragMove(evt.pageY - start)
-      }
-      const mouseUpHandler = (evt: MouseEvent) => {
-        document.removeEventListener("mouseup", mouseUpHandler)
-        document.removeEventListener("mousemove", mouseMoveHandler)
-        drag.onDragEnd(evt.pageY - start)
-        setIsDragging(false)
-      }
-      document.addEventListener("mousemove", mouseMoveHandler)
-      document.addEventListener("mouseup", mouseUpHandler)
+    const start = evt.pageY
+    const mouseMoveHandler = (evt: MouseEvent) => {
+      drag.onDragMove(evt.pageY - start)
     }
-
-    return (
-      <div
-        ref={drag ? ref : undefined}
-        className={twMerge(
-          "hover:bg-polkadot-800 hover:bg-opacity-60 border-l border-polkadot-700 last:border-0 last:before:block last:before:absolute last:before:border-l last:before:h-4 last:before:border-polkadot-700",
-          drag?.rearranging && "relative",
-          isDragging && "none select-none z-10 bg-polkadot-800 bg-opacity-70 last:border-l last:before:border-0",
-          !isDragging && drag?.rearranging && "transition-transform",
-        )}
-        style={{
-          transform: drag?.translation
-            ? `translateY(${drag.translation}px)`
-            : undefined,
-        }}
-      >
-        <ItemTitle
-          path={path}
-          icon={TypeIcons.list}
-          titleRef={setTitleElement}
-          onZoom={onZoom}
-          onNavigate={onNavigate}
-          binaryStatus={binaryStatus}
-          className={isCollapsed ? "opacity-65" : ""}
-          actions={
-            <>
-              {onDelete && (
-                <button
-                  className={twMerge(
-                    "hover:text-polkadot-500",
-                    editable ? "cursor-pointer" : "opacity-50"
-                  )}
-                  disabled={!editable}
-                  onClick={onDelete}
-                >
-                  <Trash2 size={15} />
-                </button>
-              )}
-              {drag && (
-                <div
-                  className={twMerge(
-                    "hover:text-polkadot-500 -ml-1",
-                    editable
-                      ? isDragging
-                        ? "cursor-grabbing"
-                        : "cursor-grab"
-                      : "opacity-50"
-                  )}
-                  onMouseDown={startDrag}
-                >
-                  <GripVertical size={15} />
-                </div>
-              )}
-            </>
-          }
-        >
-          {idx + 1}
-        </ItemTitle>
-        <div
-          className={twMerge(
-            "pl-6 pb-1 transition-opacity",
-            isCollapsed && "opacity-65",
-          )}
-        >
-          <ChildrenProviders
-            titleElement={titleElement}
-            onValueChange={setBinaryStatus}
-          >
-            {children}
-          </ChildrenProviders>
-        </div>
-      </div>
-    )
+    const mouseUpHandler = (evt: MouseEvent) => {
+      document.removeEventListener("mouseup", mouseUpHandler)
+      document.removeEventListener("mousemove", mouseMoveHandler)
+      drag.onDragEnd(evt.pageY - start)
+      setIsDragging(false)
+    }
+    document.addEventListener("mousemove", mouseMoveHandler)
+    document.addEventListener("mouseup", mouseUpHandler)
   }
+
+  return (
+    <div
+      ref={drag ? ref : undefined}
+      className={twMerge(
+        "hover:bg-secondary/80 hover:bg-opacity-60 border-l border-polkadot-700 last:border-0 last:before:block last:before:absolute last:before:border-l last:before:h-4 last:before:border-polkadot-700",
+        drag?.rearranging && "relative",
+        isDragging &&
+          "none select-none z-10 bg-secondary/80 bg-opacity-70 last:border-l last:before:border-0",
+        !isDragging && drag?.rearranging && "transition-transform",
+      )}
+      style={{
+        transform: drag?.translation
+          ? `translateY(${drag.translation}px)`
+          : undefined,
+      }}
+    >
+      <ItemTitle
+        path={path}
+        icon={TypeIcons.list}
+        titleRef={setTitleElement}
+        onZoom={onZoom}
+        onNavigate={onNavigate}
+        binaryStatus={binaryStatus}
+        className={isCollapsed ? "opacity-65" : ""}
+        actions={
+          <>
+            {onDelete && (
+              <button
+                className={twMerge(
+                  "hover:text-primary",
+                  editable ? "cursor-pointer" : "opacity-50",
+                )}
+                disabled={!editable}
+                onClick={onDelete}
+              >
+                <Trash2 size={15} />
+              </button>
+            )}
+            {drag && (
+              <div
+                className={twMerge(
+                  "hover:text-primary -ml-1",
+                  editable
+                    ? isDragging
+                      ? "cursor-grabbing"
+                      : "cursor-grab"
+                    : "opacity-50",
+                )}
+                onMouseDown={startDrag}
+              >
+                <GripVertical size={15} />
+              </div>
+            )}
+          </>
+        }
+      >
+        {idx + 1}
+      </ItemTitle>
+      <div
+        className={twMerge(
+          "pl-6 pb-1 transition-opacity",
+          isCollapsed && "opacity-65",
+        )}
+      >
+        <ChildrenProviders
+          titleElement={titleElement}
+          onValueChange={setBinaryStatus}
+        >
+          {children}
+        </ChildrenProviders>
+      </div>
+    </div>
+  )
+}
 
 const useDrag = (
   rearrange: boolean,
@@ -234,8 +235,8 @@ const useDrag = (
   // react stuff... We don't want to keep recreating ResizeObservers on each render, so we prefer having a stable reference.
   const measureCallbacks = useRef<Array<(height: number) => void>>([])
   const onMeasure = (idx: number) =>
-  (measureCallbacks.current[idx] ??= (height) =>
-    (itemHeights.current[idx] = height))
+    (measureCallbacks.current[idx] ??= (height) =>
+      (itemHeights.current[idx] = height))
 
   if (!rearrange) {
     return undefined
@@ -245,9 +246,9 @@ const useDrag = (
     // if we return undefined, then we will miss the "onMeasure" callback of when
     // each item is initialized, so we just return the function to capture measurements
     return (idx: number) => ({
-      onDragEnd() { },
-      onDragMove() { },
-      onDragStart() { },
+      onDragEnd() {},
+      onDragMove() {},
+      onDragStart() {},
       onMeasure: onMeasure(idx),
       translation: translations[idx] ?? 0,
       rearranging: translations.some((t) => t !== 0),
@@ -313,7 +314,7 @@ const useDrag = (
       })
       setTranslations(translations)
     },
-    onDragStart() { },
+    onDragStart() {},
     onMeasure: onMeasure(idx),
     translation: translations[idx] ?? 0,
     rearranging: translations.some((t) => t !== 0),

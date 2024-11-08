@@ -29,7 +29,7 @@ export const SearchableSelect = <T,>({
           variant="outline"
           role="combobox"
           aria-expanded={open}
-          className="flex w-52 justify-between overflow-hidden"
+          className="flex w-52 justify-between overflow-hidden bg-input border border-border"
         >
           {value ? (
             <span className="text-ellipsis overflow-hidden">

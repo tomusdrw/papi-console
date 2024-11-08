@@ -71,13 +71,13 @@ export const BinaryInput: React.FC<{
       {(input) => (
         <div
           className={twMerge(
-            "px-4 py-2 border border-slate-500 leading-tight text-white focus-within:outline focus-within:outline-1 flex items-center gap-2",
+            "px-4 py-2 border border-border rounded leading-tight focus-within:outline focus-within:outline-1 flex items-center gap-2 bg-input",
             warn ? "border-orange-400" : null,
             uploadError ? "border-red-600" : null,
           )}
         >
           {input}
-          <label title="Load from file" className="text-slate-200">
+          <label title="Load from file" className="text-foreground/80">
             <FileUp size={16} />
             <BinaryFileInput
               validate={validateFile}

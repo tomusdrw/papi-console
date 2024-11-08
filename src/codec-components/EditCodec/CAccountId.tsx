@@ -87,7 +87,7 @@ export const CAccountId: EditAccountId = ({ value, onValueChanged }) => {
           variant="outline"
           role="combobox"
           aria-expanded={open}
-          className="flex w-64 justify-between overflow-hidden px-2"
+          className="flex w-64 justify-between overflow-hidden px-2 border border-border bg-input"
           forceSvgSize={false}
         >
           {value !== NOTIN ? (
