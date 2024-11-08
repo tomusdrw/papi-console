@@ -7,11 +7,11 @@ import { CodecComponentType, CodecComponentValue } from "@codec-components"
 import { Binary } from "@polkadot-api/substrate-bindings"
 import { state, useStateObservable } from "@react-rxjs/core"
 import { useState } from "react"
+import { useLocation } from "react-router-dom"
 import { map } from "rxjs"
 import { EditMode } from "./EditMode"
 import { JsonMode } from "./JsonMode"
 import { ExtrinsicModal } from "./SubmitTx/SubmitTx"
-import { useLocation } from "react-router-dom"
 
 const extrinsicProps$ = state(
   runtimeCtx$.pipe(
@@ -47,16 +47,8 @@ export const Extrinsics = withSubscribe(
           ? null
           : componentValue.value.encoded) ?? null
 
-    const calllData =
-      componentValue.type === CodecComponentType.Initial
-        ? componentValue.value
-        : !componentValue.value.empty
-          ? componentValue.value.encoded
-          : undefined
-
     return (
       <div className="flex flex-col overflow-hidden gap-2 p-4 pb-0">
-        {/* <div>Extrinsics</div> */}
         <BinaryDisplay
           {...extrinsicProps}
           value={componentValue}
@@ -81,7 +73,7 @@ export const Extrinsics = withSubscribe(
               },
             ]}
           />
-          <ExtrinsicModal callData={calllData} />
+          <ExtrinsicModal callData={binaryValue ?? undefined} />
         </div>
 
         {viewMode === "edit" ? (

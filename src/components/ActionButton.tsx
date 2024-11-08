@@ -1,11 +1,13 @@
-import { ButtonHTMLAttributes, FC } from "react"
+import { ButtonHTMLAttributes, forwardRef } from "react"
 import { twMerge } from "tailwind-merge"
 
-export const ActionButton: FC<ButtonHTMLAttributes<HTMLButtonElement>> = (
-  props,
-) => (
+export const ActionButton = forwardRef<
+  HTMLButtonElement,
+  ButtonHTMLAttributes<HTMLButtonElement>
+>((props, ref) => (
   <button
     {...props}
+    ref={ref}
     className={twMerge(
       "text-polkadot-0 bg-polkadot-700 px-3 py-1",
       "cursor-pointer select-none hover:bg-polkadot-500",
@@ -13,4 +15,4 @@ export const ActionButton: FC<ButtonHTMLAttributes<HTMLButtonElement>> = (
       props.className,
     )}
   />
-)
+))

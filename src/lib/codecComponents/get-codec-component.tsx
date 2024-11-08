@@ -190,8 +190,9 @@ export function getViewCodecComponent(
       let innerEntry
       if (!value.empty) {
         innerEntry = entry.value[value.decoded.type as string]
-        if (innerEntry.type === "lookupEntry")
+        if (innerEntry?.type === "lookupEntry")
           innerEntry = innerEntry.value as any
+        if (!innerEntry) return null
       }
       return (
         <CEnum
@@ -616,8 +617,12 @@ export function getCodecComponent(
       let innerEntry
       if (!value.empty) {
         innerEntry = entry.value[value.decoded.type as string]
-        if (innerEntry.type === "lookupEntry")
+        if (innerEntry?.type === "lookupEntry")
           innerEntry = innerEntry.value as any
+        if (!innerEntry) {
+          valueProps = { type: "blank", value: NOTIN, encodedValue: undefined }
+          value = { empty: true }
+        }
       }
       return (
         <CEnum
