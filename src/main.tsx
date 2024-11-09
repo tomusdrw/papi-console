@@ -8,9 +8,10 @@ import { dynamicBuilder$ } from "./chain.state.ts"
 import { TooltipProvider } from "./components/Tooltip.tsx"
 import "./index.css"
 import { explorer$ } from "./pages/Explorer"
+import { transactions$ } from "./pages/Transactions"
 
 createRoot(document.getElementById("root")!).render(
-  <Subscribe source$={merge(dynamicBuilder$, explorer$)}>
+  <Subscribe source$={merge(dynamicBuilder$, explorer$, transactions$)}>
     <RemoveSubscribe>
       <StrictMode>
         <BrowserRouter>

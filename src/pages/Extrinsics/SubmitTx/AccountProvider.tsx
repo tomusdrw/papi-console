@@ -102,19 +102,36 @@ export const selectedAccount$ = state(
   null,
 )
 
+const allAccounts$ = state(
+  combineLatest([walletConnectAccounts$, accountsByExtension$]).pipe(
+    map(([wcAccounts, accounts]) => [
+      ...Object.keys(wcAccounts).map((account) => `${account}-wallet_connect`),
+      ...[...accounts.entries()].flatMap(([extension, accounts]) =>
+        accounts.map((account) => `${account.address}-${extension}`),
+      ),
+    ]),
+  ),
+  [],
+)
+
 export const AccountProvider: React.FC = () => {
   const value = useStateObservable(selectedValue$)
   const extensions = useStateObservable(selectedExtensions$)
   const walletConnect = useStateObservable(walletConnectStatus$)
+  const allAccounts = useStateObservable(allAccounts$)
 
   const activeExtensions = [...extensions.values()].filter((v) => !!v)
+  const valueExists = value && allAccounts.includes(value)
 
   if (!activeExtensions.length && walletConnect.type !== "connected")
     return null
 
   return (
-    <Select value={value ?? ""} onValueChange={selectValue}>
-      <SelectTrigger className="h-auto">
+    <Select
+      value={valueExists ? (value ?? "") : ""}
+      onValueChange={selectValue}
+    >
+      <SelectTrigger className="h-auto border-foreground/30">
         <SelectValue placeholder="Select an account" />
       </SelectTrigger>
       <SelectContent>

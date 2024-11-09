@@ -17,9 +17,6 @@ export const ExtensionProvider: React.FC = () => {
   const selectedExtensions = useStateObservable(selectedExtensions$)
   const walletConnectStatus = useStateObservable(walletConnectStatus$)
 
-  if (availableExtensions.length === 0)
-    return <div>No extension provider detected</div>
-
   return (
     <>
       <Label>Click on the provider name to toggle it:</Label>
