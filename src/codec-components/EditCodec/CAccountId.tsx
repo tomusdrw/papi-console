@@ -80,9 +80,15 @@ export const CAccountId: EditAccountId = ({ value, onValueChanged }) => {
     )
   }
 
+  const onTriggerKeyDown = (evt: React.KeyboardEvent) => {
+    if (evt.key.length === 1) {
+      setOpen(true)
+    }
+  }
+
   return (
     <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger asChild>
+      <PopoverTrigger asChild onKeyDown={onTriggerKeyDown}>
         <Button
           variant="outline"
           role="combobox"

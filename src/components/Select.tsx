@@ -1,6 +1,6 @@
 import { cn } from "@/utils/cn"
 import { Check, ChevronsUpDown } from "lucide-react"
-import { useState } from "react"
+import React, { useState } from "react"
 import { Button } from "./ui/button"
 import {
   Command,
@@ -22,9 +22,15 @@ export const SearchableSelect = <T,>({
 }) => {
   const [open, setOpen] = useState(false)
 
+  const onTriggerKeyDown = (evt: React.KeyboardEvent) => {
+    if (evt.key.length === 1) {
+      setOpen(true)
+    }
+  }
+
   return (
     <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger asChild>
+      <PopoverTrigger asChild onKeyDown={onTriggerKeyDown}>
         <Button
           variant="outline"
           role="combobox"

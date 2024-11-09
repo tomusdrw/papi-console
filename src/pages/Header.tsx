@@ -40,7 +40,8 @@ const NavLink: FC<PropsWithChildren<{ to: string }>> = ({ to, children }) => {
     <Link
       to={to}
       className={twMerge(
-        "transition-colors text-foreground/75 hover:text-foreground cursor-pointer px-3 py-1",
+        "transition-colors text-foreground/75 hover:text-foreground cursor-pointer px-3 py-1 rounded",
+        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
         active && "text-foreground font-bold",
       )}
     >

@@ -54,7 +54,7 @@ export const EditMode: React.FC<{
             >
               <div className="relative">
                 {!value.value ? (
-                  <div className="text-sm text-polkadot-500">(Empty)</div>
+                  <div className="text-sm text-foreground/50 py-1">(Empty)</div>
                 ) : (
                   <TreeCodec {...props} />
                 )}

@@ -12,6 +12,7 @@ import { twMerge } from "tailwind-merge"
 // @ts-expect-error save-as typings not available
 import { saveAs } from "save-as"
 import { BinaryEdit } from "./Icons"
+import { ActionButton } from "./ActionButton"
 
 export interface BinaryEditProps {
   initialValue?: Uint8Array
@@ -174,13 +175,9 @@ const BinaryEditModalContent: FC<
           placeholder={placeholder}
         />
       </div>
-      <button
-        className={twMerge("border rounded p-1", !isValid && "opacity-50")}
-        onClick={submit}
-        disabled={!isValid}
-      >
+      <ActionButton onClick={submit} disabled={!isValid}>
         OK
-      </button>
+      </ActionButton>
       {error && <p className="text-red-600">{error}</p>}
     </>
   )

@@ -34,7 +34,7 @@ export const Row: FC<
 
 export const Root: FC<PropsWithChildren> = ({ children }) => {
   return (
-    <div className="w-full px-3 py-2 border bg-card text-card-foreground">
+    <div className="w-full px-3 py-2 border bg-card text-card-foreground rounded">
       {children}
     </div>
   )

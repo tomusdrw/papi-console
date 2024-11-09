@@ -20,7 +20,7 @@ export const ExtrinsicModal: React.FC<{
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <ActionButton disabled={callData == null}>
+        <ActionButton disabled={callData == null || callData.length === 0}>
           Submit extrinsic
         </ActionButton>
       </DialogTrigger>

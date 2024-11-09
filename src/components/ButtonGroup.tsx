@@ -17,7 +17,7 @@ export const ButtonGroup: FC<{
       type="single"
       value={value}
       onValueChange={(v) => v && onValueChange(v)}
-      className="inline-flex border border-primary bg-background text-foreground"
+      className="inline-flex border border-accent bg-background text-foreground"
     >
       {items.map(({ value, content, disabled }) => (
         <ToggleGroup.Item
@@ -26,7 +26,7 @@ export const ButtonGroup: FC<{
           className={twMerge(
             "text-secondary-foreground px-3 py-1",
             "hover:text-polkadot-500",
-            "data-[state=on]:bg-primary data-[state=on]:text-primary-foreground",
+            "data-[state=on]:bg-accent data-[state=on]:text-accent-foreground",
             disabled && "opacity-50 pointer-events-none",
           )}
           disabled={disabled}
