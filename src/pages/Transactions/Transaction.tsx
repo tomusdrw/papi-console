@@ -5,9 +5,16 @@ import * as React from "react"
 import { Link } from "react-router-dom"
 import { onGoingEvents } from "./transactions.state"
 
-export const Transaction: React.FC<
-  TxBroadcastEvent | { type: "invalid" | "error"; value: any; txHash: string }
-> = (event) => {
+export const Transaction: React.FC<{
+  event:
+    | TxBroadcastEvent
+    | {
+        type: "invalid" | "error"
+        value: any
+        txHash: string
+      }
+  onClose: () => void
+}> = ({ event, onClose }) => {
   const getStatus = () => {
     const { type } = event
     switch (event.type) {
@@ -26,6 +33,7 @@ export const Transaction: React.FC<
             <Link
               className="underline font-bold"
               to={`/explorer/${event.block.hash}#tx=${event.block.index}`}
+              onClick={() => onClose()}
             >
               best block
             </Link>
@@ -45,6 +53,7 @@ export const Transaction: React.FC<
             <Link
               className="underline font-bold"
               to={`/explorer/${event.block.hash}#tx=${event.block.index}`}
+              onClick={() => onClose()}
             >
               {" "}
               finalized block

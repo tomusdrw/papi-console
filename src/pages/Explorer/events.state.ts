@@ -2,7 +2,7 @@ import { groupBy } from "@/lib/groupBy"
 import type { SystemEvent } from "@polkadot-api/observable-client"
 import { state } from "@react-rxjs/core"
 import { combineKeys } from "@react-rxjs/utils"
-import { filter, map, takeWhile } from "rxjs"
+import { filter, map, takeWhile, tap } from "rxjs"
 import { blockInfo$, BlockState, recordedBlocks$ } from "./block.state"
 import { MAX_LENGTH } from "./BlockTable"
 
@@ -17,9 +17,11 @@ const blackList = new Set([
   "TransactionPayment.TransactionFeePaid",
   "Staking.Rewarded",
 ])
+const whitelist = new Set(["System.Remarked"])
 export const filterEvt = (evt: SystemEvent) =>
-  !blackList.has(`${evt.event.type}.*`) &&
-  !blackList.has(`${evt.event.type}.${evt.event.value.type}`)
+  whitelist.has(`${evt.event.type}.${evt.event.value.type}`) ||
+  (!blackList.has(`${evt.event.type}.*`) &&
+    !blackList.has(`${evt.event.type}.${evt.event.value.type}`))
 
 export interface EventInfo {
   status: BlockState

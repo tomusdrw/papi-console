@@ -16,17 +16,15 @@ const txsSummary$ = grouppedTransactions$.pipeState(
 )
 
 const transactionList$ = grouppedTransactions$.pipeState(
-  map((x) =>
-    [...x.values()].map((props) => (
-      <Transaction key={props.txHash} {...props} />
-    )),
-  ),
+  map((x) => [...x.values()]),
   withDefault([]),
 )
 
 export function Transactions() {
   const [isOpen, setIsOpen] = React.useState(false)
   const { nTxs, nOngoing } = useStateObservable(txsSummary$)
+  const list = useStateObservable(transactionList$)
+
   return !nTxs ? null : (
     <Dialog.Root open={isOpen} onOpenChange={setIsOpen}>
       <Dialog.Trigger asChild>
@@ -54,7 +52,13 @@ export function Transactions() {
             </Dialog.Close>
           </div>
           <div className="p-4 h-[calc(100%-4rem)] overflow-y-auto">
-            {transactionList$}
+            {list.map((event) => (
+              <Transaction
+                key={event.txHash}
+                event={event}
+                onClose={() => setIsOpen(false)}
+              />
+            ))}
           </div>
         </Dialog.Content>
       </Dialog.Portal>
