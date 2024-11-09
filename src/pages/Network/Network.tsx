@@ -134,9 +134,11 @@ export function NetworkSwitcher() {
       <DialogTrigger asChild>
         <Button
           variant="outline"
-          className="w-[200px] gap-0 justify-between text-base px-3 border border-border bg-input"
+          className="w-[200px] flex gap-0 justify-between text-base px-3 border border-border bg-input"
         >
-          {selectedNetwork.display}
+          <span className="overflow-hidden text-ellipsis">
+            {selectedNetwork.display}
+          </span>
           <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </DialogTrigger>
