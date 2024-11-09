@@ -13,7 +13,7 @@ export const EventPopover: FC<{ event: EventInfo }> = ({ event }) => {
           Event{" "}
           <Link
             to={`${event.hash}#event=${event.index}`}
-            className="text-primary/70 hover:text-primary"
+            className="text-primary/70 hover:text-primary underline"
           >
             {eventKey(event)}
           </Link>

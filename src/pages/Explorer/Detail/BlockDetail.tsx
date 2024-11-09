@@ -266,7 +266,7 @@ const BlockLink: FC<{ hash: string }> = ({ hash }) => {
 
   return (
     <Link
-      className="text-primary/70 hover:text-primary align-middle inline-flex items-center gap-1"
+      className="text-primary/70 hover:text-primary align-middle inline-flex items-center gap-1 underline"
       to={`../${hash}`}
     >
       {<BlockStatusIcon state={block.status} size={20} />}
