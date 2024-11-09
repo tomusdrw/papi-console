@@ -34,6 +34,9 @@ importers:
       '@polkadot-api/observable-client':
         specifier: ^0.6.2
         version: 0.6.2(patch_hash=ntppxp7tto3f2viektlrpekj7y)(@polkadot-api/substrate-client@0.3.0)(rxjs@7.8.1)
+      '@polkadot-api/react-builder':
+        specifier: link:../polkadot-api/packages/react-builder
+        version: link:../polkadot-api/packages/react-builder
       '@polkadot-api/substrate-bindings':
         specifier: ^0.9.3
         version: 0.9.3

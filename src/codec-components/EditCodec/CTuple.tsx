@@ -1,5 +1,5 @@
 import { useSubtreeFocus } from "../common/SubtreeFocus"
-import { EditTuple } from "@codec-components"
+import { EditTuple } from "@polkadot-api/react-builder"
 
 export const CTuple: EditTuple = ({ innerComponents, path }) => {
   const focus = useSubtreeFocus()

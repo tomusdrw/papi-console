@@ -8,7 +8,7 @@ import {
   CodecComponentType,
   CodecComponentValue,
   NOTIN,
-} from "@codec-components"
+} from "@polkadot-api/react-builder"
 import { state, useStateObservable, withDefault } from "@react-rxjs/core"
 import { createSignal } from "@react-rxjs/utils"
 import { Binary } from "polkadot-api"

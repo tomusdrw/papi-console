@@ -1,5 +1,5 @@
 import { withDefault } from "@/utils/default"
-import { EditStr } from "@codec-components"
+import { EditStr } from "@polkadot-api/react-builder"
 
 // TODO
 export const CStr: EditStr = ({ value, onValueChanged }) => {

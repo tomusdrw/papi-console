@@ -11,7 +11,7 @@ import {
   EditStr,
   EditVoid,
   NOTIN,
-} from "@codec-components"
+} from "@polkadot-api/react-builder"
 import { u8 } from "@polkadot-api/substrate-bindings"
 import { toHex } from "@polkadot-api/utils"
 import { useStateObservable } from "@react-rxjs/core"

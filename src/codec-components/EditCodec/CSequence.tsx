@@ -1,4 +1,4 @@
-import { EditSequence, NOTIN } from "@codec-components"
+import { EditSequence, NOTIN } from "@polkadot-api/react-builder"
 import { CirclePlus } from "lucide-react"
 import { twMerge as clsx } from "tailwind-merge"
 import { ListItem } from "../common/ListItem"

@@ -1,6 +1,6 @@
 import { dynamicBuilder$ } from "@/chain.state"
 import { ActionButton } from "@/components/ActionButton"
-import { NOTIN } from "@codec-components"
+import { NOTIN } from "@polkadot-api/react-builder"
 import { state, useStateObservable } from "@react-rxjs/core"
 import { createSignal } from "@react-rxjs/utils"
 import { FC } from "react"

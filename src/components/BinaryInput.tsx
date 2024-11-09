@@ -1,5 +1,5 @@
 import { byteArraysAreEqual } from "@/utils/byteArray"
-import { NOTIN } from "@codec-components"
+import { NOTIN } from "@polkadot-api/react-builder"
 import { Binary } from "@polkadot-api/substrate-bindings"
 import { FileUp } from "lucide-react"
 import { FC, useState } from "react"

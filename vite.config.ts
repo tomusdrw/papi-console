@@ -7,7 +7,6 @@ export default defineConfig({
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
-      "@codec-components": path.resolve(__dirname, "./src/lib/codecComponents"),
     },
   },
   plugins: [react()],

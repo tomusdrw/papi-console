@@ -1,4 +1,4 @@
-import { getCodecComponent } from "@codec-components"
+import { getCodecComponent } from "@polkadot-api/react-builder"
 
 import * as treeComponents from "./components"
 

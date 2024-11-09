@@ -1,4 +1,4 @@
-import { ViewArray, ViewSequence, ViewTuple } from "@codec-components"
+import { ViewArray, ViewSequence, ViewTuple } from "@polkadot-api/react-builder"
 import { useStateObservable } from "@react-rxjs/core"
 import { FC, PropsWithChildren, ReactNode } from "react"
 import { ListItem } from "../common/ListItem"

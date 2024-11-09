@@ -1,4 +1,4 @@
-import { EditEnum, NOTIN } from "@codec-components"
+import { EditEnum, NOTIN } from "@polkadot-api/react-builder"
 import { u8 } from "@polkadot-api/substrate-bindings"
 import { useStateObservable } from "@react-rxjs/core"
 import { isActive$ } from "../common/paths.state"

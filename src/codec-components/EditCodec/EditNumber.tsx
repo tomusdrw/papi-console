@@ -6,7 +6,7 @@ import {
   EditNumber,
   EditNumberInterface,
   NOTIN,
-} from "@codec-components"
+} from "@polkadot-api/react-builder"
 import { TextInputField } from "./codec-components"
 import { useSynchronizeInput } from "@/components/useSynchroniseInput"
 

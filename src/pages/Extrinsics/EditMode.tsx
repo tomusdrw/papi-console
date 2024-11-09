@@ -12,7 +12,7 @@ import {
   CodecComponentUpdate,
   CodecComponentValue,
   MetadataType,
-} from "@codec-components"
+} from "@polkadot-api/react-builder"
 import { useEffect, useRef, useState } from "react"
 
 export const EditMode: React.FC<{

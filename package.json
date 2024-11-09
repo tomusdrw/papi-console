@@ -20,6 +20,7 @@
     "@polkadot-api/ledger-signer": "^0.1.6",
     "@polkadot-api/metadata-builders": "^0.9.1",
     "@polkadot-api/observable-client": "^0.6.2",
+    "@polkadot-api/react-builder": "link:../polkadot-api/packages/react-builder",
     "@polkadot-api/substrate-bindings": "^0.9.3",
     "@polkadot-api/substrate-client": "^0.3.0",
     "@polkadot-api/utils": "^0.1.2",

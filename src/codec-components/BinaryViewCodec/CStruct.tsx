@@ -1,4 +1,4 @@
-import { EditStruct, NOTIN } from "@codec-components"
+import { EditStruct, NOTIN } from "@polkadot-api/react-builder"
 import { useStateObservable } from "@react-rxjs/core"
 import React from "react"
 import { isActive$ } from "../common/paths.state"

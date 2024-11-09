@@ -1,6 +1,6 @@
 import { ExpandBtn } from "@/components/Expand"
 import { getFinalType } from "@/utils/shape"
-import { EditStruct } from "@codec-components"
+import { EditStruct } from "@polkadot-api/react-builder"
 import { useStateObservable } from "@react-rxjs/core"
 import React from "react"
 import { twMerge as clsx, twMerge } from "tailwind-merge"

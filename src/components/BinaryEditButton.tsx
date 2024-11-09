@@ -4,7 +4,7 @@ import {
 } from "@/components/BinaryInput"
 import { Modal } from "@/components/Modal"
 import { useGenericSynchronizeInput } from "@/components/useSynchroniseInput"
-import { NOTIN } from "@codec-components"
+import { NOTIN } from "@polkadot-api/react-builder"
 import { Binary } from "@polkadot-api/substrate-bindings"
 import { Download, FileUp } from "lucide-react"
 import { ComponentProps, FC, useMemo, useState } from "react"

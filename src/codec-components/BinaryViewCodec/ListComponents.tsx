@@ -4,7 +4,7 @@ import {
   EditSequence,
   EditTuple,
   NOTIN,
-} from "@codec-components"
+} from "@polkadot-api/react-builder"
 import { compact } from "@polkadot-api/substrate-bindings"
 import { useStateObservable } from "@react-rxjs/core"
 import React, { ReactNode } from "react"

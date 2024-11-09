@@ -1,4 +1,4 @@
-import { NOTIN } from "@codec-components"
+import { NOTIN } from "@polkadot-api/react-builder"
 import { useEffect, useLayoutEffect, useRef, useState } from "react"
 
 export const useGenericSynchronizeInput = <T extends unknown, R>(

@@ -1,4 +1,4 @@
-import { ViewEnum } from "@codec-components"
+import { ViewEnum } from "@polkadot-api/react-builder"
 import { useStateObservable } from "@react-rxjs/core"
 import { useContext, useState } from "react"
 import { Portal } from "react-portal"

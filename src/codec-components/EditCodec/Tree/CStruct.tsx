@@ -1,6 +1,6 @@
 import { lookupToType, TypeIcon, TypeIcons } from "@/components/Icons"
 import { isComplex } from "@/utils/shape"
-import { EditStruct } from "@codec-components"
+import { EditStruct } from "@polkadot-api/react-builder"
 import { useStateObservable } from "@react-rxjs/core"
 import { FC, PropsWithChildren, useState } from "react"
 import { twMerge } from "tailwind-merge"

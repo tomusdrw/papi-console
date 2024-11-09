@@ -1,5 +1,5 @@
 import { bytesToString } from "@/components/BinaryInput"
-import { ViewBytes } from "@codec-components"
+import { ViewBytes } from "@polkadot-api/react-builder"
 import { useReportBinary } from "./CopyBinary"
 
 export const CBytes: ViewBytes = ({ value, encodedValue }) => {

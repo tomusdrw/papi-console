@@ -1,5 +1,5 @@
 import { ExpandBtn } from "@/components/Expand"
-import { ViewStruct } from "@codec-components"
+import { ViewStruct } from "@polkadot-api/react-builder"
 import { Var } from "@polkadot-api/metadata-builders"
 import { useStateObservable } from "@react-rxjs/core"
 import React, { useContext, useState } from "react"

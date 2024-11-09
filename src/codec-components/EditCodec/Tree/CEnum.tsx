@@ -1,6 +1,6 @@
 import { Enum } from "@/components/Icons"
 import { isComplex } from "@/utils/shape"
-import { EditEnum, NOTIN } from "@codec-components"
+import { EditEnum, NOTIN } from "@polkadot-api/react-builder"
 import { useContext, useLayoutEffect, useState } from "react"
 import { Portal } from "react-portal"
 import { scrollToMarker } from "../../common/scroll"

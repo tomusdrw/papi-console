@@ -22,8 +22,7 @@
     "noFallthroughCasesInSwitch": true,
 
     "paths": {
-      "@/*": ["./src/*"],
-      "@codec-components": ["./src/lib/codecComponents"]
+      "@/*": ["./src/*"]
     }
   },
   "include": ["src"]

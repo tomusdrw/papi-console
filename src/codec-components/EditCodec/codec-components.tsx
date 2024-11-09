@@ -8,7 +8,7 @@ import {
   EditResult,
   EditVoid,
   NOTIN,
-} from "@codec-components"
+} from "@polkadot-api/react-builder"
 import { FC, ReactNode, useState } from "react"
 import { twMerge } from "tailwind-merge"
 import { ListItem } from "../common/ListItem"

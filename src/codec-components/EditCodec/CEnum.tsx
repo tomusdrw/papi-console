@@ -1,6 +1,6 @@
 import { SearchableSelect } from "@/components/Select"
 import { isEnumComplex, isEnumVoid } from "@/utils/shape"
-import { EditEnum, NOTIN } from "@codec-components"
+import { EditEnum, NOTIN } from "@polkadot-api/react-builder"
 import { Marker } from "../common/Markers"
 import { useSubtreeFocus } from "../common/SubtreeFocus"
 

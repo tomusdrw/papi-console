@@ -7,7 +7,7 @@ import {
   ViewResult,
   ViewStr,
   ViewVoid,
-} from "@codec-components"
+} from "@polkadot-api/react-builder"
 
 export const CBool: ViewBool = ({ value }) => {
   return <div className="flex gap-4">{value ? "Yes" : "No"}</div>

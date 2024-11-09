@@ -20,7 +20,7 @@ import {
 } from "@/extension-accounts.state"
 import { identity$, isVerified } from "@/identity.state"
 import { cn } from "@/utils/cn"
-import { EditAccountId, NOTIN } from "@codec-components"
+import { EditAccountId, NOTIN } from "@polkadot-api/react-builder"
 import { getSs58AddressInfo } from "@polkadot-api/substrate-bindings"
 import { toHex } from "@polkadot-api/utils"
 import { state, useStateObservable } from "@react-rxjs/core"

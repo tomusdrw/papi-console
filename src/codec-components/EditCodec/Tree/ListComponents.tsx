@@ -6,7 +6,7 @@ import {
   EditSequence,
   EditTuple,
   NOTIN,
-} from "@codec-components"
+} from "@polkadot-api/react-builder"
 import { useStateObservable } from "@react-rxjs/core"
 import { GripVertical, Trash2 } from "lucide-react"
 import React, {

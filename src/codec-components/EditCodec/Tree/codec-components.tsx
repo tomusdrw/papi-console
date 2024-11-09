@@ -13,7 +13,7 @@ import {
   EditStr,
   EditVoid,
   NOTIN,
-} from "@codec-components"
+} from "@polkadot-api/react-builder"
 import { HexString } from "@polkadot-api/substrate-bindings"
 import { useStateObservable } from "@react-rxjs/core"
 import { Circle } from "lucide-react"
