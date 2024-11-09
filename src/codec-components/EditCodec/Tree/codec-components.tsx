@@ -72,7 +72,7 @@ export const CResult: EditResult = ({ value, inner }) => (
 )
 
 export const ItemMarker = () => (
-  <span className="w-[0.77rem] border-t border-polkadot-700"></span>
+  <span className="w-[0.77rem] border-t border-treeBorder"></span>
 )
 
 export const TitleContext = createContext<HTMLElement | null>(null)
@@ -152,7 +152,7 @@ export const ItemTitle: FC<
       >
         <span
           className={twMerge(
-            "hover:text-polkadot-500 flex-shrink-0 flex items-center",
+            "hover:text-primary flex-shrink-0 flex items-center",
             onNavigate && "cursor-pointer",
           )}
           onClick={onNavigate}
@@ -169,7 +169,7 @@ export const ItemTitle: FC<
               binaryStatus === undefined && "text-slate-600",
             )}
           />
-          <Icon size={15} className="text-polkadot-600 mr-2" />
+          <Icon size={15} className="text-primary mr-2" />
           {children}
         </span>
         <div

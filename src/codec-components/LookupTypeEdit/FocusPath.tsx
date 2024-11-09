@@ -14,10 +14,10 @@ export const FocusPath: FC<{
 
   return (
     <div className="flex-shrink-0 px-2">
-      <div className="flex max-w-full flex-wrap gap-1 items-center border border-polkadot-700 text-sm px-2 py-1">
+      <div className="flex max-w-full flex-wrap gap-1 items-center border border-treeBorder text-sm px-2 py-1">
         {breadcrumbs.map((v, i) => (
           <span key={i} className="whitespace-nowrap flex gap-1 items-center">
-            {i > 0 && <span className="text-slate-500 mx-2">&gt;</span>}
+            {i > 0 && <span className="text-foreground/50 mx-2">&gt;</span>}
             {v.icon}
             {v.label}
           </span>
@@ -56,12 +56,14 @@ function getBreadcrumbs(
     })
 
     switch (lookupType.type) {
-      case "option":
-        throw new Error("TODO Option breadcrumb not implemented")
       case "result":
-        throw new Error("TODO Result breadcrumb not implemented")
+        lookupType = path[i].includes("Success")
+          ? lookupType.value.ok
+          : lookupType.value.ko
+        break
       case "array":
       case "sequence":
+      case "option":
         lookupType = lookupType.value
         break
       case "tuple":
@@ -87,7 +89,7 @@ function getBreadcrumbs(
       ) : (
         <a
           href="#"
-          className={clsx("hover:text-polkadot-500", i === 0 && "font-bold")}
+          className={clsx("hover:text-primary", i === 0 && "font-bold")}
           onClick={(evt) => {
             evt.preventDefault()
             onFocus(i === 0 ? null : path.slice(0, i))
@@ -103,14 +105,14 @@ function getBreadcrumbs(
       previousBreadcrumb.label = (
         <>
           {previousLabel}
-          <span className="text-slate-500">/</span>
+          <span className="text-foreground/50">/</span>
           {label}
         </>
       )
     } else {
       const Icon = node.type && TypeIcons[node.type]
       breadcrumbs.push({
-        icon: Icon ? <Icon size={15} className="text-polkadot-600 mr-1" /> : null,
+        icon: Icon ? <Icon size={15} className="text-primary mr-1" /> : null,
         label,
       })
     }

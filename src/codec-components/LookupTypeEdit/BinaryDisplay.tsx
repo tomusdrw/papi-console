@@ -37,7 +37,7 @@ export const BinaryDisplay: FC<
 
   return (
     <div className={twMerge("px-2 w-full", className)}>
-      <div className="px-3 py-2 gap-2 flex flex-row border-polkadot-600 border items-start">
+      <div className="px-3 py-2 gap-2 flex flex-row border-border border items-start">
         <CopyText text={hex ?? ""} disabled={!hex} className="h-5" />
         <div
           className={twMerge(

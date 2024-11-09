@@ -57,12 +57,6 @@ export const LookupTypeEdit: FC<{
           onFocus={setFocusingSubtree}
         />
       )}
-      {tree && (
-        <div className="px-2">
-          {/* This element is presentational only: Adds a connecting border between the FocusPath and the tree below */}
-          <div className="border-l border-polkadot-700 h-2 max-sm:border-none" />
-        </div>
-      )}
       <SubtreeFocus
         value={{ callback: setFocusingSubtree, path: focusingSubtree }}
       >

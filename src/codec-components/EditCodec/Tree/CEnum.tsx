@@ -70,7 +70,7 @@ export const CEnum: EditEnum = ({
     innerShape.type === "lookupEntry" ? innerShape.value : innerShape
   const innerIsComplex = isComplex(innerEntry.type)
   return (
-    <div className="before:absolute before:border-l before:h-4 before:border-polkadot-700">
+    <div className="before:absolute before:border-l before:h-4 before:border-treeBorder">
       <ItemTitle
         icon={Enum}
         path={path.join(".")}

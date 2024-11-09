@@ -21,6 +21,7 @@ export default {
           900: "#0C052C",
           950: "#030110",
         },
+        treeBorder: "hsl(var(--border))",
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
         card: {

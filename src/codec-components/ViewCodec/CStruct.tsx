@@ -110,7 +110,7 @@ export const CStruct: ViewStruct = ({
     <ul
       className={twMerge(
         "flex flex-col w-full",
-        hasParentTitle && "border-l border-polkadot-700",
+        hasParentTitle && "border-l border-primary",
       )}
     >
       {Object.entries(innerComponents).map(([name, jsx]) => (
