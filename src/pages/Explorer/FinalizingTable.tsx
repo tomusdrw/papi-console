@@ -16,12 +16,14 @@ export const Row: FC<
     number: number
     finalized: number
     firstInGroup: boolean
+    idx: number
   }>
-> = ({ children, number, finalized, firstInGroup }) => (
+> = ({ children, number, finalized, firstInGroup, idx }) => (
   <tr
     className={twMerge(
-      number <= finalized ? "bg-primary/5" : "",
-      number === finalized &&
+      number > finalized ? "bg-muted-foreground/5" : "",
+      idx > 0 &&
+        number === finalized &&
         firstInGroup &&
         "border-t border-card-foreground/50",
     )}

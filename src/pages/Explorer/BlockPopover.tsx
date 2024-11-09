@@ -7,7 +7,7 @@ import { Link } from "react-router-dom"
 import { map } from "rxjs"
 import { blockInfoState$ } from "./block.state"
 import { BlockStatusIcon, statusText } from "./Detail/BlockState"
-import { filterEvt } from "./Events"
+import { filterEvt } from "./events.state"
 import { CopyText } from "@/components/Copy"
 
 const maxBlockWeight$ = state(

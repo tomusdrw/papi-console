@@ -111,6 +111,7 @@ export const BlockTable = () => {
             number={row.block.number}
             finalized={finalized.number}
             firstInGroup={row.position === 0}
+            idx={i}
           >
             {rows[i - 1]?.block.number !== row.block.number ? (
               <td
@@ -136,7 +137,7 @@ export const BlockTable = () => {
               <ForkRenderer row={row} />
             </td>
             <td className="max-w-xs w-full">
-              <div className="flex gap-1">
+              <div className="flex gap-1 pr-1">
                 <Popover content={<BlockPopover hash={row.block.hash} />}>
                   <button
                     className={twMerge(

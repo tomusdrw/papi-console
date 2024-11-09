@@ -12,7 +12,7 @@ export const Loading: FC<PropsWithChildren> = ({ children }) => {
   return (
     <div
       className={twMerge(
-        "font-mono text-center p-2 text-sm text-polkadot-600 opacity-0 transition-opacity h-48 flex items-center justify-center",
+        "font-mono text-center p-2 text-sm text-foreground/70 opacity-0 transition-opacity h-48 flex items-center justify-center",
         visible && "opacity-100",
       )}
     >

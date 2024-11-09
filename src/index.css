@@ -7,10 +7,6 @@ dialog {
   @apply bg-transparent;
 }
 
-:root {
-  color-scheme: dark;
-}
-
 .karla-400 {
   font-family: "Karla", sans-serif;
   font-optical-sizing: auto;
@@ -67,6 +63,7 @@ dialog {
     --chart-3: 197 37% 24%;
     --chart-4: 43 74% 66%;
     --chart-5: 27 87% 67%;
+    color-scheme: light;
   }
 
   .dark {
@@ -94,6 +91,7 @@ dialog {
     --chart-3: 30 80% 55%;
     --chart-4: 280 65% 60%;
     --chart-5: 340 75% 55%;
+    color-scheme: dark;
   }
 }
 
