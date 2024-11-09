@@ -27,6 +27,22 @@ import { blockInfoState$, blocksByHeight$, BlockState } from "../block.state"
 import { BlockStatusIcon, statusText } from "./BlockState"
 import { createExtrinsicCodec, DecodedExtrinsic } from "./extrinsicDecoder"
 import { CopyText } from "@/components/Copy"
+import { Enum, HexString, SS58String } from "polkadot-api"
+
+const Sender: React.FC<{
+  sender: Enum<{ Id: SS58String }> | SS58String | HexString
+}> = ({ sender }) => {
+  const value: string | null =
+    typeof sender === "string" ? sender : "Id" in sender ? sender.value : null
+  return (
+    value && (
+      <div className="flex gap-2 items-center py-2">
+        Signer:
+        <AccountIdDisplay value={value} />
+      </div>
+    )
+  )
+}
 
 const blockExtrinsics$ = state((hash: string) => {
   const decoder$ = runtimeCtx$.pipe(
@@ -311,12 +327,7 @@ const Extrinsic: FC<{
         <div className="overflow-hidden">
           {extrinsic.signed && (
             <div>
-              {"type" in extrinsic.sender && extrinsic.sender.type === "Id" && (
-                <div className="flex gap-2 items-center py-2">
-                  Signer:
-                  <AccountIdDisplay value={extrinsic.sender.value} />
-                </div>
-              )}
+              <Sender sender={extrinsic.sender} />
               <SignedExtensions extra={extrinsic.extra} />
             </div>
           )}

@@ -9,6 +9,7 @@ import {
   compact,
   enhanceDecoder,
   Enum,
+  HexString,
   SS58String,
   Struct,
   u8,
@@ -31,9 +32,11 @@ export const createExtrinsicCodec = (
           lookup.metadata.extrinsic.address,
         ) as Codec<
           // TODO Assume MultiAddress, but can be anything really :/
-          Enum<{
-            Id: SS58String
-          }>
+          | Enum<{
+              Id: SS58String
+            }>
+          | SS58String
+          | HexString
         >)
       : AccountId()
   const v14Signature = Variant({
