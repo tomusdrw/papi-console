@@ -1,8 +1,10 @@
 import { CircularProgress } from "@/components/CircularProgress"
 import { state, useStateObservable } from "@react-rxjs/core"
 import {
+  catchError,
   combineLatest,
   distinctUntilChanged,
+  EMPTY,
   map,
   of,
   switchMap,
@@ -111,6 +113,10 @@ const timeProps$ = state(
       }
     }),
     distinctUntilChanged((a, b) => a.time === b.time),
+    catchError((err) => {
+      console.error("caught error", err)
+      return EMPTY
+    }),
   ),
   {
     percent: "0%",
@@ -129,8 +135,8 @@ export const EpochRemainingTime = () => {
       />
       {progress != null ? (
         <div className="flex flex-col items-center">
-          <text>{time}</text>
-          <text>remaining</text>
+          <span>{time}</span>
+          <span>remaining</span>
         </div>
       ) : null}
     </div>
