@@ -35,8 +35,8 @@ importers:
         specifier: ^0.6.2
         version: 0.6.2(patch_hash=ntppxp7tto3f2viektlrpekj7y)(@polkadot-api/substrate-client@0.3.0)(rxjs@7.8.1)
       '@polkadot-api/react-builder':
-        specifier: link:../polkadot-api/packages/react-builder
-        version: link:../polkadot-api/packages/react-builder
+        specifier: 0.2.0
+        version: 0.2.0(react@18.3.1)
       '@polkadot-api/substrate-bindings':
         specifier: ^0.9.3
         version: 0.9.3
@@ -944,6 +944,11 @@ packages:
 
   '@polkadot-api/polkadot-signer@0.1.6':
     resolution: {integrity: sha512-X7ghAa4r7doETtjAPTb50IpfGtrBmy3BJM5WCfNKa1saK04VFY9w+vDn+hwEcM4p0PcDHt66Ts74hzvHq54d9A==}
+
+  '@polkadot-api/react-builder@0.2.0':
+    resolution: {integrity: sha512-SSfICdZCpKehwaGI3Vtul98uK7Fauo6HVWKVydxFUnixpNe/ZkkVquGNdDt2hk1nkWxnn8QjdOkHAkdJWRA3kA==}
+    peerDependencies:
+      react: '>=18'
 
   '@polkadot-api/signer@0.1.10':
     resolution: {integrity: sha512-SW4aqfM0hxsZqjX/pHdCZmVdS9bAXKwRSKzcb8vT9AA5YAq3si/Rue5eGGw8gRVcHOr5TdTicMjjaFDfebDyfQ==}
@@ -4323,6 +4328,13 @@ snapshots:
       '@polkadot-api/json-rpc-provider': 0.0.4
 
   '@polkadot-api/polkadot-signer@0.1.6': {}
+
+  '@polkadot-api/react-builder@0.2.0(react@18.3.1)':
+    dependencies:
+      '@polkadot-api/metadata-builders': 0.9.1
+      '@polkadot-api/substrate-bindings': 0.9.3
+      '@polkadot-api/utils': 0.1.2
+      react: 18.3.1
 
   '@polkadot-api/signer@0.1.10':
     dependencies:
