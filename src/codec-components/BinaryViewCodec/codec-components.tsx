@@ -83,10 +83,14 @@ export const CResult: EditResult = ({ value, inner, path }) => {
 }
 
 export const MissingData = () => (
-  <span className="mx-0.5 text-slate-500 text-sm">
-    (
-    <Circle size={8} strokeWidth={3} className="text-yellow-400 inline-block" />
-    )
+  <span className="mx-0.5 text-foreground/30 text-sm whitespace-nowrap">
+    [
+    <Circle
+      size={8}
+      strokeWidth={3}
+      className="text-red-500 inline-block mx-0.5"
+    />
+    ]
   </span>
 )
 export const toConcatHex = (value: Uint8Array) => toHex(value).slice(2)
