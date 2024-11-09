@@ -4,10 +4,7 @@ import {
   PinnedBlocks,
   SystemEvent,
 } from "@polkadot-api/observable-client"
-import {
-  FollowEventWithRuntime,
-  StopError,
-} from "@polkadot-api/substrate-client"
+import { StopError } from "@polkadot-api/substrate-client"
 import { state, withDefault } from "@react-rxjs/core"
 import { partitionByKey, toKeySet } from "@react-rxjs/utils"
 import { HexString } from "polkadot-api"
@@ -26,6 +23,7 @@ import {
   mergeMap,
   NEVER,
   Observable,
+  ObservedValueOf,
   of,
   repeat,
   retry,
@@ -277,7 +275,7 @@ export const blocksByHeight$ = state(
 )
 
 function withInitializedNumber() {
-  return (source$: Observable<FollowEventWithRuntime>) =>
+  return (source$: Observable<ObservedValueOf<ChainHead$["follow$"]>>) =>
     source$.pipe(
       withLatestFrom(chainHead$),
       concatMap(([event, chainHead]) => {
