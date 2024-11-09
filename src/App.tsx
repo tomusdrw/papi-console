@@ -19,7 +19,7 @@ export default function App() {
         <Route path="constants/*" element={<Constants />} />
         <Route path="runtimeCalls/*" element={<RuntimeCalls />} />
         <Route path="metadata/*" element={<Metadata />} />
-        <Route path="*" element={<Navigate to="/extrinsics" replace />} />
+        <Route path="*" element={<Navigate to="/explorer" replace />} />
       </Routes>
       <Transactions />
     </div>

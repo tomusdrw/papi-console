@@ -85,7 +85,23 @@ const [Polkadot, Kusama, Paseo, Westend] = (
     relayChain: x.relayChainInfo?.id,
   })),
 )
-const networks = { Polkadot, Kusama, Paseo, Westend }
+
+const networks = {
+  Polkadot,
+  Kusama,
+  Paseo,
+  Westend,
+  Development: [
+    {
+      id: "localhost",
+      display: "Localhost",
+      lightclient: false,
+      endpoints: {
+        "Local (ws://127.0.0.1:9944)": "ws://127.0.0.1:9944",
+      },
+    } as Network,
+  ],
+}
 
 export const networkCategories: NetworkCategory[] = Object.entries(
   networks,

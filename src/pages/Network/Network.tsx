@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { Check, ChevronDown } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
@@ -33,6 +33,68 @@ import {
   onChangeChain,
   selectedChain$,
 } from "@/chain.state"
+import { useCommandState } from "cmdk"
+
+const isValidUri = (input: string): boolean => {
+  try {
+    new URL(input)
+  } catch {
+    return false
+  }
+  return true
+}
+
+const EmptyOption: React.FC<{
+  enteredText: string
+  selectedNetwork: Network
+  selectedRpc: string
+  setSelectedNetwork: React.Dispatch<React.SetStateAction<Network>>
+  setSelectedRpc: React.Dispatch<React.SetStateAction<string>>
+}> = (props) =>
+  useCommandState((x) => x.filtered.count) ? null : <Empty {...props} />
+
+const Empty: React.FC<{
+  enteredText: string
+  selectedNetwork: Network
+  selectedRpc: string
+  setSelectedNetwork: React.Dispatch<React.SetStateAction<Network>>
+  setSelectedRpc: React.Dispatch<React.SetStateAction<string>>
+}> = ({
+  enteredText,
+  selectedNetwork,
+  selectedRpc,
+  setSelectedNetwork,
+  setSelectedRpc,
+}) => {
+  const initialValue = useRef({
+    selectedNetwork,
+    selectedRpc,
+  })
+  const isValid = isValidUri(enteredText)
+  useEffect(() => {
+    setSelectedNetwork({
+      id: "custom-network",
+      lightclient: false,
+      endpoints: { custom: enteredText },
+      display: enteredText,
+    })
+    setSelectedRpc(isValid ? enteredText : "")
+    return () => {
+      if (!isValid) {
+        setSelectedNetwork(initialValue.current.selectedNetwork)
+        setSelectedRpc(initialValue.current.selectedRpc)
+      }
+    }
+  }, [enteredText, isValid])
+  return isValid ? (
+    <div className="relative flex cursor-default gap-2 select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none data-[disabled=true]:pointer-events-none data-[selected='true']:bg-accent data-[selected=true]:text-accent-foreground data-[disabled=true]:opacity-50">
+      <Check className="mr-2 h-4 w-4 opacity-100" />
+      {enteredText}
+    </div>
+  ) : (
+    <CommandEmpty>No networks found.</CommandEmpty>
+  )
+}
 
 export function NetworkSwitcher() {
   const [open, setOpen] = useState(false)
@@ -40,13 +102,19 @@ export function NetworkSwitcher() {
   const [selectedNetwork, setSelectedNetwork] = useState<Network>(
     selectedChain.network,
   )
-  const [selectedRpc, setSelecteRpc] = useState<string>(
-    selectedChain.endpoint ?? "light-client",
-  )
+  const currentRpc = selectedChain.endpoint ?? "light-client"
+  const [selectedRpc, setSelectedRpc] = useState<string>(currentRpc)
+  const [enteredText, setEnteredText] = useState<string>("")
+
+  const hasChanged =
+    selectedNetwork.id !== selectedChain.network.id ||
+    selectedRpc !== currentRpc
 
   const handleNetworkSelect = (network: Network) => {
+    if (network === selectedNetwork) return
+
     setSelectedNetwork(network)
-    setSelecteRpc(
+    setSelectedRpc(
       network.lightclient
         ? "light-client"
         : Object.values(network.endpoints)[0],
@@ -77,9 +145,21 @@ export function NetworkSwitcher() {
           <DialogTitle>Switch Network</DialogTitle>
         </DialogHeader>
         <Command className="rounded-lg border shadow-md">
-          <CommandInput placeholder="Search networks..." />
+          <CommandInput
+            placeholder="Search or enter a custom URI"
+            value={enteredText}
+            onValueChange={setEnteredText}
+          />
           <CommandList>
-            <CommandEmpty>No networks found.</CommandEmpty>
+            <EmptyOption
+              {...{
+                enteredText,
+                selectedNetwork,
+                selectedRpc,
+                setSelectedRpc,
+                setSelectedNetwork,
+              }}
+            />
             <ScrollArea className="h-[260px]">
               {networkCategories.map((category) => (
                 <CommandGroup key={category.name} heading={category.name}>
@@ -103,7 +183,7 @@ export function NetworkSwitcher() {
             </ScrollArea>
           </CommandList>
         </Command>
-        {selectedNetwork && (
+        {selectedNetwork && selectedNetwork.id !== "custom-network" && (
           <Accordion type="single" collapsible className="w-full -mt-3">
             <AccordionItem value="connection-options">
               <AccordionTrigger>Connection Options</AccordionTrigger>
@@ -116,7 +196,7 @@ export function NetworkSwitcher() {
                           value="light-client"
                           id="light-client"
                           checked={selectedRpc === "light-client"}
-                          onClick={() => setSelecteRpc("light-client")}
+                          onClick={() => setSelectedRpc("light-client")}
                         />
                         <Label htmlFor="light-client">
                           Light Client (smoldot)
@@ -130,7 +210,7 @@ export function NetworkSwitcher() {
                             value={url}
                             id={url}
                             checked={selectedRpc === url}
-                            onClick={() => setSelecteRpc(url)}
+                            onClick={() => setSelectedRpc(url)}
                           />
                           <Label htmlFor={url}>{rpcName}</Label>
                         </div>
@@ -144,7 +224,11 @@ export function NetworkSwitcher() {
         )}
         <Button
           onClick={handleConfirm}
-          disabled={!selectedNetwork || selectedRpc == null}
+          disabled={
+            !selectedNetwork ||
+            !hasChanged ||
+            (selectedNetwork.id === "custom-network" && !selectedRpc)
+          }
         >
           Confirm Selection
         </Button>
