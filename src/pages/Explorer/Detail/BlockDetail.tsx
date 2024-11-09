@@ -33,7 +33,11 @@ const Sender: React.FC<{
   sender: Enum<{ Id: SS58String }> | SS58String | HexString
 }> = ({ sender }) => {
   const value: string | null =
-    typeof sender === "string" ? sender : "Id" in sender ? sender.value : null
+    typeof sender === "string"
+      ? sender
+      : "type" in sender && sender.type === "Id"
+        ? sender.value
+        : null
   return (
     value && (
       <div className="flex gap-2 items-center py-2">
