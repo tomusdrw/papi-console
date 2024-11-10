@@ -195,12 +195,21 @@ const StorageKeyInput: FC<{ idx: number; type: number; disabled: boolean }> = ({
   if (!builder) return null
 
   const codec = builder.buildDefinition(type)
-  const binaryValue =
-    (value.type === CodecComponentType.Initial
-      ? value.value
-      : value.value.empty
-        ? null
-        : (value.value.encoded ?? codec.enc(value.value.decoded))) ?? null
+  console.log("decoded", value)
+  const getBinValue = () => {
+    try {
+      return (
+        (value.type === CodecComponentType.Initial
+          ? value.value
+          : value.value.empty
+            ? null
+            : (value.value.encoded ?? codec.enc(value.value.decoded))) ?? null
+      )
+    } catch {
+      null
+    }
+  }
+  const binaryValue = getBinValue()
 
   const getTypeName = () => {
     const lookupEntry = builder.lookup(type)
