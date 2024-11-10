@@ -9,10 +9,6 @@ import { toHex } from "@polkadot-api/utils"
 import { sinkSuspense, state, SUSPENSE } from "@react-rxjs/core"
 import { createSignal } from "@react-rxjs/utils"
 import { createClient } from "polkadot-api"
-import { chainSpec as ksmChainSpec } from "polkadot-api/chains/ksmcc3"
-import { chainSpec as paseoChainSpec } from "polkadot-api/chains/paseo"
-import { chainSpec } from "polkadot-api/chains/polkadot"
-import { chainSpec as westendChainSpec } from "polkadot-api/chains/westend2"
 import { withLogsRecorder } from "polkadot-api/logs-provider"
 import { withPolkadotSdkCompat } from "polkadot-api/polkadot-sdk-compat"
 import { getSmProvider } from "polkadot-api/sm-provider"
@@ -33,10 +29,18 @@ import {
   switchMap,
   tap,
 } from "rxjs"
+
 import ksmRawNetworks from "./networks/kusama.json"
 import polkadotRawNetworks from "./networks/polkadot.json"
 import paseoRawNetworks from "./networks/paseo.json"
 import westendRawNetworks from "./networks/westend.json"
+
+const [chainSpec, ksmChainSpec, paseoChainSpec, westendChainSpec] = [
+  import("polkadot-api/chains/polkadot"),
+  import("polkadot-api/chains/ksmcc3"),
+  import("polkadot-api/chains/paseo"),
+  import("polkadot-api/chains/westend2"),
+].map((x) => x.then((y) => y.chainSpec))
 
 export type ChainSource = { id: string } & (
   | {
@@ -251,21 +255,17 @@ export function getProvider(source: ChainSource): JsonRpcProvider {
         console.debug("smoldot[%s(%s)] %s", target, level, message)
       },
     })
+    const createChain = async (input: Promise<string>) =>
+      client.addChain({
+        chainSpec: await input,
+      })
     smoldot = {
       client,
       relayChains: {
-        polkadot: client.addChain({
-          chainSpec: chainSpec,
-        }),
-        kusama: client.addChain({
-          chainSpec: ksmChainSpec,
-        }),
-        westend: client.addChain({
-          chainSpec: westendChainSpec,
-        }),
-        paseo: client.addChain({
-          chainSpec: paseoChainSpec,
-        }),
+        polkadot: createChain(chainSpec),
+        kusama: createChain(ksmChainSpec),
+        westend: createChain(westendChainSpec),
+        paseo: createChain(paseoChainSpec),
       },
     }
   }
