@@ -1,3 +1,4 @@
+import { localStorageSubject } from "@/utils/localStorageSubject"
 import {
   IdentityData,
   IdentityJudgement,
@@ -5,10 +6,9 @@ import {
 } from "@polkadot-api/descriptors"
 import { state } from "@react-rxjs/core"
 import { Binary, createClient, SS58String } from "polkadot-api"
-import { chainSpec } from "./chains/chainspecs/polkadot_people"
 import { catchError, map, of, tap } from "rxjs"
 import { getProvider } from "./chains/chain.state"
-import { localStorageSubject } from "@/utils/localStorageSubject"
+import { chainSpec } from "./chains/chainspecs/polkadot_people"
 
 export interface Identity {
   displayName: string

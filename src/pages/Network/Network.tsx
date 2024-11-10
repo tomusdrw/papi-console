@@ -1,13 +1,3 @@
-import { Check, ChevronDown } from "lucide-react"
-import { FC, useEffect, useRef, useState } from "react"
-
-import {
-  Network,
-  networkCategories,
-  onChangeChain,
-  SelectedChain,
-  selectedChain$,
-} from "@/state/chains/chain.state"
 import {
   Accordion,
   AccordionContent,
@@ -33,8 +23,17 @@ import {
 import { Label } from "@/components/ui/label"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { ScrollArea } from "@/components/ui/scroll-area"
+import {
+  Network,
+  networkCategories,
+  onChangeChain,
+  SelectedChain,
+  selectedChain$,
+} from "@/state/chains/chain.state"
 import { useStateObservable } from "@react-rxjs/core"
 import { useCommandState } from "cmdk"
+import { Check, ChevronDown } from "lucide-react"
+import { FC, useEffect, useRef, useState } from "react"
 
 const isValidUri = (input: string): boolean => {
   try {

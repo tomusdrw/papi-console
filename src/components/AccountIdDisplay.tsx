@@ -1,6 +1,6 @@
 import { PolkadotIdenticon } from "@/components/PolkadotIdenticon"
-import { accountDetail$, getPublicKey } from "@/extension-accounts.state"
-import { identity$, isVerified } from "@/identity.state"
+import { accountDetail$, getPublicKey } from "@/state/extension-accounts.state"
+import { identity$, isVerified } from "@/state/identity.state"
 import { useStateObservable } from "@react-rxjs/core"
 import { CheckCircle } from "lucide-react"
 import { SS58String } from "polkadot-api"

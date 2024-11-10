@@ -13,11 +13,11 @@ import {
   accountsByExtension$,
   extensionAccounts$,
   selectedExtensions$,
-} from "@/extension-accounts.state"
+} from "@/state/extension-accounts.state"
 import {
   walletConnectAccounts$,
   walletConnectStatus$,
-} from "@/walletconnect.state"
+} from "@/state/walletconnect.state"
 import { state, useStateObservable } from "@react-rxjs/core"
 import { createSignal } from "@react-rxjs/utils"
 import { InjectedExtension } from "polkadot-api/pjs-signer"

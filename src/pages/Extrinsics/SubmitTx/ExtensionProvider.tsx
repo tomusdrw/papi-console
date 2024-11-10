@@ -5,11 +5,11 @@ import {
   availableExtensions$,
   onToggleExtension,
   selectedExtensions$,
-} from "@/extension-accounts.state"
+} from "@/state/extension-accounts.state"
 import {
   toggleWalletConnect,
   walletConnectStatus$,
-} from "@/walletconnect.state"
+} from "@/state/walletconnect.state"
 import { useStateObservable } from "@react-rxjs/core"
 
 export const ExtensionProvider: React.FC = () => {
