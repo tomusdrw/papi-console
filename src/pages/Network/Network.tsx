@@ -7,7 +7,7 @@ import {
   onChangeChain,
   SelectedChain,
   selectedChain$,
-} from "@/chain.state"
+} from "@/state/chains/chain.state"
 import {
   Accordion,
   AccordionContent,

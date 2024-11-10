@@ -1,4 +1,4 @@
-import { lookup$ } from "@/chain.state"
+import { lookup$ } from "@/state/chains/chain.state"
 import { LookupTypeEdit } from "@/codec-components/LookupTypeEdit"
 import { getTypeComplexity } from "@/utils/shape"
 import { state, useStateObservable } from "@react-rxjs/core"

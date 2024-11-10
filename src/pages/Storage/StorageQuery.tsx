@@ -1,4 +1,8 @@
-import { dynamicBuilder$, runtimeCtx$, unsafeApi$ } from "@/chain.state"
+import {
+  dynamicBuilder$,
+  runtimeCtx$,
+  unsafeApi$,
+} from "@/state/chains/chain.state"
 import { EditCodec } from "@/codec-components/EditCodec"
 import { ActionButton } from "@/components/ActionButton"
 import { BinaryEditButton } from "@/components/BinaryEditButton"

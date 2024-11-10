@@ -1,4 +1,4 @@
-import { unsafeApi$ } from "@/chain.state"
+import { unsafeApi$ } from "@/state/chains/chain.state"
 import { ActionButton } from "@/components/ActionButton"
 import { onNexTx } from "@/pages/Transactions"
 import { useStateObservable } from "@react-rxjs/core"

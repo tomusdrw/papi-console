@@ -1,4 +1,4 @@
-import { chainHead$, runtimeCtx$ } from "@/chain.state"
+import { chainHead$, runtimeCtx$ } from "@/state/chains/chain.state"
 import { FC, PropsWithChildren } from "react"
 import { map, switchMap } from "rxjs"
 import { twMerge } from "tailwind-merge"

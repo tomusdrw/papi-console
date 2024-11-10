@@ -11,7 +11,11 @@ import {
   withLatestFrom,
 } from "rxjs"
 import { targetBlockTime$ } from "./blockTime.state"
-import { chainClient$, chainHead$, runtimeCtx$ } from "@/chain.state"
+import {
+  chainClient$,
+  chainHead$,
+  runtimeCtx$,
+} from "@/state/chains/chain.state"
 import { groupBy } from "@/lib/groupBy"
 
 const bestBlock$ = chainHead$.pipeState(

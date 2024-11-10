@@ -1,4 +1,8 @@
-import { dynamicBuilder$, lookup$, unsafeApi$ } from "@/chain.state"
+import {
+  dynamicBuilder$,
+  lookup$,
+  unsafeApi$,
+} from "@/state/chains/chain.state"
 import {
   InlineLookupTypeEdit,
   LookupTypeEdit,

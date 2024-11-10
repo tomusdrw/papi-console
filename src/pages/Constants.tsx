@@ -1,4 +1,4 @@
-import { lookup$, runtimeCtx$ } from "@/chain.state"
+import { lookup$, runtimeCtx$ } from "@/state/chains/chain.state"
 import { ViewCodec } from "@/codec-components/ViewCodec"
 import { ButtonGroup } from "@/components/ButtonGroup"
 import { DocsRenderer } from "@/components/DocsRenderer"

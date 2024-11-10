@@ -1,4 +1,4 @@
-import { chainHead$ } from "@/chain.state"
+import { chainHead$ } from "@/state/chains/chain.state"
 import { CircularProgress } from "@/components/CircularProgress"
 import { state, useStateObservable } from "@react-rxjs/core"
 import {

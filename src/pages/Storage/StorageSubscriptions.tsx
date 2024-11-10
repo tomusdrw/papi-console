@@ -1,4 +1,4 @@
-import { dynamicBuilder$, metadata$ } from "@/chain.state"
+import { dynamicBuilder$, metadata$ } from "@/state/chains/chain.state"
 import { ViewCodec } from "@/codec-components/ViewCodec"
 import { CopyBinary } from "@/codec-components/ViewCodec/CopyBinary"
 import { ButtonGroup } from "@/components/ButtonGroup"

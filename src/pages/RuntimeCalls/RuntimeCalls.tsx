@@ -1,4 +1,4 @@
-import { lookup$ } from "@/chain.state"
+import { lookup$ } from "@/state/chains/chain.state"
 import { DocsRenderer } from "@/components/DocsRenderer"
 import { LoadingMetadata } from "@/components/Loading"
 import { SearchableSelect } from "@/components/Select"

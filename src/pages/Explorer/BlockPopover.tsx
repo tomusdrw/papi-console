@@ -1,4 +1,4 @@
-import { runtimeCtx$ } from "@/chain.state"
+import { runtimeCtx$ } from "@/state/chains/chain.state"
 import { CircularProgress } from "@/components/CircularProgress"
 import { groupBy } from "@/lib/groupBy"
 import { state, useStateObservable } from "@react-rxjs/core"

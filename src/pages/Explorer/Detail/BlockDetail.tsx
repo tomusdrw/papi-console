@@ -1,4 +1,4 @@
-import { runtimeCtx$ } from "@/chain.state"
+import { runtimeCtx$ } from "@/state/chains/chain.state"
 import { CopyBinary } from "@/codec-components/ViewCodec/CopyBinary"
 import { AccountIdDisplay } from "@/components/AccountIdDisplay"
 import { ExpandBtn } from "@/components/Expand"

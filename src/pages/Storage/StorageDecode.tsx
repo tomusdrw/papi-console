@@ -1,4 +1,4 @@
-import { dynamicBuilder$ } from "@/chain.state"
+import { dynamicBuilder$ } from "@/state/chains/chain.state"
 import { ActionButton } from "@/components/ActionButton"
 import { NOTIN } from "@polkadot-api/react-builder"
 import { state, useStateObservable } from "@react-rxjs/core"
