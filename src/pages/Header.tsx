@@ -5,7 +5,7 @@ import { twMerge } from "tailwind-merge"
 
 export const Header = () => (
   <div className="flex p-4 pb-2 items-center flex-shrink-0 gap-2 border-b">
-    <div className="flex flex-1 items-center flex-row gap-2">
+    <div className="flex flex-1 items-center flex-row gap-2 relative">
       <img
         className="w-14 min-w-14 hidden dark:inline-block"
         src="/papi_logo-dark.svg"
@@ -19,6 +19,9 @@ export const Header = () => (
       <h1 className="hidden lg:block poppins-regular text-lg">
         papi <span className="poppins-extralight">console</span>
       </h1>
+      <div className="absolute -bottom-1 left-0 lg:bottom-0 lg:right-1 text-right text-sm">
+        (beta)
+      </div>
     </div>
     <NetworkSwitcher />
     <div className="flex flex-row items-center justify-end px-1 py-1 text-nowrap">
