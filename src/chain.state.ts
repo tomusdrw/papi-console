@@ -12,7 +12,7 @@ import { createClient } from "polkadot-api"
 import { withLogsRecorder } from "polkadot-api/logs-provider"
 import { withPolkadotSdkCompat } from "polkadot-api/polkadot-sdk-compat"
 import { getSmProvider } from "polkadot-api/sm-provider"
-import { Chain, Client } from "polkadot-api/smoldot"
+import { Chain } from "polkadot-api/smoldot"
 import { startFromWorker } from "polkadot-api/smoldot/from-worker"
 import SmWorker from "polkadot-api/smoldot/worker?worker"
 import { getWsProvider } from "polkadot-api/ws-provider/web"
@@ -29,18 +29,39 @@ import {
   switchMap,
   tap,
 } from "rxjs"
-
 import ksmRawNetworks from "./networks/kusama.json"
-import polkadotRawNetworks from "./networks/polkadot.json"
 import paseoRawNetworks from "./networks/paseo.json"
+import polkadotRawNetworks from "./networks/polkadot.json"
 import westendRawNetworks from "./networks/westend.json"
 
-const [chainSpec, ksmChainSpec, paseoChainSpec, westendChainSpec] = [
+const [dotChainSpec, ksmChainSpec, paseoChainSpec, westendChainSpec] = [
   import("polkadot-api/chains/polkadot"),
   import("polkadot-api/chains/ksmcc3"),
   import("polkadot-api/chains/paseo"),
   import("polkadot-api/chains/westend2"),
 ].map((x) => x.then((y) => y.chainSpec))
+const smoldot = startFromWorker(new SmWorker(), {
+  logCallback: (level, target, message) => {
+    console.debug("smoldot[%s(%s)] %s", target, level, message)
+  },
+})
+const relayChains: Record<
+  string,
+  { chainSpec: Promise<string>; chain: Promise<Chain> | null }
+> = {
+  polkadot: { chainSpec: dotChainSpec, chain: null },
+  kusama: { chainSpec: ksmChainSpec, chain: null },
+  paseo: { chainSpec: paseoChainSpec, chain: null },
+  westend: { chainSpec: westendChainSpec, chain: null },
+}
+const getRelayChain = async (name: string) => {
+  if (!relayChains[name].chain) {
+    relayChains[name].chain = smoldot.addChain({
+      chainSpec: await relayChains[name].chainSpec,
+    })
+  }
+  return relayChains[name].chain
+}
 
 export type ChainSource = { id: string } & (
   | {
@@ -119,7 +140,6 @@ export const selectedChain$ = state<SelectedChain>(selectedChainChanged$, {
 })
 selectedChain$.subscribe()
 
-const relayChains = new Set(["polkadot", "kusama", "westend", "paseo"])
 const selectedSource$ = selectedChain$.pipe(
   switchMap(
     ({ endpoint, network }): Observable<ChainSource> | Promise<ChainSource> => {
@@ -130,12 +150,12 @@ const selectedSource$ = selectedChain$.pipe(
           type: "websocket",
           value: endpoint,
         })
-      if (relayChains.has(id)) {
-        return of({
+      if (id in relayChains) {
+        return relayChains[id].chainSpec.then((chainSpec) => ({
           id,
           type: "chainSpec",
-          value: { chainSpec: id },
-        })
+          value: { chainSpec },
+        }))
       }
       return import(`./chainspecs/${id}.ts`).then(({ chainSpec }) => {
         const parsed = JSON.parse(chainSpec)
@@ -240,46 +260,24 @@ export const dynamicBuilder$ = runtimeCtx$.pipeState(
   map((ctx) => ctx.dynamicBuilder),
 )
 
-let smoldot: {
-  client: Client
-  relayChains: Record<string, Promise<Chain>>
-} | null = null
 export function getProvider(source: ChainSource): JsonRpcProvider {
   if (source.type === "websocket") {
     return withPolkadotSdkCompat(getWsProvider(source.value))
   }
 
-  if (!smoldot) {
-    const client = startFromWorker(new SmWorker(), {
-      logCallback: (level, target, message) => {
-        console.debug("smoldot[%s(%s)] %s", target, level, message)
-      },
-    })
-    const createChain = async (input: Promise<string>) =>
-      client.addChain({
-        chainSpec: await input,
-      })
-    smoldot = {
-      client,
-      relayChains: {
-        polkadot: createChain(chainSpec),
-        kusama: createChain(ksmChainSpec),
-        westend: createChain(westendChainSpec),
-        paseo: createChain(paseoChainSpec),
-      },
-    }
-  }
   const chain = source.value.relayChain
-    ? smoldot.relayChains[source.value.relayChain].then((chain) => {
-        return smoldot!.client.addChain({
+    ? getRelayChain(source.value.relayChain).then((chain) =>
+        smoldot.addChain({
           chainSpec: source.value.chainSpec,
           potentialRelayChains: [chain],
-        })
-      })
-    : smoldot.relayChains[source.value.chainSpec] ||
-      smoldot.client.addChain({
+        }),
+      )
+    : smoldot.addChain({
         chainSpec: source.value.chainSpec,
       })
 
-  return withLogsRecorder(console.debug, getSmProvider(chain))
+  return withLogsRecorder(
+    (v) => v.includes("initialized") && console.debug(v),
+    getSmProvider(chain),
+  )
 }
