@@ -195,7 +195,6 @@ const StorageKeyInput: FC<{ idx: number; type: number; disabled: boolean }> = ({
   if (!builder) return null
 
   const codec = builder.buildDefinition(type)
-  console.log("decoded", value)
   const getBinValue = () => {
     try {
       return (
