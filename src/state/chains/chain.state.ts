@@ -1,12 +1,14 @@
+import { cyclingLocalCache } from "@/utils/cyclingLocalCache"
 import { getDynamicBuilder, getLookupFn } from "@polkadot-api/metadata-builders"
 import { getObservableClient } from "@polkadot-api/observable-client"
-import { decAnyMetadata, HexString } from "@polkadot-api/substrate-bindings"
+import { decAnyMetadata } from "@polkadot-api/substrate-bindings"
 import { createClient as createSubstrateClient } from "@polkadot-api/substrate-client"
 import { toHex } from "@polkadot-api/utils"
 import { sinkSuspense, state, SUSPENSE } from "@react-rxjs/core"
 import { createSignal } from "@react-rxjs/utils"
 import { createClient } from "polkadot-api"
 import {
+  catchError,
   concat,
   EMPTY,
   filter,
@@ -23,12 +25,15 @@ import {
   createSmoldotSource,
   getSmoldotProvider,
   SmoldotSource,
+  RelayChain,
+  relayChains,
 } from "./smoldot"
 import {
   createWebsocketSource,
   getWebsocketProvider,
   WebsocketSource,
 } from "./websocket"
+import { setCachedSmoldotDb } from "./smoldot.cache"
 
 export type ChainSource = WebsocketSource | SmoldotSource
 
@@ -88,34 +93,18 @@ export const unsafeApi$ = chainClient$.pipeState(
   map(({ client }) => client.getUnsafeApi()),
 )
 
-const uncachedRuntimeCtx$ = chainClient$.pipeState(
+export const uncachedRuntimeCtx$ = chainClient$.pipeState(
   switchMap(({ chainHead }) => chainHead.runtime$),
   filter((v) => !!v),
 )
 
-const getMetadataCache = () => {
-  const cached = localStorage.getItem(`metadata-cache`)
-  return new Map<string, { time: number; data: HexString }>(
-    cached ? JSON.parse(cached) : [],
-  )
-}
-const getCachedMetadata = (id: string) =>
-  getMetadataCache().get(id)?.data ?? null
-const setCachedMetadata = (id: string, data: HexString) => {
-  const cached = getMetadataCache()
-  cached.set(id, { time: Date.now(), data })
-  if (cached.size > 3) {
-    const oldest = [...cached.entries()].reduce((a, b) =>
-      a[1].time < b[1].time ? a : b,
-    )[0]
-    cached.delete(oldest)
-  }
-  localStorage.setItem("metadata-cache", JSON.stringify([...cached.entries()]))
-}
+const [getCachedMetadata, setCachedMetadata] =
+  cyclingLocalCache("metadata-cache")
 export const runtimeCtx$ = chainClient$.pipeState(
-  switchMap(({ id }) => {
-    const cached = getCachedMetadata(id)
-
+  switchMap(({ id }) =>
+    getCachedMetadata(id).then((cached) => ({ id, cached })),
+  ),
+  switchMap(({ id, cached }) => {
     const realCtx$ = uncachedRuntimeCtx$.pipe(
       tap((v) => {
         setCachedMetadata(id, toHex(v.metadataRaw))
@@ -142,6 +131,25 @@ export const lookup$ = runtimeCtx$.pipeState(map((ctx) => ctx.lookup))
 export const metadata$ = lookup$.pipeState(map((lookup) => lookup.metadata))
 export const dynamicBuilder$ = runtimeCtx$.pipeState(
   map((ctx) => ctx.dynamicBuilder),
+)
+
+export const persistSyncState$ = chainClient$.pipe(
+  switchMap(({ id, client }) => {
+    if (!relayChains.includes(id as RelayChain)) return EMPTY
+
+    return uncachedRuntimeCtx$.pipe(
+      switchMap(() =>
+        client._request<string, []>("chainHead_unstable_finalizedDatabase", []),
+      ),
+      catchError(() => EMPTY),
+      filter((v) => !!v),
+      map((db) => ({
+        id,
+        db,
+      })),
+    )
+  }),
+  tap(({ id, db }) => setCachedSmoldotDb(id, db)),
 )
 
 export { networkCategories, type Network } from "./networks"
