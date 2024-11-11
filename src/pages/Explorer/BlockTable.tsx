@@ -1,4 +1,4 @@
-import { chainHead$ } from "@/chain.state"
+import { chainHead$ } from "@/state/chains/chain.state"
 import { CopyText } from "@/components/Copy"
 import { Popover } from "@/components/Popover"
 import { state, useStateObservable } from "@react-rxjs/core"

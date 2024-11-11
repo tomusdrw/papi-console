@@ -4,7 +4,8 @@ import { createRoot } from "react-dom/client"
 import { BrowserRouter } from "react-router-dom"
 import { merge } from "rxjs"
 import App from "./App.tsx"
-import { dynamicBuilder$ } from "./chain.state.ts"
+import { dynamicBuilder$ } from "@/state/chains/chain.state"
+import { persistSyncState$ } from "./state/chains/chain.state.ts"
 import { TooltipProvider } from "./components/Tooltip.tsx"
 import "./index.css"
 import { explorer$ } from "./pages/Explorer"
@@ -12,7 +13,14 @@ import { transactions$ } from "./pages/Transactions"
 import { ThemeProvider } from "./ThemeProvider.tsx"
 
 createRoot(document.getElementById("root")!).render(
-  <Subscribe source$={merge(dynamicBuilder$, explorer$, transactions$)}>
+  <Subscribe
+    source$={merge(
+      dynamicBuilder$,
+      explorer$,
+      transactions$,
+      persistSyncState$,
+    )}
+  >
     <RemoveSubscribe>
       <StrictMode>
         <ThemeProvider>

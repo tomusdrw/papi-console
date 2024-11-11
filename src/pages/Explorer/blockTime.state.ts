@@ -1,4 +1,4 @@
-import { chainClient$, runtimeCtx$ } from "@/chain.state"
+import { chainClient$, runtimeCtx$ } from "@/state/chains/chain.state"
 import { groupBy } from "@/lib/groupBy"
 import { state } from "@react-rxjs/core"
 import { map, of, switchMap, withLatestFrom } from "rxjs"

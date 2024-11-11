@@ -1,3 +1,4 @@
+import { localStorageSubject } from "@/utils/localStorageSubject"
 import { state, withDefault } from "@react-rxjs/core"
 import { createSignal } from "@react-rxjs/utils"
 import { WalletConnectModal } from "@walletconnect/modal"
@@ -28,7 +29,6 @@ import {
   takeUntil,
   tap,
 } from "rxjs"
-import { localStorageSubject } from "./utils/localStorageSubject"
 
 // https://docs.reown.com/advanced/multichain/polkadot/dapp-integration-guide
 const chains = [

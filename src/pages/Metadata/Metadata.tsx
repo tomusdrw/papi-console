@@ -1,4 +1,4 @@
-import { lookup$, metadata$ } from "@/chain.state"
+import { lookup$, metadata$ } from "@/state/chains/chain.state"
 import { LookupTypeEdit } from "@/codec-components/LookupTypeEdit"
 import { ButtonGroup } from "@/components/ButtonGroup"
 import { JsonDisplay } from "@/components/JsonDisplay"

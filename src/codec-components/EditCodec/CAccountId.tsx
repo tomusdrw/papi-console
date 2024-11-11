@@ -17,8 +17,8 @@ import {
   accountDetail$,
   accounts$,
   getPublicKey,
-} from "@/extension-accounts.state"
-import { identity$, isVerified } from "@/identity.state"
+} from "@/state/extension-accounts.state"
+import { identity$, isVerified } from "@/state/identity.state"
 import { cn } from "@/utils/cn"
 import { EditAccountId, NOTIN } from "@polkadot-api/react-builder"
 import { getSs58AddressInfo } from "@polkadot-api/substrate-bindings"

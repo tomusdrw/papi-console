@@ -1,4 +1,4 @@
-import { chainClient$ } from "@/chain.state"
+import { chainClient$ } from "@/state/chains/chain.state"
 import { state } from "@react-rxjs/core"
 import { combineKeys, createSignal, partitionByKey } from "@react-rxjs/utils"
 import { HexString, InvalidTxError, TxBroadcastEvent } from "polkadot-api"

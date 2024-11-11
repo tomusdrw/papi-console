@@ -1,4 +1,4 @@
-import { chainClient$, chainHead$ } from "@/chain.state"
+import { chainClient$, chainHead$ } from "@/state/chains/chain.state"
 import {
   ChainHead$,
   PinnedBlocks,

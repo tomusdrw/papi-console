@@ -1,4 +1,4 @@
-import { lookup$ } from "@/chain.state"
+import { lookup$ } from "@/state/chains/chain.state"
 import { ButtonGroup } from "@/components/ButtonGroup"
 import { SearchableSelect } from "@/components/Select"
 import { withSubscribe } from "@/components/withSuspense"
