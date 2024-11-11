@@ -154,7 +154,7 @@ const ConstantValue: FC<{ type: number; decoded: unknown }> = ({
   type,
   decoded,
 }) => {
-  const [mode, setMode] = useState<"json" | "decoded">("json")
+  const [mode, setMode] = useState<"json" | "decoded">("decoded")
 
   return (
     <div className="pl-6 py-2 flex flex-col gap-2 items-start overflow-hidden w-full">
