@@ -15,6 +15,7 @@ const smoldot = startFromWorker(new SmWorker(), {
   logCallback: (level, target, message) => {
     console.debug("smoldot[%s(%s)] %s", target, level, message)
   },
+  forbidWs: true,
 })
 const relayChains: Record<
   string,
