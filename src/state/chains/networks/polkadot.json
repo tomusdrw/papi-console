@@ -197,6 +197,23 @@
     "hasChainSpecs": true
   },
   {
+    "id": "aventus",
+    "display": "Aventus",
+    "relayChainInfo": {
+      "id": "polkadot",
+      "isSystem": false,
+      "parachain": 2056
+    },
+    "rpcs": {
+      "Aventus": "wss://public-rpc.mainnet.aventus.network"
+    },
+    "nativeToken": {
+      "symbol": "AVT",
+      "decimals": 18
+    },
+    "hasChainSpecs": false
+  },
+  {
     "id": "bifrost",
     "display": "Bifrost",
     "relayChainInfo": {
