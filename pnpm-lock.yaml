@@ -88,6 +88,9 @@ importers:
       '@react-rxjs/utils':
         specifier: ^0.9.7
         version: 0.9.7(@react-rxjs/core@0.10.7(react@18.3.1)(rxjs@7.8.1))(react@18.3.1)(rxjs@7.8.1)
+      '@typeberry/block':
+        specifier: 0.0.1-447d5c4
+        version: 0.0.1-447d5c4
       '@walletconnect/modal':
         specifier: ^2.7.0
         version: 2.7.0(@types/react@18.3.12)(react@18.3.1)
@@ -1578,6 +1581,9 @@ packages:
 
   '@tanem/svg-injector@10.1.68':
     resolution: {integrity: sha512-UkJajeR44u73ujtr5GVSbIlELDWD/mzjqWe54YMK61ljKxFcJoPd9RBSaO7xj02ISCWUqJW99GjrS+sVF0UnrA==}
+
+  '@typeberry/block@0.0.1-447d5c4':
+    resolution: {integrity: sha512-+WMDuqDU5sqJJmpsZQPIBOpcR7u1wVPxoM5uVUYTQN64WGU7Rz1meQ12tdZgDOzZpJTeYhDGow5yXwdIs8hgsA==}
 
   '@types/babel__core@7.20.5':
     resolution: {integrity: sha512-qoQprZvz5wQFJwMDqeseRXWv3rqMvhgpbXFfVyWhbx9X47POIA6i/+dXefEmZKoAgOaTdaIgNSMqMIU61yRyzA==}
@@ -4981,6 +4987,8 @@ snapshots:
       '@babel/runtime': 7.26.0
       content-type: 1.0.5
       tslib: 2.8.1
+
+  '@typeberry/block@0.0.1-447d5c4': {}
 
   '@types/babel__core@7.20.5':
     dependencies:
