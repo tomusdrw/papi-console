@@ -13,8 +13,7 @@ type Metadata = {
   [id: number]: LookupEntryWithCodec,
 };
 
-export let initial: LookupEntryWithCodec;
-export const metadata = ((spec: config.ChainSpec) => {
+export function createMetadata(spec: config.ChainSpec) {
   let id = 0;
   const metadata: Metadata = {};
 
@@ -291,10 +290,26 @@ export const metadata = ((spec: config.ChainSpec) => {
     extrinsic
   }, "Block");
 
-  initial = header
 
-  return metadata;
+  return {
+    metadata,
+    lookup,
+    dynCodecs,
+    initial: header,
+  };
 
+  function lookup(id: number): LookupEntryWithCodec | undefined {
+    return metadata[id];
+  }
+
+  function dynCodecs(id: number) {
+    // build a whole map and instead of special casing, rather convert based on the structure.
+    const entry = lookup(id);
+    if (!entry) {
+      throw new Error(`No entry for ${id}`);
+    }
+    return entry.Codec;
+  }
 
   function add<T, V>(codec: jamCodec.Descriptor<T, V>, v: Var, name?: string) {
     id++;
@@ -320,7 +335,7 @@ export const metadata = ((spec: config.ChainSpec) => {
       innerDocs: {},
     }, name);
   }
-})(config.tinyChainSpec);
+}
 
 type Fields<T> = {
   [K in PropertyKeys<T>]: LookupEntry;

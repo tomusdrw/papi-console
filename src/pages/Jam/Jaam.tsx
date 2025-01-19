@@ -11,11 +11,11 @@ import { useLocation } from "react-router-dom"
 import { JamEditMode } from "./EditMode"
 import { JsonMode } from "./JsonMode"
 
-import { codec as jamCodec } from "@typeberry/block";
+import { config, codec as jamCodec } from "@typeberry/block";
 import {Var} from "@polkadot-api/metadata-builders"
 import {createDecode, createEncode} from "@/jam-codec-components/EditCodec"
 import {SearchableSelect} from "@/components/Select"
-import {LookupEntryWithCodec, initial, metadata} from "./metadata"
+import {LookupEntryWithCodec, createMetadata} from "./metadata"
 
 
 // TODO [ToDr] Instead we should extend encoder,
@@ -59,20 +59,16 @@ function patchEncoder(c: typeof jamCodec.Encoder) {
 
 patchEncoder(jamCodec.Encoder);
 
-const lookup = function(id: number): LookupEntryWithCodec | undefined {
-  return metadata[id];
-};
-
-const dynCodecs = function(id: number) {
-  // build a whole map and instead of special casing, rather convert based on the structure.
-  const entry = lookup(id);
-  if (!entry) {
-    throw new Error(`No entry for ${id}`);
-  }
-  return entry.Codec;
-}
+const specOptions = [
+  { text: 'Tiny Chain Spec', value: config.tinyChainSpec },
+  { text: 'Full Chain Spec', value: config.fullChainSpec },
+];
 
 export function Jam() {
+    const [spec, setSpec] = useState(config.tinyChainSpec);
+    const { metadata, initial, lookup, dynCodecs } = useMemo(() => {
+      return createMetadata(spec);
+    }, [spec]);
     const [entry, setSelectedEntry] = useState<LookupEntryWithCodec>(initial);
     const [viewMode, setViewMode] = useState<"edit" | "json">("edit")
     const location = useLocation()
@@ -95,7 +91,7 @@ export function Jam() {
         value: x,
         text: x.name!
       }));
-    }, []);
+    }, [metadata]);
 
     const codec = useMemo(() => {
       const jamCodec = dynCodecs(entry.id);
@@ -119,11 +115,16 @@ export function Jam() {
           : componentValue.value.encoded) ?? null
 
     return (<>
-      <div className="flex flex-col gap-2 p-4">
+      <div className="flex flex-row gap-2 p-4">
         <SearchableSelect
           setValue={changeEntry}
           value={entry}
           options={entryOptions}
+        />
+        <SearchableSelect
+          setValue={(x) => setSpec(x || config.tinyChainSpec)}
+          value={spec}
+          options={specOptions}
         />
       </div>
       <div className="flex flex-col overflow-hidden gap-2 p-4 pb-0">
