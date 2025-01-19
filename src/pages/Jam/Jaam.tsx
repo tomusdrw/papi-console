@@ -15,8 +15,6 @@ import { codec as jamCodec, config, EpochMarker, Header, tickets } from "@typebe
 import {LookupEntry, Var} from "@polkadot-api/metadata-builders"
 import {createDecode, createEncode} from "@/jam-codec-components/EditCodec"
 
-// const binaryValue = '0x5c743dbc514284b2ea57798787c5a155ef9d7ac1e9499ec65910a7a3d65897b72591ebd047489f1006361a4254731466a946174af02fe1d86681d254cfd4a00b74a9e79d2618e0ce8720ff61811b10e045c02224a09299f04e404a9656e85c812a00000001ae85d6635e9ae539d0846b911ec86a27fe000f619b78bcac8a74b77e36f6dbcf333a7e328f0c4183f4b947e1d8f68aa4034f762e5ecdb5a7f6fbf0afea2fd8cd5e465beb01dbafe160ce8216047f2155dd0569f058afd52dcea601025a8d161d3d5e5a51aab2b048f8686ecd79712a80e3265a114cc73f14bdb2a59233fb66d0aa2b95f7572875b0d0f186552ae745ba8222fc0b5bd456554bfe51c68938f8bc7f6190116d118d643a98878e294ccf62b509e214299931aad8ff9764181a4e3348e5fcdce10e0b64ec4eebd0d9211c7bac2f27ce54bca6f7776ff6fee86ab3e3f16e5352840afb47e206b5c89f560f2611835855cf2e6ebad1acc9520a72591d00013b6a27bcceb6a42d62a3a8d02a6f0d73653215771de243a63ac048a18b59da290300ae85d6635e9ae539d0846b911ec86a27fe000f619b78bcac8a74b77e36f6dbcf49a52360f74a0233cea0775356ab0512fafff0683df08fae3cb848122e296cbc50fed22418ea55f19e55b3c75eb8b0ec71dcae0d79823d39920bf8d6a2256c5f31dc5b1e9423eccff9bccd6549eae8034162158000d5be9339919cc03d14046e6431c14cbb172b3aed702b9e9869904b1f39a6fe1f3e904b0fd536f13e8cac496682e1c81898e88e604904fa7c3e496f9a8771ef1102cc29d567c4aad283f7b0';
-
 type LookupEntryWithCodec = LookupEntry & {
   Codec: jamCodec.Descriptor<unknown>,
 }
@@ -62,7 +60,7 @@ function patchEncoder(c: typeof jamCodec.Encoder) {
 
 patchEncoder(jamCodec.Encoder);
 
-let header: LookupEntryWithCodec;
+let toplevel: LookupEntryWithCodec;
 const metadata = ((spec: config.ChainSpec) => {
   let id = 0;
   const metadata: { [id: number]: LookupEntryWithCodec } = {};
@@ -141,7 +139,7 @@ const metadata = ((spec: config.ChainSpec) => {
     value: ticketsMarkerArray,
   });
 
-  header = add(Header.Codec, {
+  const header = add(Header.Codec, {
     type: 'struct',
     value: {
       parentHeaderHash: hash,
@@ -158,6 +156,7 @@ const metadata = ((spec: config.ChainSpec) => {
     innerDocs: {}
   });
 
+  toplevel = header
 
   return metadata;
 })(config.tinyChainSpec);
@@ -190,7 +189,7 @@ export function Jam() {
           ? null
           : componentValue.value.encoded) ?? null
 
-    const entry = header;
+    const entry = toplevel;
     const codec = useMemo(() => {
       const jamCodec = dynCodecs(entry.id);
       const decode = createDecode(jamCodec);
@@ -204,8 +203,6 @@ export function Jam() {
         enc: (x: any | NOTIN) => codec.encode(x) || new Uint8Array(),
       }
     }, [codec]);
-
-    console.log(entry.Codec.name, componentValue);
 
     return (
       <div className="flex flex-col overflow-hidden gap-2 p-4 pb-0">

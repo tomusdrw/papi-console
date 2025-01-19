@@ -83,6 +83,7 @@ export function getJamCodecComponent(baseComponents: EditComponents) {
     CBool,
     CStr,
     CBytes,
+    CEnum,
     CSequence,
     CArray,
     CTuple,
@@ -189,6 +190,53 @@ export function getJamCodecComponent(baseComponents: EditComponents) {
             />
           ))
         }
+        }
+      />);
+    }
+
+    if (entry.type === "enum") {
+      let innerEntry;
+      if (!value.empty) {
+        innerEntry = entry.value[value.decoded.type as string];
+        if (innerEntry?.type === "lookupEntry")
+          innerEntry = innerEntry.value;
+        if (!innerEntry) {
+          valueProps = { type: "blank", value: NOTIN, encodedValue: void 0 };
+          value = { empty: true };
+        }
+      }
+      const typedOnChange = onChange as OnChange<{type: string, value: unknown}>;
+      return (<CEnum
+        {
+          ...{
+            ...valueProps,
+            decode: decode as DecodeFun<any>,
+            onValueChanged: typedOnChange,
+            path,
+            tags: Object.entries(entry.value).map(([tag, { idx }]) => ({
+              tag,
+              idx
+            })),
+            shape: entry,
+            inner: value.empty ? null : (<JamCodecComponent 
+              {...{
+                path: path.concat(value.decoded.type),
+                dynCodecs,
+                entry: innerEntry as any,
+                onChange: (x) => typedOnChange({ type: (value as any).decoded.type, value: x }),
+                parent: {
+                  id: entry.id,
+                  variantTag: value.decoded.type,
+                  variantIdx: entry.value[value.decoded.type as string].idx
+                },
+                value: value.decoded.value === NOTIN ? { empty: true } : {
+                  empty: false,
+                  decoded: value.decoded.value,
+                  encoded: valueProps.encodedValue && valueProps.encodedValue.slice(1)
+                }
+              }}
+            />)
+          }
         }
       />);
     }
