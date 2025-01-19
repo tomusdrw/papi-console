@@ -6,7 +6,7 @@ import {
 import { synchronizeScroll } from "@/codec-components/common/scroll"
 import { SubtreeFocus } from "@/codec-components/common/SubtreeFocus"
 import { JamEditCodec } from "@/jam-codec-components/EditCodec"
-// import { TreeCodec } from "@/codec-components/EditCodec/Tree/index"
+import { JamTreeCodec } from "@/jam-codec-components/EditCodec/Tree/index"
 import { JamFocusPath } from "@/jam-codec-components/LookupTypeEdit"
 import {
   CodecComponentUpdate,
@@ -58,7 +58,7 @@ export const JamEditMode: React.FC<{
                 {!value.value ? (
                   <div className="text-sm text-foreground/50 py-1">(Empty)</div>
                 ) : (
-                /* <TreeCodec {...props} /> */ null
+                  <JamTreeCodec {...props} />
                 )}
                 <VisibleWindow />
               </div>
