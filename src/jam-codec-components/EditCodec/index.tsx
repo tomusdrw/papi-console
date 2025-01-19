@@ -125,11 +125,7 @@ export function getJamCodecComponent(baseComponents: EditComponents) {
       encodedValue: undefined
     };
     if (!value.empty) {
-      const tryEncode = () => {
-        const encode = createEncode(cod);
-        return encode(value.decoded);
-      };
-      const encodedValue = value.encoded || tryEncode();
+      const encodedValue = value.encoded || createEncode(cod)(value.decoded);
       valueProps = encodedValue ? { type: "complete", value: value.decoded, encodedValue } : { type: "partial", value: value.decoded, encodedValue: void 0 };
     }
     if (entry.type === "struct") {

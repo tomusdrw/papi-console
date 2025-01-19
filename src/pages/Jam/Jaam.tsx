@@ -6,18 +6,17 @@ import {
   NOTIN,
 } from "@polkadot-api/react-builder"
 import { Binary } from "@polkadot-api/substrate-bindings"
-import { useMemo, useState } from "react"
+import { useCallback, useMemo, useState } from "react"
 import { useLocation } from "react-router-dom"
 import { JamEditMode } from "./EditMode"
 import { JsonMode } from "./JsonMode"
 
-import { codec as jamCodec, config, EpochMarker, Header, tickets } from "@typeberry/block";
-import {LookupEntry, Var} from "@polkadot-api/metadata-builders"
+import { codec as jamCodec } from "@typeberry/block";
+import {Var} from "@polkadot-api/metadata-builders"
 import {createDecode, createEncode} from "@/jam-codec-components/EditCodec"
+import {SearchableSelect} from "@/components/Select"
+import {LookupEntryWithCodec, initial, metadata} from "./metadata"
 
-type LookupEntryWithCodec = LookupEntry & {
-  Codec: jamCodec.Descriptor<unknown>,
-}
 
 // TODO [ToDr] Instead we should extend encoder,
 // but currently the constructor is private so that's prohibited.
@@ -60,107 +59,6 @@ function patchEncoder(c: typeof jamCodec.Encoder) {
 
 patchEncoder(jamCodec.Encoder);
 
-let toplevel: LookupEntryWithCodec;
-const metadata = ((spec: config.ChainSpec) => {
-  let id = 0;
-  const metadata: { [id: number]: LookupEntryWithCodec } = {};
-  const add = <T, V>(codec: jamCodec.Descriptor<T, V>, v: Var) => {
-    id++;
-    // attach context
-    (codec as any).context = spec;
-    metadata[id] = {
-      id,
-      Codec: codec as jamCodec.Descriptor<unknown>,
-      ...v,
-    };
-    return metadata[id];
-  };
-
-  const u8 = add(jamCodec.codec.u8, {
-    type: 'primitive',
-    value: 'u8',
-  });
-  const u16 = add(jamCodec.codec.u16, {
-    type: 'primitive',
-    value: 'u16',
-  });
-  const u32 = add(jamCodec.codec.u32, {
-    type: 'primitive',
-    value: 'u32',
-  });
-  const hash = add(jamCodec.codec.bytes(32), {
-    type: 'array',
-    len: 32,
-    value: u8,
-  });
-  const hashSeq = add(jamCodec.codec.sequenceVarLen(hash.Codec), {
-    type: 'sequence',
-    value: hash,
-  });
-  const bytes96 = add(jamCodec.codec.bytes(96), {
-    type: 'array',
-    len: 96,
-    value: u8,
-  });
-  const epochMarkerValidatorsArr = add(jamCodec.codec.sequenceFixLen(hash.Codec, spec.validatorsCount), {
-    type: 'array',
-    len: spec.validatorsCount,
-    value: hash,
-  });
-  const epochMarker = add(EpochMarker.Codec, {
-    type: 'struct',
-    value: {
-      entropy: hash,
-      ticketsEntropy: hash,
-      validators: epochMarkerValidatorsArr,
-    },
-    innerDocs: {},
-  });
-  const optionalEpochMarker = add(jamCodec.codec.optional(epochMarker.Codec), {
-    type: 'option',
-    value: epochMarker,
-  });
-  const ticket = add(tickets.Ticket.Codec, {
-    type: 'struct',
-    value: {
-      id: hash,
-      attempt: u8,
-    },
-    innerDocs: {}
-  });
-  const ticketsMarkerArray = add(jamCodec.codec.sequenceFixLen(ticket.Codec, spec.epochLength), {
-    type: 'array',
-    len: config.tinyChainSpec.epochLength,
-    value: ticket,
-  });
-
-  const optionalTicketsMarker = add(jamCodec.codec.optional(ticketsMarkerArray.Codec), {
-    type: 'option',
-    value: ticketsMarkerArray,
-  });
-
-  const header = add(Header.Codec, {
-    type: 'struct',
-    value: {
-      parentHeaderHash: hash,
-      priorStateRoot: hash,
-      extrinsicHash: hash,
-      timeSlotIndex: u32,
-      epochMarker: optionalEpochMarker,
-      ticketsMarker: optionalTicketsMarker, 
-      offendersMarker: hashSeq,
-      bandersnatchBlockAuthorIndex: u16,
-      entropySource: bytes96,
-      seal: bytes96,
-    },
-    innerDocs: {}
-  });
-
-  toplevel = header
-
-  return metadata;
-})(config.tinyChainSpec);
-
 const lookup = function(id: number): LookupEntryWithCodec | undefined {
   return metadata[id];
 };
@@ -175,21 +73,30 @@ const dynCodecs = function(id: number) {
 }
 
 export function Jam() {
+    const [entry, setSelectedEntry] = useState<LookupEntryWithCodec>(initial);
     const [viewMode, setViewMode] = useState<"edit" | "json">("edit")
     const location = useLocation()
 
     const [componentValue, setComponentValue] = useState<CodecComponentValue>({
       type: CodecComponentType.Initial,
-      value: location.hash.slice(1),
-    })
-    const binaryValue =
-      (componentValue.type === CodecComponentType.Initial
-        ? componentValue.value
-        : componentValue.value.empty
-          ? null
-          : componentValue.value.encoded) ?? null
+      value: location.hash.slice(1) || '00',
+    });
 
-    const entry = toplevel;
+    const changeEntry = useCallback((x: LookupEntryWithCodec | null) => {
+      setComponentValue({
+        type: CodecComponentType.Initial,
+        value: location.hash.slice(1) || '00'
+      });
+      setSelectedEntry(x || initial);
+    }, []);
+
+    const entryOptions = useMemo(() => {
+      return Object.values(metadata).filter(x => x.name).map(x => ({
+        value: x,
+        text: x.name!
+      }));
+    }, []);
+
     const codec = useMemo(() => {
       const jamCodec = dynCodecs(entry.id);
       const decode = createDecode(jamCodec);
@@ -204,7 +111,21 @@ export function Jam() {
       }
     }, [codec]);
 
-    return (
+    const binaryValue =
+      (componentValue.type === CodecComponentType.Initial
+        ? componentValue.value
+        : componentValue.value.empty
+          ? null
+          : componentValue.value.encoded) ?? null
+
+    return (<>
+      <div className="flex flex-col gap-2 p-4">
+        <SearchableSelect
+          setValue={changeEntry}
+          value={entry}
+          options={entryOptions}
+        />
+      </div>
       <div className="flex flex-col overflow-hidden gap-2 p-4 pb-0">
         <JamBinaryDisplay
           dynCodecs={dynCodecs}
@@ -253,5 +174,5 @@ export function Jam() {
           />
         )}
       </div>
-    )
+    </>)
   }
