@@ -1,9 +1,9 @@
 import { JsonRpcProvider } from "@polkadot-api/substrate-client"
 import { withLogsRecorder } from "polkadot-api/logs-provider"
 import { getSmProvider } from "polkadot-api/sm-provider"
-import { Chain } from "polkadot-api/smoldot"
-import { startFromWorker } from "polkadot-api/smoldot/from-worker"
-import SmWorker from "polkadot-api/smoldot/worker?worker"
+import { Chain, Client } from "polkadot-api/smoldot"
+// import { startFromWorker } from "polkadot-api/smoldot/from-worker"
+// import SmWorker from "polkadot-api/smoldot/worker?worker"
 
 const [dotChainSpec, ksmChainSpec, paseoChainSpec, westendChainSpec] = [
   import("polkadot-api/chains/polkadot"),
@@ -11,12 +11,13 @@ const [dotChainSpec, ksmChainSpec, paseoChainSpec, westendChainSpec] = [
   import("polkadot-api/chains/paseo"),
   import("polkadot-api/chains/westend2"),
 ].map((x) => x.then((y) => y.chainSpec))
-const smoldot = startFromWorker(new SmWorker(), {
+/* const smoldot = startFromWorker(new SmWorker(), {
   logCallback: (level, target, message) => {
     console.debug("smoldot[%s(%s)] %s", target, level, message)
   },
   forbidWs: true,
-})
+})*/
+const smoldot: Client = null as any;
 const relayChains: Record<
   string,
   { chainSpec: Promise<string>; chain: Promise<Chain> | null }
