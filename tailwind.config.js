@@ -1,6 +1,8 @@
 /**
  * @type {import("tailwindcss").Config}
  */
+import tailwindCssAnimate from 'tailwindcss-animate';
+
 export default {
   darkMode: ["class"],
   content: ["./index.html", "./src/**/*.{js,ts,jsx,tsx}"],
@@ -96,6 +98,6 @@ export default {
     function ({ addVariant }) {
       addVariant("group-state-open", ':merge(.group)[data-state="open"] &')
     },
-    require("tailwindcss-animate"),
+    tailwindCssAnimate,
   ],
 }
