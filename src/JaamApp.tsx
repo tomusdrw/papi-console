@@ -1,4 +1,4 @@
-import { Navigate, Route, Routes } from "react-router-dom"
+import { Route, Routes } from "react-router-dom"
 import {Jam } from "./pages/Jam"
 
 export default function JamApp() {
@@ -6,8 +6,7 @@ export default function JamApp() {
     <div className="w-full max-w-screen-lg h-screen bg-background flex flex-col">
       <JamHeader />
       <Routes>
-        <Route path="jam/*" element={<Jam />} />
-        <Route path="*" element={<Navigate to="/jam" replace />} />
+        <Route path="/*" element={<Jam />} />
       </Routes>
     </div>
   )
