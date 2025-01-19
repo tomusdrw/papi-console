@@ -1,7 +1,9 @@
+import { JamBinaryDisplay } from "@/jam-codec-components/LookupTypeEdit"
 import { ButtonGroup } from "@/components/ButtonGroup"
 import {
   CodecComponentType,
   CodecComponentValue,
+  NOTIN,
 } from "@polkadot-api/react-builder"
 import { Binary } from "@polkadot-api/substrate-bindings"
 import { useMemo, useState } from "react"
@@ -11,7 +13,7 @@ import { JsonMode } from "./JsonMode"
 
 import { codec as jamCodec, config, EpochMarker, Header, tickets } from "@typeberry/block";
 import {LookupEntry, Var} from "@polkadot-api/metadata-builders"
-import {createDecode} from "@/jam-codec-components/EditCodec"
+import {createDecode, createEncode} from "@/jam-codec-components/EditCodec"
 
 // const binaryValue = '0x5c743dbc514284b2ea57798787c5a155ef9d7ac1e9499ec65910a7a3d65897b72591ebd047489f1006361a4254731466a946174af02fe1d86681d254cfd4a00b74a9e79d2618e0ce8720ff61811b10e045c02224a09299f04e404a9656e85c812a00000001ae85d6635e9ae539d0846b911ec86a27fe000f619b78bcac8a74b77e36f6dbcf333a7e328f0c4183f4b947e1d8f68aa4034f762e5ecdb5a7f6fbf0afea2fd8cd5e465beb01dbafe160ce8216047f2155dd0569f058afd52dcea601025a8d161d3d5e5a51aab2b048f8686ecd79712a80e3265a114cc73f14bdb2a59233fb66d0aa2b95f7572875b0d0f186552ae745ba8222fc0b5bd456554bfe51c68938f8bc7f6190116d118d643a98878e294ccf62b509e214299931aad8ff9764181a4e3348e5fcdce10e0b64ec4eebd0d9211c7bac2f27ce54bca6f7776ff6fee86ab3e3f16e5352840afb47e206b5c89f560f2611835855cf2e6ebad1acc9520a72591d00013b6a27bcceb6a42d62a3a8d02a6f0d73653215771de243a63ac048a18b59da290300ae85d6635e9ae539d0846b911ec86a27fe000f619b78bcac8a74b77e36f6dbcf49a52360f74a0233cea0775356ab0512fafff0683df08fae3cb848122e296cbc50fed22418ea55f19e55b3c75eb8b0ec71dcae0d79823d39920bf8d6a2256c5f31dc5b1e9423eccff9bccd6549eae8034162158000d5be9339919cc03d14046e6431c14cbb172b3aed702b9e9869904b1f39a6fe1f3e904b0fd536f13e8cac496682e1c81898e88e604904fa7c3e496f9a8771ef1102cc29d567c4aad283f7b0';
 
@@ -19,12 +21,55 @@ type LookupEntryWithCodec = LookupEntry & {
   Codec: jamCodec.Descriptor<unknown>,
 }
 
+// TODO [ToDr] Instead we should extend encoder,
+// but currently the constructor is private so that's prohibited.
+function patchEncoder(c: typeof jamCodec.Encoder) {
+  // patch encode to handle NOTIN
+  function patched1<A>(f: (v: A) => void) {
+    return function(this: any, v: A | NOTIN): void {
+      if (v === NOTIN) return;
+      f.call(this, v);
+    };
+  }
+  function patched2<A, B>(f: (a: A, v: B) => void) {
+    return function (this: any, a: A, v: B | NOTIN): void {
+      if (v === NOTIN) return;
+      f.call(this, a, v);
+    };
+  }
+  const p = c.prototype;
+  const x = p as any;
+
+  x.bitVecFixLen = patched1(p.bitVecFixLen);
+  x.bitVecVarLen = patched1(p.bitVecVarLen);
+  x.blob = patched1(p.blob);
+  x.bool = patched1(p.bool);
+  x.bytes = patched1(p.bytes);
+  x.bytesBlob = patched1(p.bytesBlob);
+  x.i16 = patched1(p.i16);
+  x.i24 = patched1(p.i24);
+  x.i8 = patched1(p.i8);
+  x.i32 = patched1(p.i32);
+  x.i64 = patched1(p.i64);
+  x.varU32 = patched1(p.varU32);
+  x.varU64 = patched1(p.varU64);
+  //2
+  x.object = patched2(p.object);
+  x.optional = patched2(p.optional);
+  x.sequenceFixLen = patched2(p.sequenceFixLen);
+  x.sequenceVarLen = patched2(p.sequenceVarLen);
+}
+
+patchEncoder(jamCodec.Encoder);
+
 let header: LookupEntryWithCodec;
 const metadata = ((spec: config.ChainSpec) => {
   let id = 0;
   const metadata: { [id: number]: LookupEntryWithCodec } = {};
   const add = <T, V>(codec: jamCodec.Descriptor<T, V>, v: Var) => {
     id++;
+    // attach context
+    (codec as any).context = spec;
     metadata[id] = {
       id,
       Codec: codec as jamCodec.Descriptor<unknown>,
@@ -146,21 +191,31 @@ export function Jam() {
           : componentValue.value.encoded) ?? null
 
     const entry = header;
-    const decode = useMemo(() => {
-      const decoder = createDecode(dynCodecs(entry.id));
-      return decoder;
+    const codec = useMemo(() => {
+      const jamCodec = dynCodecs(entry.id);
+      const decode = createDecode(jamCodec);
+      const encode = createEncode(jamCodec);
+      return { decode, encode };
     }, [entry]);
+
+    const binCodec = useMemo(() => {
+      return {
+        dec: codec.decode,
+        enc: (x: any | NOTIN) => codec.encode(x) || new Uint8Array(),
+      }
+    }, [codec]);
+
+    console.log(entry.Codec.name, componentValue);
+
     return (
       <div className="flex flex-col overflow-hidden gap-2 p-4 pb-0">
-        {/*
-            Requires a bit of patching
-            <BinaryDisplay
-          {...extrinsicProps}
+        <JamBinaryDisplay
+          dynCodecs={dynCodecs}
+          entry={entry}
           value={componentValue}
-          onUpdate={(value) =>
-            setComponentValue({ type: CodecComponentType.Updated, value })
-          }
-          />*/}
+          onUpdate={(value) => setComponentValue({ type: CodecComponentType.Updated, value })}
+          codec={binCodec}
+        />
 
         <div className="flex flex-row justify-between px-2">
           <ButtonGroup
@@ -197,7 +252,7 @@ export function Jam() {
                 ? Binary.fromHex(binaryValue).asBytes()
                 : binaryValue
             }
-            decode={decode}
+            decode={codec.decode}
           />
         )}
       </div>

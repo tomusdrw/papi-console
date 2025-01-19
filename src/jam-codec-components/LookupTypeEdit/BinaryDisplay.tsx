@@ -5,7 +5,7 @@ import { ExpandBtn } from "@/components/Expand"
 import { CodecComponentType, NOTIN } from "@polkadot-api/react-builder"
 import { Binary, HexString } from "@polkadot-api/substrate-bindings"
 import { toHex } from "@polkadot-api/utils"
-import { ComponentProps, FC, useState } from "react"
+import { ComponentProps, FC, useMemo, useState } from "react"
 import { twMerge } from "tailwind-merge"
 import { JamEditCodec } from "../EditCodec"
 import "@/codec-components/LookupTypeEdit/binaryDisplay.css"
@@ -20,7 +20,7 @@ export const JamBinaryDisplay: FC<
   }
   > = ({ entry, dynCodecs, codec, value, onUpdate, className }) => {
   const [wrap, setWrap] = useState(false)
-  const encoded = (() => {
+  const encoded = useMemo(() => {
     if (value.type === CodecComponentType.Initial) {
       if (!value.value) return null
       return typeof value.value === "string"
@@ -29,7 +29,7 @@ export const JamBinaryDisplay: FC<
     }
     if (value.value.empty || !value.value.encoded) return null
     return value.value.encoded
-  })()
+  }, [value]);
   const hex = encoded ? toHex(encoded) : null
   const isEmpty =
     (value.type === CodecComponentType.Initial && !value.value) ||
