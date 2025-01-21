@@ -13,7 +13,7 @@ import { JsonMode } from "./JsonMode"
 
 import { bytes, config, codec as jamCodec } from "@typeberry/block";
 import {Var} from "@polkadot-api/metadata-builders"
-import {compatBinaryType, createDecode, createEncode} from "@/jam-codec-components/"
+import {createDecode, createEncode} from "@/jam-codec-components/"
 import {SearchableSelect} from "@/components/Select"
 import {LookupEntryWithCodec, createMetadata} from "./metadata"
 
