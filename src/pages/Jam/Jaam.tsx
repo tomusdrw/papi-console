@@ -11,9 +11,9 @@ import { useLocation } from "react-router-dom"
 import { JamEditMode } from "./EditMode"
 import { JsonMode } from "./JsonMode"
 
-import { config, codec as jamCodec } from "@typeberry/block";
+import { bytes, config, codec as jamCodec } from "@typeberry/block";
 import {Var} from "@polkadot-api/metadata-builders"
-import {createDecode, createEncode} from "@/jam-codec-components/EditCodec"
+import {createDecode, createEncode} from "@/jam-codec-components/"
 import {SearchableSelect} from "@/components/Select"
 import {LookupEntryWithCodec, createMetadata} from "./metadata"
 
@@ -50,6 +50,15 @@ function patchEncoder(c: typeof jamCodec.Encoder) {
   x.i64 = patched1(p.i64);
   x.varU32 = patched1(p.varU32);
   x.varU64 = patched1(p.varU64);
+  x.bitVecVarLen = patched1(p.bitVecVarLen)
+  const bitVecFixLen = patched1(p.bitVecFixLen);
+  x.bitVecFixLen = function (v: bytes.BitVec | bytes.BytesBlob) { 
+    if (v instanceof bytes.BytesBlob) {
+      return bitVecFixLen.call(this, bytes.BitVec.fromBlob(v.raw, v.length * 8));
+    }
+    return bitVecFixLen.call(this, v);
+  };
+
   //2
   x.object = patched2(p.object);
   x.optional = patched2(p.optional);
@@ -75,22 +84,25 @@ export function Jam() {
 
     const [componentValue, setComponentValue] = useState<CodecComponentValue>({
       type: CodecComponentType.Initial,
-      value: location.hash.slice(1) || '00',
+      value: location.hash.slice(1)
     });
 
     const changeEntry = useCallback((x: LookupEntryWithCodec | null) => {
       setComponentValue({
         type: CodecComponentType.Initial,
-        value: location.hash.slice(1) || '00'
+        value: location.hash.slice(1)
       });
       setSelectedEntry(x || initial);
     }, []);
 
     const entryOptions = useMemo(() => {
-      return Object.values(metadata).filter(x => x.name).map(x => ({
-        value: x,
-        text: x.name!
-      }));
+      return Object.values(metadata)
+        .filter(x => x.name)
+        .map(x => ({
+          value: x,
+          text: x.name!
+        }))
+        .sort((a, b) => ((a.text < b.text) ? -1 : (a.text === b.text ? 0 : 1)));
     }, [metadata]);
 
     const codec = useMemo(() => {
@@ -132,7 +144,9 @@ export function Jam() {
           dynCodecs={dynCodecs}
           entry={entry}
           value={componentValue}
-          onUpdate={(value) => setComponentValue({ type: CodecComponentType.Updated, value })}
+          onUpdate={(value) => {
+            setComponentValue({ type: CodecComponentType.Updated, value })
+          }}
           codec={binCodec}
         />
 

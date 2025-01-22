@@ -52,7 +52,7 @@ export function createMetadata(spec: config.ChainSpec) {
   });
   const bytes64 = add(codec.bytes(64), {
     type: 'array',
-    len: 54,
+    len: 64,
     value: u8,
   }, 'Bytes<64>');
   const bytes96 = add(codec.bytes(96), {
@@ -117,9 +117,19 @@ export function createMetadata(spec: config.ChainSpec) {
     seal: bytes96,
   }, "Header");
 
+  const assurancesBitfieldBytes = Math.ceil(spec.coresCount / 8) * 8;
+  const assuranceBitfield = add(
+    codec.bitVecFixLen(assurancesBitfieldBytes),
+    {
+      type: 'array',
+      len: assurancesBitfieldBytes / 8,
+      value: u8
+    }
+  );
+
   const availabilityAssurance = addStruct(assurances.AvailabilityAssurance, {
     anchor: hash,
-    bitfield: hash, // TODO [ToDr] bitVec: spec.coresCount / 8,
+    bitfield: assuranceBitfield,
     validatorIndex: u16,
     signature: bytes64,
   }, "Availability Assurance");
@@ -308,13 +318,12 @@ export function createMetadata(spec: config.ChainSpec) {
     if (!entry) {
       throw new Error(`No entry for ${id}`);
     }
+    (entry.Codec as any).context = spec;
     return entry.Codec;
   }
 
   function add<T, V>(codec: jamCodec.Descriptor<T, V>, v: Var, name?: string) {
     id++;
-    // attach context
-    (codec as any).context = spec;
     metadata[id] = {
       id,
       name,
