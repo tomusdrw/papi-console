@@ -47,7 +47,9 @@ export function InitialBinary({ onChange, value: propsValue, isValid, onError }:
       const val = bytes.BytesBlob.parseBlob(v);
       onChange(Binary.fromBytes(val.raw));
     } catch (e) {
-      setError(`${e}`);
+      const err = `${e}`;
+      // get rid of value dump in the error message.
+      setError(err.substring(0, err.indexOf('Invalid hex string')));
     }
   }, []);
 
