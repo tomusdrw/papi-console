@@ -43,7 +43,7 @@ export const JamBinaryDisplay: FC<
           className={twMerge(
             "binary-display-codec",
             "text-sm tabular-nums overflow-hidden flex-1",
-            wrap ? "break-words" : "whitespace-nowrap text-ellipsis h-5",
+            wrap ? "break-words" : "break-words text-ellipsis overflow-auto h-20",
           )}
         >
           {isEmpty ? (

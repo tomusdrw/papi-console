@@ -6,7 +6,7 @@ import {
   NOTIN,
 } from "@polkadot-api/react-builder"
 import { Binary } from "@polkadot-api/substrate-bindings"
-import { useCallback, useMemo, useState } from "react"
+import { useCallback, useEffect, useMemo, useState } from "react"
 import { useLocation } from "react-router-dom"
 import { JamEditMode } from "./EditMode"
 import { JsonMode } from "./JsonMode"
@@ -16,6 +16,7 @@ import {Var} from "@polkadot-api/metadata-builders"
 import {createDecode, createEncode} from "@/jam-codec-components/"
 import {SearchableSelect} from "@/components/Select"
 import {LookupEntryWithCodec, createMetadata} from "./metadata"
+import {InitialBinary} from "@/jam-codec-components/InitialBinary"
 
 
 // TODO [ToDr] Instead we should extend encoder,
@@ -73,24 +74,46 @@ const specOptions = [
   { text: 'Full Chain Spec', value: config.fullChainSpec },
 ];
 
+
 export function Jam() {
+  const [value, setValue] = useState<Binary>();
+  const [isValid, setIsValid] = useState(true);
+
+  const handleChange = useCallback((v: Binary | undefined, isValid: boolean) => {
+    setValue(v);
+    setIsValid(isValid);
+    console.log('changed', v, isValid);
+  }, []);
+
+  return (<>
+    <div className="flex flex-row gap-2 p-4">
+      <InitialBinary value={value} isValid={isValid} onChange={setValue} />
+    </div>
+    <JamWithCodec initialValue={value} onChange={handleChange} />
+  </>);
+}
+
+type JamWithCodecProps = { 
+  initialValue: Binary | undefined;
+  onChange: (v: Binary, isValid: boolean) => void;
+};
+function JamWithCodec({ initialValue, onChange }: JamWithCodecProps) {
     const [spec, setSpec] = useState(config.tinyChainSpec);
     const { metadata, initial, lookup, dynCodecs } = useMemo(() => {
       return createMetadata(spec);
     }, [spec]);
     const [entry, setSelectedEntry] = useState<LookupEntryWithCodec>(initial);
     const [viewMode, setViewMode] = useState<"edit" | "json">("edit")
-    const location = useLocation()
 
     const [componentValue, setComponentValue] = useState<CodecComponentValue>({
       type: CodecComponentType.Initial,
-      value: location.hash.slice(1)
+      value: initialValue?.asHex(),
     });
 
     const changeEntry = useCallback((x: LookupEntryWithCodec | null) => {
       setComponentValue({
         type: CodecComponentType.Initial,
-        value: location.hash.slice(1)
+        value: initialValue?.asHex(),
       });
       setSelectedEntry(x || initial);
     }, []);
@@ -119,6 +142,45 @@ export function Jam() {
       }
     }, [codec]);
 
+    // update the location when value changes
+    useEffect(() => {
+      if (!componentValue.value) {
+        return;
+      }
+      if (!('encoded' in componentValue.value)) {
+        return;
+      }
+      if (componentValue.value.encoded === undefined) {
+        return;
+      }
+      if (componentValue.value.encoded === initialValue?.asBytes()) {
+        return;
+      }
+      onChange(Binary.fromBytes(componentValue.value.encoded), true);
+    }, [componentValue]);
+
+    // attempt to parse when initial value changes
+    useEffect(() => {
+      if (!initialValue) {
+        return;
+      }
+
+      try {
+        const decoded = codec.decode(initialValue.asBytes());
+        if (decoded === NOTIN) {
+          throw new Error('could not parse');
+        }
+        setComponentValue({ type: CodecComponentType.Updated, value: {
+          empty: false,
+          decoded,
+          encoded: initialValue.asBytes(),
+        }})
+        onChange(initialValue, true);
+      } catch {
+        onChange(initialValue, false);
+      }
+    }, [initialValue, codec]);
+
     const binaryValue =
       (componentValue.type === CodecComponentType.Initial
         ? componentValue.value
@@ -127,7 +189,7 @@ export function Jam() {
           : componentValue.value.encoded) ?? null
 
     return (<>
-      <div className="flex flex-row gap-2 p-4">
+      <div className="flex flex-row gap-2 px-6 py-4">
         <SearchableSelect
           setValue={changeEntry}
           value={entry}
