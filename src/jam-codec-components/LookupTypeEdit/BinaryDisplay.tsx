@@ -1,5 +1,4 @@
 import { JamBinaryViewCodec } from "@/jam-codec-components/BinaryViewCodec"
-import { BinaryEditButton } from "@/components/BinaryEditButton"
 import { CopyText } from "@/components/Copy"
 import { ExpandBtn } from "@/components/Expand"
 import { CodecComponentType, NOTIN } from "@polkadot-api/react-builder"
@@ -18,7 +17,7 @@ export const JamBinaryDisplay: FC<
     }
     className?: string
   }
-  > = ({ entry, dynCodecs, codec, value, onUpdate, className }) => {
+  > = ({ entry, dynCodecs, value, className }) => {
   const [wrap, setWrap] = useState(false)
   const encoded = useMemo(() => {
     if (value.type === CodecComponentType.Initial) {
@@ -72,18 +71,6 @@ export const JamBinaryDisplay: FC<
               isEmpty && "opacity-50 pointer-events-none",
             )}
             onClick={() => setWrap((v) => !v)}
-          />
-          <BinaryEditButton
-            initialValue={encoded ?? undefined}
-            onValueChange={(decoded) => {
-              const encoded = codec.enc(decoded)
-              onUpdate?.({ empty: false, decoded, encoded })
-              return true
-            }}
-            decode={codec.dec}
-            iconProps={{
-              size: 24,
-            }}
           />
         </div>
       </div>

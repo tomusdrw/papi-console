@@ -50,6 +50,8 @@ export function InitialBinary({ onChange, value: propsValue, isValid }: InitialB
     handleChange(value);
   }, []);
 
+  const binaryValue = value !== undefined ? Binary.fromHex(value).asBytes() : undefined;
+
   return (
     <div className="px-2 w-full">
       <TextInputField
@@ -71,7 +73,7 @@ export function InitialBinary({ onChange, value: propsValue, isValid }: InitialB
             {input}
             <div className="flex gap-2 items-center h-5">
               <BinaryEditButton
-                initialValue={undefined}
+                initialValue={binaryValue}
                 onValueChange={(decoded: Binary) => {
                   setValue(decoded.asHex());
                   onChange(decoded);
