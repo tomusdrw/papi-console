@@ -91,7 +91,13 @@ export function Jam() {
 
   return (<>
     <div className="flex flex-col gap-2 p-4">
-      <InitialBinary value={value} isValid={isValid} onChange={setValue} />
+      <InitialBinary
+        value={value}
+        isValid={isValid}
+        onChange={setValue}
+        onError={setError}
+      />
+
       <div className="text-red-600">{error}</div>
     </div>
     <JamWithCodec initialValue={value} onChange={handleChange} />
@@ -133,6 +139,14 @@ function JamWithCodec({ initialValue, onChange }: JamWithCodecProps) {
         .sort((a, b) => ((a.text < b.text) ? -1 : (a.text === b.text ? 0 : 1)));
     }, [metadata]);
 
+    // refresh the selected entry in case metadata changes
+    useEffect(() => {
+      setSelectedEntry((entry) => {
+        return entryOptions.find(x => x.value.name === entry.name)?.value || entry;
+      });
+    }, [entryOptions])
+
+
     const codec = useMemo(() => {
       const jamCodec = dynCodecs(entry.id);
       const decode = createDecode(jamCodec);
@@ -149,7 +163,7 @@ function JamWithCodec({ initialValue, onChange }: JamWithCodecProps) {
 
     // update the location when value changes
     useEffect(() => {
-      if (!componentValue.value) {
+      if (!componentValue.value || typeof componentValue.value !== 'object') {
         return;
       }
       if (!('encoded' in componentValue.value)) {

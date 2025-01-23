@@ -18,10 +18,11 @@ type InitialBinaryProps = {
   isValid: boolean;
   value: Binary | undefined;
   onChange: (b: Binary | undefined) => void;
+  onError: (s: string) => void;
 };
-export function InitialBinary({ onChange, value: propsValue, isValid }: InitialBinaryProps) {
+export function InitialBinary({ onChange, value: propsValue, isValid, onError }: InitialBinaryProps) {
   const [searchParams, setSearchParams] = useSearchParams();
-  const [error, setError] = useState(false);
+  const [error, setError] = useState('');
   const [value, setValue] = useState(searchParams.get('data') || '0x');
   
   useEffect(() => {
@@ -30,9 +31,14 @@ export function InitialBinary({ onChange, value: propsValue, isValid }: InitialB
     }
   }, [propsValue]);
 
+  // propagate error upwards
+  useEffect(() => {
+    onError(error);
+  }, [error]);
+
   const handleChange = useCallback((v: string) => {
     try {
-      setError(false);
+      setError('');
       setValue(v);
       setSearchParams(x => {
         x.set('data', v);
@@ -41,7 +47,7 @@ export function InitialBinary({ onChange, value: propsValue, isValid }: InitialB
       const val = bytes.BytesBlob.parseBlob(v);
       onChange(Binary.fromBytes(val.raw));
     } catch (e) {
-      setError(true);
+      setError(`${e}`);
     }
   }, []);
 
@@ -50,6 +56,7 @@ export function InitialBinary({ onChange, value: propsValue, isValid }: InitialB
     handleChange(value);
   }, []);
 
+  const isError = !!error;
   const binaryValue = value !== undefined ? Binary.fromHex(value).asBytes() : undefined;
 
   return (
@@ -59,15 +66,15 @@ export function InitialBinary({ onChange, value: propsValue, isValid }: InitialB
         onChange={handleChange}
         placeholder={"0x"}
         className="min-w-80 border-none p-0 outline-none bg-transparent flex-1"
-        warn={isValid}
-        error={error}
+        warn={!isValid}
+        error={isError}
       >
         {(input) => (
           <div
             className={twMerge(
               "px-4 py-2 border border-border rounded leading-tight focus-within:outline focus-within:outline-1 flex flex-1 items-center gap-2 bg-input",
               !isValid ? "border-orange-400" : null,
-              error ? "border-red-600" : null,
+              isError ? "border-red-600" : null,
             )}
           >
             {input}
