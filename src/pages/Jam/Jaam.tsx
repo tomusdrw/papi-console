@@ -7,7 +7,6 @@ import {
 } from "@polkadot-api/react-builder"
 import { Binary } from "@polkadot-api/substrate-bindings"
 import { useCallback, useEffect, useMemo, useState } from "react"
-import { useLocation } from "react-router-dom"
 import { JamEditMode } from "./EditMode"
 import { JsonMode } from "./JsonMode"
 
@@ -78,16 +77,22 @@ const specOptions = [
 export function Jam() {
   const [value, setValue] = useState<Binary>();
   const [isValid, setIsValid] = useState(true);
+  const [error, setError] = useState("");
 
-  const handleChange = useCallback((v: Binary | undefined, isValid: boolean) => {
+  const handleChange = useCallback<JamWithCodecProps['onChange']>((v, isValid, entry) => {
     setValue(v);
     setIsValid(isValid);
-    console.log('changed', v, isValid);
+    if (!isValid) {
+      setError(`Given data does not look like '${entry.name}'.`);
+    } else {
+      setError('');
+    }
   }, []);
 
   return (<>
-    <div className="flex flex-row gap-2 p-4">
+    <div className="flex flex-col gap-2 p-4">
       <InitialBinary value={value} isValid={isValid} onChange={setValue} />
+      <div className="text-red-600">{error}</div>
     </div>
     <JamWithCodec initialValue={value} onChange={handleChange} />
   </>);
@@ -95,7 +100,7 @@ export function Jam() {
 
 type JamWithCodecProps = { 
   initialValue: Binary | undefined;
-  onChange: (v: Binary, isValid: boolean) => void;
+  onChange: (v: Binary | undefined, isValid: boolean, entry: LookupEntryWithCodec) => void;
 };
 function JamWithCodec({ initialValue, onChange }: JamWithCodecProps) {
     const [spec, setSpec] = useState(config.tinyChainSpec);
@@ -156,8 +161,12 @@ function JamWithCodec({ initialValue, onChange }: JamWithCodecProps) {
       if (componentValue.value.encoded === initialValue?.asBytes()) {
         return;
       }
-      onChange(Binary.fromBytes(componentValue.value.encoded), true);
-    }, [componentValue]);
+      onChange(
+        Binary.fromBytes(componentValue.value.encoded),
+        true,
+        entry,
+      );
+    }, [componentValue, entry]);
 
     // attempt to parse when initial value changes
     useEffect(() => {
@@ -175,11 +184,11 @@ function JamWithCodec({ initialValue, onChange }: JamWithCodecProps) {
           decoded,
           encoded: initialValue.asBytes(),
         }})
-        onChange(initialValue, true);
-      } catch {
-        onChange(initialValue, false);
+        onChange(initialValue, true, entry);
+      } catch (e: unknown) {
+        onChange(initialValue, false, entry);
       }
-    }, [initialValue, codec]);
+    }, [initialValue, codec, entry]);
 
     const binaryValue =
       (componentValue.type === CodecComponentType.Initial
