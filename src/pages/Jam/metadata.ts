@@ -399,6 +399,7 @@ type Fields<T> = {
 };
 
 type PropertyKeys<T> = {
+  // eslint-disable-next-line
   [K in Extract<keyof T, string>]: T[K] extends Function ? never : K;
 }[Extract<keyof T, string>];
 

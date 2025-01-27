@@ -62,7 +62,7 @@ export function createEncode<T>(codec: JamCodec<T>) {
     }
 
     try {
-      let vJam = compatBinaryType(value, true);
+      const vJam = compatBinaryType(value, true);
       return jamCodec.Encoder.encodeObject(codec, vJam, codec.context).raw;
     } catch (e) {
       console.warn('Error encoding', e, codec, value);

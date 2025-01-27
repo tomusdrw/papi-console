@@ -25,16 +25,10 @@ export function InitialBinary({ onChange, value: propsValue, isValid, onError }:
   const [error, setError] = useState('');
   const [value, setValue] = useState(searchParams.get('data') || '0x');
   
-  useEffect(() => {
-    if (propsValue) {
-      handleChange(propsValue.asHex());
-    }
-  }, [propsValue]);
-
   // propagate error upwards
   useEffect(() => {
     onError(error);
-  }, [error]);
+  }, [error, onError]);
 
   const handleChange = useCallback((v: string) => {
     try {
@@ -51,12 +45,18 @@ export function InitialBinary({ onChange, value: propsValue, isValid, onError }:
       // get rid of value dump in the error message.
       setError(err.substring(0, err.indexOf('Invalid hex string')));
     }
-  }, []);
+  }, [onChange, setSearchParams]);
+
+  useEffect(() => {
+    if (propsValue) {
+      handleChange(propsValue.asHex());
+    }
+  }, [propsValue]);
 
   // initial onChange
   useEffect(() => {
     handleChange(value);
-  }, []);
+  }, [handleChange]);
 
   const isError = !!error;
   const binaryValue = value !== undefined ? Binary.fromHex(value).asBytes() : undefined;
