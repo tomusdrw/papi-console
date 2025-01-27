@@ -127,7 +127,7 @@ function JamWithCodec({ initialValue, onChange }: JamWithCodecProps) {
         value: initialValue?.asHex(),
       });
       setSelectedEntry(x || initial);
-    }, []);
+    }, [initial, initialValue]);
 
     const entryOptions = useMemo(() => {
       return Object.values(metadata)
@@ -152,7 +152,7 @@ function JamWithCodec({ initialValue, onChange }: JamWithCodecProps) {
       const decode = createDecode(jamCodec);
       const encode = createEncode(jamCodec);
       return { decode, encode };
-    }, [entry]);
+    }, [entry, dynCodecs]);
 
     const binCodec = useMemo(() => {
       return {
@@ -180,7 +180,7 @@ function JamWithCodec({ initialValue, onChange }: JamWithCodecProps) {
         true,
         entry,
       );
-    }, [componentValue, entry]);
+    }, [componentValue, entry, initialValue, onChange]);
 
     // attempt to parse when initial value changes
     useEffect(() => {
@@ -199,10 +199,10 @@ function JamWithCodec({ initialValue, onChange }: JamWithCodecProps) {
           encoded: initialValue.asBytes(),
         }})
         onChange(initialValue, true, entry);
-      } catch (e: unknown) {
+      } catch {
         onChange(initialValue, false, entry);
       }
-    }, [initialValue, codec, entry]);
+    }, [initialValue, codec, entry, onChange]);
 
     const binaryValue =
       (componentValue.type === CodecComponentType.Initial
