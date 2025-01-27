@@ -1,6 +1,6 @@
 import {LookupEntry, Var} from "@polkadot-api/metadata-builders";
 import {StringRecord} from "@polkadot-api/substrate-bindings";
-import { codec as jamCodec, config, EpochMarker, Header, tickets, assurances, disputes, gaurantees, workReport, refineContext, workResult, Block, Extrinsic, preimage } from "@typeberry/block";
+import { codec as jamCodec, config, EpochMarker, Header, tickets, assurances, disputes, gaurantees, workReport, refineContext, workResult, Block, Extrinsic, preimage, bytes, workItem } from "@typeberry/block";
 
 const { codec } = jamCodec;
 
@@ -12,6 +12,18 @@ export type LookupEntryWithCodec = LookupEntry & {
 type Metadata = {
   [id: number]: LookupEntryWithCodec,
 };
+
+class PackageInfo {
+  static Codec = jamCodec.codec.object({
+    packageHash: jamCodec.codec.bytes(32),
+    refineContext: refineContext.RefineContext.Codec,
+  });
+  constructor(
+    public readonly packageHash: bytes.Bytes<32>,
+    public readonly refineContext: refineContext.RefineContext,
+  ) {}
+}
+
 
 export function createMetadata(spec: config.ChainSpec) {
   let id = 0;
@@ -37,6 +49,10 @@ export function createMetadata(spec: config.ChainSpec) {
     type: 'primitive',
     value: 'u64',
   }, 'u64');
+  add(codec.varU64, {
+    type: 'primitive',
+    value: 'u64',
+  }, 'varU64');
   const hash = add(codec.bytes(32), {
     type: 'array',
     len: 32,
@@ -212,6 +228,38 @@ export function createMetadata(spec: config.ChainSpec) {
     workPackageHash: hash,
     segmentTreeRoot: hash
   }, "Segment Root Lookup Item");
+
+  addStruct(PackageInfo, {
+    packageHash: hash,
+    refineContext: context,
+  }, "Package Info");
+
+  const importSpec = addStruct(workItem.ImportSpec, {
+    treeRoot: hash,
+    index: u16,
+  }, "Import Spec");
+
+  const workItemExtrinsicSpec = addStruct(workItem.WorkItemExtrinsicSpec, {
+    hash: hash,
+    len: u32,
+  }, "Work Item Extrinsic Spec");
+
+  addStruct(workItem.WorkItem, {
+    service: u32,
+    codeHash: hash,
+    payload: blob,
+    refineGasLimit: u64,
+    accumulateGasLimit: u64,
+    importSegments: add(codec.sequenceVarLen(importSpec.Codec), {
+      type: 'sequence',
+      value: importSpec,
+    }),
+    extrinsic: add(codec.sequenceVarLen(workItemExtrinsicSpec.Codec), {
+      type: 'sequence',
+      value: workItemExtrinsicSpec,
+    }),
+    exportCount: u16
+  }, "Work Item");
 
   const workExecResult = add(workResult.WorkExecResult.Codec, {
     type: 'enum',
