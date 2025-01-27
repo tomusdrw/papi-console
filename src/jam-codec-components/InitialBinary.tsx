@@ -51,12 +51,12 @@ export function InitialBinary({ onChange, value: propsValue, isValid, onError }:
     if (propsValue) {
       handleChange(propsValue.asHex());
     }
-  }, [propsValue]);
+  }, [propsValue, /* no handleChange here to avoid overwriting */]);
 
   // initial onChange
   useEffect(() => {
     handleChange(value);
-  }, [handleChange]);
+  }, [handleChange, /* no value here since we only want to run it once */]);
 
   const isError = !!error;
   const binaryValue = value !== undefined ? Binary.fromHex(value).asBytes() : undefined;
