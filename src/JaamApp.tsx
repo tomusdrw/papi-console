@@ -1,5 +1,5 @@
 import { Route, Routes } from "react-router-dom"
-import {Jam } from "./pages/Jam"
+import { Jam } from "./pages/Jam"
 
 export default function JamApp() {
   return (
@@ -13,7 +13,7 @@ export default function JamApp() {
 }
 
 import { Link, useLocation } from "react-router-dom"
-import { FC, PropsWithChildren } from "react"
+import type { FC, PropsWithChildren } from "react"
 import { twMerge } from "tailwind-merge"
 
 export const JamHeader = () => (
