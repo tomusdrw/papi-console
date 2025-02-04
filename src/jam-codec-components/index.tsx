@@ -90,12 +90,19 @@ export function getJamCodecComponent(baseComponents: EditComponents) {
 
   type OnChange<T> = (newValue: T | NOTIN) => boolean;
 
+  type EnumParent = {
+    id: LookupEntry["id"]
+    variantTag: string
+    variantIdx: number
+  }
+
   type JamCodecComponentProps<T> = {
     entry: LookupEntry;
     value: CodecComponentUpdate;
     dynCodecs: (id: number) => JamCodec<unknown>;
     onChange: OnChange<T>;
     path: string[];
+    parent?: EnumParent;
   };
 
   type ValueProps<T> = {
@@ -113,8 +120,31 @@ export function getJamCodecComponent(baseComponents: EditComponents) {
     encodedValue: undefined;
   };
 
-  function JamCodecComponent<T>({ entry, value, dynCodecs, onChange, path }: JamCodecComponentProps<T>) {
-    const cod = dynCodecs(entry.id);
+  function getInnerEnumCodec(
+    parentCodec: JamCodec<unknown>,
+    parent: EnumParent,
+  ): JamCodec<unknown> {
+    return {
+      ...parentCodec,
+      encode: (e: jamCodec.Encoder, value: unknown) => {
+        const newE = jamCodec.Encoder.create()
+        newE.object(parentCodec, { type: parent.variantTag, value })
+        const encoded = newE.viewResult().raw.slice(1)
+        e.bytes(jamCodec.bytes.Bytes.fromBlob(encoded, encoded.length))
+      },
+      decode: (d: jamCodec.Decoder) => {
+        const newD = jamCodec.Decoder.fromBlob(
+          utils.mergeUint8(new Uint8Array([parent.variantIdx]), d.source),
+        )
+        return parentCodec.decode(newD)
+      },
+    } as JamCodec<unknown>
+  }
+
+  function JamCodecComponent<T>({ entry, value, dynCodecs, onChange, path, parent }: JamCodecComponentProps<T>) {
+    const cod = "id" in entry 
+      ? dynCodecs(entry.id)
+      : getInnerEnumCodec(dynCodecs(parent?.id || 0), parent as EnumParent)
     const decode = createDecode(cod);
     let valueProps: PartialValueProps<any> = {
       type: "blank",

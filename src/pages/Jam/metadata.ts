@@ -24,6 +24,38 @@ class PackageInfo {
   ) {}
 }
 
+// Patch workExecResult encoder/decoder
+const workExecResultCodec = workResult.WorkExecResult.Codec
+const originalEncode = workExecResultCodec.encode
+const originalDecode = workExecResultCodec.decode
+const h = workExecResultCodec as any
+h.decode = (d: jamCodec.Decoder) => {
+  const workExecResult = originalDecode(d)
+  return {
+    type: workResult.WorkExecResultKind[workExecResult.kind],
+    value: workExecResult.okBlob,
+  }
+}
+h.encode = (e: jamCodec.Encoder, value: any) => {
+  if (!("type" in value)) {
+    return originalEncode(e, value)
+  }
+  const isOk = value.type === "ok"
+  let kind = workResult.WorkExecResultKind.ok
+  if (!isOk) {
+    const m = {
+      badCode: workResult.WorkExecResultKind.badCode,
+      outOfGas: workResult.WorkExecResultKind.outOfGas,
+      codecOversize: workResult.WorkExecResultKind.codeOversize,
+      panic: workResult.WorkExecResultKind.panic,
+    }
+    kind = m[value.type as keyof typeof m] || workResult.WorkExecResultKind.panic
+  }
+  return originalEncode(
+    e,
+    new workResult.WorkExecResult(kind, isOk ? value.value : null),
+  )
+}
 
 export function createMetadata(spec: config.ChainSpec) {
   let id = 0;
@@ -266,13 +298,25 @@ export function createMetadata(spec: config.ChainSpec) {
     value: {
       ok: {
         idx: 0,
-        type: 'lookupEntry',
+        type: "lookupEntry",
         value: blob,
       },
-      error: {
+      outOfGas: {
         idx: 1,
-        type: 'void',
-      }
+        type: "void",
+      },
+      panic: {
+        idx: 2,
+        type: "void",
+      },
+      badCode: {
+        idx: 3,
+        type: "void",
+      },
+      codeOversize: {
+        idx: 4,
+        type: "void",
+      },
     },
     innerDocs: {}
   }, "Work Exec Result");
